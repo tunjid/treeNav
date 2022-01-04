@@ -2,8 +2,8 @@ plugins {
     kotlin("multiplatform") version "1.6.10"
 }
 
-group = "com.tunjid.tiler"
-version = "1.0-SNAPSHOT"
+group = "com.tunjid.treenav"
+version = "0.0.0"
 
 repositories {
     mavenCentral()
