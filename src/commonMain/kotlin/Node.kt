@@ -28,18 +28,21 @@ interface Node {
  */
 interface Route : Node
 
-/**
- * Recursively traverses each node in the tree with [this] as a parent
- */
-fun Node.traverseRecursive(onNodeVisited: (Node) -> Unit) {
-    if (children.isEmpty()) return onNodeVisited(this)
-    for (child in children) child.traverse(onNodeVisited)
+sealed class Order {
+    object BreadthFirst : Order()
+    object DepthFirst : Order()
 }
 
 /**
  * Traverses each node in the tree with [this] as a parent
  */
-inline fun Node.traverse(crossinline onNodeVisited: (Node) -> Unit) {
+
+inline fun Node.traverse(order: Order, crossinline onNodeVisited: (Node) -> Unit) = when(order){
+    Order.BreadthFirst -> bfs(onNodeVisited)
+    Order.DepthFirst -> dfs(onNodeVisited)
+}
+
+inline fun Node.dfs(crossinline onNodeVisited: (Node) -> Unit) {
     val stack = mutableListOf(this)
     while (stack.isNotEmpty()) {
         // Pop off end of stack.
@@ -51,22 +54,34 @@ inline fun Node.traverse(crossinline onNodeVisited: (Node) -> Unit) {
     }
 }
 
+inline fun Node.bfs(crossinline onNodeVisited: (Node) -> Unit) {
+    val queue = mutableListOf(this)
+    while (queue.isNotEmpty()) {
+        // deque.
+        val node = queue.removeAt(0)
+        // Visit node.
+        onNodeVisited(node)
+        // Push child nodes on the queue.
+        for (i in 0 until node.children.size) queue.add(node.children[i])
+    }
+}
+
 /**
  * Returns a [List] of all [Node]s in the tree with [this] as a parent
  */
-fun Node.flatten(): List<Node> {
+fun Node.flatten(order: Order): List<Node> {
     val result = mutableListOf<Node>()
-    traverse(result::add)
+    traverse(order, result::add)
     return result
 }
 
 operator fun Node.minus(node: Node): Set<Node> {
     val left = mutableSetOf<Node>().let { set ->
-        this.traverse(set::add)
+        this.dfs(set::add)
         set - this
     }
     val right = mutableSetOf<Node>().let { set ->
-        node.traverse(set::add)
+        node.dfs(set::add)
         set - node
     }
     return left - right
