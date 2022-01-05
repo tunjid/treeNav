@@ -24,22 +24,30 @@ interface Node {
 }
 
 /**
+ * A navigation node that represents a navigation destination on the screen.
+ */
+interface Route : Node
+
+/**
  * Recursively traverses each node in the tree with [this] as a parent
  */
- fun Node.traverse2( onNodeVisited: (Node) -> Unit) {
+fun Node.traverseRecursive(onNodeVisited: (Node) -> Unit) {
     if (children.isEmpty()) return onNodeVisited(this)
-    for(child in children) child.traverse(onNodeVisited)
+    for (child in children) child.traverse(onNodeVisited)
 }
 
+/**
+ * Traverses each node in the tree with [this] as a parent
+ */
 inline fun Node.traverse(crossinline onNodeVisited: (Node) -> Unit) {
     val stack = mutableListOf(this)
     while (stack.isNotEmpty()) {
         // Pop off end of stack.
         val node = stack.removeAt(stack.lastIndex)
-        // Do stuff.
+        // Visit node.
         onNodeVisited(node)
-        // Push other objects on the stack as needed.
-        for(i in node.children.lastIndex downTo 0)  stack.add(node.children[i])
+        // Push child nodes on the stack.
+        for (i in node.children.lastIndex downTo 0) stack.add(node.children[i])
     }
 }
 
@@ -52,14 +60,17 @@ fun Node.flatten(): List<Node> {
     return result
 }
 
-operator fun Node.minus(node: Node): Set<Node> =
-    (mutableSetOf<Node>().also { traverse(it::add) }) - (mutableSetOf<Node>().also { node.traverse(it::add) })
-
-/**
- * A navigation node that represents a navigation destination on the screen. The UI representing
- * the screen is emitted via the [Render] function.
- */
-interface Route : Node
+operator fun Node.minus(node: Node): Set<Node> {
+    val left = mutableSetOf<Node>().also { set ->
+        traverse(set::add)
+        set - this
+    }
+    val right = mutableSetOf<Node>().also { set ->
+        node.traverse(set::add)
+        set - node
+    }
+    return left - right
+}
 
 
 

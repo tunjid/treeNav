@@ -52,3 +52,5 @@ fun StackNav.pop() = if (routes.size == 1) this else copy(
  * Indicates if there's a [Route] available to pop up to
  */
 val StackNav.canGoUp get() = routes.size > 1
+
+val StackNav.current get() = routes.lastOrNull()
