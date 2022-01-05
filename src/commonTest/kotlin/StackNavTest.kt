@@ -34,8 +34,23 @@ class StackNavTest {
 
     @Test
     fun testPushing() {
-        val changed = subject.push(TestRoute("A"))
-        assertTrue { changed.current == TestRoute("A") }
-        assertEquals(setOf(TestRoute("A")), changed - subject)
+        val singlePush = subject.push(TestRoute("A"))
+        assertTrue { singlePush.current == TestRoute("A") }
+        assertEquals(setOf(TestRoute("A")), singlePush - subject)
+
+        val multiPush = subject
+            .push(TestRoute("A"))
+            .push(TestRoute("B"))
+            .push(TestRoute("C"))
+
+        assertTrue { multiPush.current == TestRoute("C") }
+
+        assertEquals(setOf(TestRoute("A")), singlePush - subject)
+        assertEquals(listOf("A", "B", "C").map(::TestRoute).toSet(), multiPush - subject)
+        assertEquals(listOf("B", "C").map(::TestRoute).toSet(), multiPush - singlePush)
+    }
+
+    @Test
+    fun testPopping() {
     }
 }

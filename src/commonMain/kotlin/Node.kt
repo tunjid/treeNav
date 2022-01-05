@@ -61,11 +61,11 @@ fun Node.flatten(): List<Node> {
 }
 
 operator fun Node.minus(node: Node): Set<Node> {
-    val left = mutableSetOf<Node>().also { set ->
-        traverse(set::add)
+    val left = mutableSetOf<Node>().let { set ->
+        this.traverse(set::add)
         set - this
     }
-    val right = mutableSetOf<Node>().also { set ->
+    val right = mutableSetOf<Node>().let { set ->
         node.traverse(set::add)
         set - node
     }
