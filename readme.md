@@ -1,7 +1,7 @@
-# Tiler
+# TreeNav
 
-[![JVM Tests](https://github.com/tunjid/Tiler/actions/workflows/tests.yml/badge.svg)](https://github.com/tunjid/Tiler/actions/workflows/tests.yml)
-![Tiler](https://img.shields.io/maven-central/v/com.tunjid.tiler/tiler?label=tiler)
+[![JVM Tests](https://github.com/tunjid/treeNav/actions/workflows/tests.yml/badge.svg)](https://github.com/tunjid/treeNav/actions/workflows/tests.yml)
+![TreeNav](https://img.shields.io/maven-central/v/com.tunjid.treeNav/treenav?label=treenav)
 
 Please note, this is not an official Google repository. It is a Kotlin multiplatform experiment
 that makes no guarantees about API stability or long term support. None of the works presented here
@@ -10,7 +10,11 @@ are production tested, and should not be taken as anything more than its face va
 ## Introduction
 
 TreeNav is a kotlin multiplatform experiment for representing app navigation with tree like data
-structures. The basic unit is a `Node` declaration.
+structures. This library is merely a declaration of interfaces and well tested types. Integration is open ended and
+left to the consuming application. An example of such an implementation can be found [here](https://github.com/tunjid/me).
+
+
+The basic type defined is the `Node` interface.
 
 ```kotlin
 interface Node {
@@ -23,11 +27,11 @@ interface Node {
 `Nodes` may be:
 * `Routes`: Simple destinations that represent a UI
 * Parent `Nodes`: `Nodes` with specific navigation semantics, the library currently offers 2:
-    * `StackNav`: Offers push pop semantics for stack based navigation
+    * `StackNav`: Offers push pop semantics for stack based navigation.
     * `MultiStackNav`: A compound `Node` comprising of multiple `StackNav` instances with the added
-    convenience of being able to switch stacks on a whim.
+    convenience of being able to switch stacks as well as the push and pop behaviors from `StackNav`.
 
-The above makes it easy to represent he following navigation structure:
+The above makes it easy to represent the following navigation structure:
 
 ```
 root_multi_stack_nav

@@ -17,14 +17,15 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
+        mavenCentral()
     }
 
     plugins {
         val kotlinVersion = "1.6.10"
 
         kotlin("jvm").version(kotlinVersion)
+        kotlin("dokka").version(kotlinVersion)
         kotlin("multiplatform").version(kotlinVersion)
-        kotlin("android").version(kotlinVersion)
     }
 }
 rootProject.name = "TreeNav"
