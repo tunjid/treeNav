@@ -75,11 +75,4 @@ private fun MultiStackNav.atCurrentIndex(operation: StackNav.() -> StackNav) = c
     }
 )
 
-/**
- * Indicates if the active [StackNav] can be popped up to a previous nav destination
- */
-val MultiStackNav.canGoUp get() = stacks.getOrNull(currentIndex)?.canGoUp == true
-
-val MultiStackNav.routes get() = stacks.map(StackNav::routes).flatten()
-
 val MultiStackNav.current get() = stacks.getOrNull(currentIndex)?.routes?.lastOrNull()

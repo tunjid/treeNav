@@ -37,32 +37,28 @@ sealed class Order {
  * Traverses each node in the tree with [this] as a parent
  */
 
-inline fun Node.traverse(order: Order, crossinline onNodeVisited: (Node) -> Unit) = when(order){
-    Order.BreadthFirst -> bfs(onNodeVisited)
-    Order.DepthFirst -> dfs(onNodeVisited)
-}
-
-inline fun Node.dfs(crossinline onNodeVisited: (Node) -> Unit) {
-    val stack = mutableListOf(this)
-    while (stack.isNotEmpty()) {
-        // Pop off end of stack.
-        val node = stack.removeAt(stack.lastIndex)
-        // Visit node.
-        onNodeVisited(node)
-        // Push child nodes on the stack.
-        for (i in node.children.lastIndex downTo 0) stack.add(node.children[i])
+inline fun Node.traverse(order: Order, crossinline onNodeVisited: (Node) -> Unit) = when (order) {
+    Order.BreadthFirst -> {
+        val queue = mutableListOf(this)
+        while (queue.isNotEmpty()) {
+            // deque.
+            val node = queue.removeAt(0)
+            // Visit node.
+            onNodeVisited(node)
+            // Push child nodes on the queue.
+            for (element in node.children) queue.add(element)
+        }
     }
-}
-
-inline fun Node.bfs(crossinline onNodeVisited: (Node) -> Unit) {
-    val queue = mutableListOf(this)
-    while (queue.isNotEmpty()) {
-        // deque.
-        val node = queue.removeAt(0)
-        // Visit node.
-        onNodeVisited(node)
-        // Push child nodes on the queue.
-        for (element in node.children) queue.add(element)
+    Order.DepthFirst -> {
+        val stack = mutableListOf(this)
+        while (stack.isNotEmpty()) {
+            // Pop off end of stack.
+            val node = stack.removeAt(stack.lastIndex)
+            // Visit node.
+            onNodeVisited(node)
+            // Push child nodes on the stack.
+            for (i in node.children.lastIndex downTo 0) stack.add(node.children[i])
+        }
     }
 }
 
@@ -75,13 +71,16 @@ fun Node.flatten(order: Order): List<Node> {
     return result
 }
 
+/**
+ * Returns the set of nodes in [this] that are not present in [node]
+ */
 operator fun Node.minus(node: Node): Set<Node> {
     val left = mutableSetOf<Node>().let { set ->
-        this.dfs(set::add)
+        this.traverse(Order.BreadthFirst, set::add)
         set - this
     }
     val right = mutableSetOf<Node>().let { set ->
-        node.dfs(set::add)
+        node.traverse(Order.BreadthFirst, set::add)
         set - node
     }
     return left - right

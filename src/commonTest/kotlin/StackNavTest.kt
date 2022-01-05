@@ -45,15 +45,15 @@ class StackNavTest {
 
     @BeforeTest
     fun setup() {
-        subject = StackNav("subject")
+        subject = StackNav(name = "subject")
     }
 
     @Test
     fun testFlatten() {
         val pushed = subject
-            .push(TestRoute("A"))
-            .push(TestRoute("B"))
-            .push(TestRoute("C"))
+            .push(TestRoute(name = "A"))
+            .push(TestRoute(name = "B"))
+            .push(TestRoute(name = "C"))
 
         assertEquals(
             expected = listOf(pushed) + listOf("A", "B", "C").map(::TestRoute),
@@ -63,19 +63,19 @@ class StackNavTest {
 
     @Test
     fun testPushing() {
-        val singlePush = subject.push(TestRoute("A"))
-        assertTrue { singlePush.current == TestRoute("A") }
-        assertEquals(setOf(TestRoute("A")), singlePush - subject)
+        val singlePush = subject.push(TestRoute(name = "A"))
+        assertTrue { singlePush.current == TestRoute(name = "A") }
+        assertEquals(setOf(TestRoute(name = "A")), singlePush - subject)
 
         val multiPush = subject
-            .push(TestRoute("A"))
-            .push(TestRoute("B"))
-            .push(TestRoute("C"))
+            .push(TestRoute(name = "A"))
+            .push(TestRoute(name = "B"))
+            .push(TestRoute(name = "C"))
 
-        assertTrue { multiPush.current == TestRoute("C") }
+        assertTrue { multiPush.current == TestRoute(name = "C") }
 
         assertEquals(
-            expected = setOf(TestRoute("A")),
+            expected = setOf(TestRoute(name = "A")),
             actual = singlePush - subject
         )
         assertEquals(
@@ -91,27 +91,27 @@ class StackNavTest {
     @Test
     fun testPopping() {
         val multiPush = subject
-            .push(TestRoute("A"))
-            .push(TestRoute("B"))
-            .push(TestRoute("C"))
+            .push(TestRoute(name = "A"))
+            .push(TestRoute(name = "B"))
+            .push(TestRoute(name = "C"))
 
-        assertTrue { multiPush.current == TestRoute("C") }
+        assertTrue { multiPush.current == TestRoute(name = "C") }
 
         assertEquals(
-            expected = listOf(TestRoute("A"), TestRoute("B")),
+            expected = listOf(TestRoute(name = "A"), TestRoute(name = "B")),
             actual = multiPush
                 .pop()
                 .children
         )
         assertEquals(
-            expected = listOf(TestRoute("A")),
+            expected = listOf(TestRoute(name = "A")),
             actual = multiPush
                 .pop()
                 .pop()
                 .children
         )
         assertEquals(
-            expected = listOf(TestRoute("A")),
+            expected = listOf(TestRoute(name = "A")),
             actual = multiPush
                 .pop()
                 .pop()

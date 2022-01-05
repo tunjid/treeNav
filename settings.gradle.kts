@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
 
+    plugins {
+        val kotlinVersion = "1.6.10"
+
+        kotlin("jvm").version(kotlinVersion)
+        kotlin("multiplatform").version(kotlinVersion)
+        kotlin("android").version(kotlinVersion)
+    }
+}
 rootProject.name = "TreeNav"
 

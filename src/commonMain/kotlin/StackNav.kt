@@ -34,7 +34,7 @@ fun StackNav.swap(route: Route) = if (routes.lastOrNull() == route) this else co
 )
 
 /**
- * Pushes the [route] unto the top of the navigation stack
+ * Pushes the [route] unto the top of the navigation stack if [current] is not equal to [route]
  */
 fun StackNav.push(route: Route) = if (routes.lastOrNull() == route) this else copy(
     routes = routes + route
