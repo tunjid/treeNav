@@ -62,7 +62,7 @@ inline fun Node.bfs(crossinline onNodeVisited: (Node) -> Unit) {
         // Visit node.
         onNodeVisited(node)
         // Push child nodes on the queue.
-        for (i in 0 until node.children.size) queue.add(node.children[i])
+        for (element in node.children) queue.add(element)
     }
 }
 

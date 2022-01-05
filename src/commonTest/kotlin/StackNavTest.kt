@@ -87,4 +87,44 @@ class StackNavTest {
             actual = multiPush - singlePush
         )
     }
+
+    @Test
+    fun testPopping() {
+        val multiPush = subject
+            .push(TestRoute("A"))
+            .push(TestRoute("B"))
+            .push(TestRoute("C"))
+
+        assertTrue { multiPush.current == TestRoute("C") }
+
+        assertEquals(
+            expected = listOf(TestRoute("A"), TestRoute("B")),
+            actual = multiPush
+                .pop()
+                .children
+        )
+        assertEquals(
+            expected = listOf(TestRoute("A")),
+            actual = multiPush
+                .pop()
+                .pop()
+                .children
+        )
+        assertEquals(
+            expected = listOf(TestRoute("A")),
+            actual = multiPush
+                .pop()
+                .pop()
+                .pop()
+                .children
+        )
+        assertEquals(
+            expected = listOf(),
+            actual = multiPush
+                .pop()
+                .pop()
+                .pop(popLast = true)
+                .children
+        )
+    }
 }

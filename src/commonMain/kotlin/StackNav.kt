@@ -41,12 +41,12 @@ fun StackNav.push(route: Route) = if (routes.lastOrNull() == route) this else co
 )
 
 /**
- * Pops the top route off if the stack is larger than 1, otherwise, it no ops
- * TODO: Make the no op behavior optional
+ * Pops the top route off if the stack is larger than 1 or [popLast] is true, otherwise it no ops
  */
-fun StackNav.pop() = if (routes.size == 1) this else copy(
-    routes = routes.dropLast(1)
-)
+fun StackNav.pop(popLast: Boolean = false) = when {
+    routes.size == 1 && !popLast -> this
+    else -> copy(routes = routes.dropLast(1))
+}
 
 /**
  * Indicates if there's a [Route] available to pop up to
