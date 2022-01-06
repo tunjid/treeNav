@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+package com.tunjid.treenav
+
 /**
  * A representation of a navigation node with child nodes [children]
  */

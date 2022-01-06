@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+package com.tunjid.treenav
 
 /**
  * An immutable navigation [Node] whose children are represented with a stack like data structure

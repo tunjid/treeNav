@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+package com.tunjid.treenav
 
 /**
  * A compound immutable navigation [Node] whose [children] are comprised of independent [StackNav]
