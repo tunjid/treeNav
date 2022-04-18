@@ -13,26 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-enableFeaturePreview("VERSION_CATALOGS")
 
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-    }
+package com.tunjid.treenav.strings
 
-    plugins {
-        val kotlinVersion = "1.6.10"
+import com.tunjid.treenav.Route
 
-        kotlin("jvm").version(kotlinVersion)
-        kotlin("dokka").version(kotlinVersion)
-        kotlin("multiplatform").version(kotlinVersion)
-    }
-}
-rootProject.name = "TreeNav"
-
-include(
-    ":treenav",
-    ":strings",
+/**
+ * Class holding pertinent information for a [String] representation of a [Route]
+ */
+data class RouteParams(
+    /**
+     * The full route represented as a string
+     */
+    val route: String,
+    /**
+     * Arguments for path variables in the string
+     */
+    val pathArgs: Map<String, String>,
+    /**
+     * Arguments for query parameters in the string
+     */
+    val queryArgs: Map<String, List<String>>,
 )
 
+fun interface RouteParser<T: Route> {
+    fun parse(routeString: String): T?
+}
