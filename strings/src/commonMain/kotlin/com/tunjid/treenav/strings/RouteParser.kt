@@ -14,6 +14,28 @@
  * limitations under the License.
  */
 
-plugins {
-    `kotlin-library-convention`
+package com.tunjid.treenav.strings
+
+import com.tunjid.treenav.Route
+
+/**
+ * Class holding pertinent information for a [String] representation of a [Route]
+ */
+data class RouteParams(
+    /**
+     * The full route represented as a string
+     */
+    val route: String,
+    /**
+     * Arguments for path variables in the string
+     */
+    val pathArgs: Map<String, String>,
+    /**
+     * Arguments for query parameters in the string
+     */
+    val queryArgs: Map<String, List<String>>,
+)
+
+fun interface RouteParser<T: Route> {
+    fun parse(routeString: String): T?
 }

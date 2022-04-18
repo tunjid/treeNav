@@ -69,7 +69,7 @@ fun MultiStackNav.switch(toIndex: Int) = copy(
 /**
  * Performs the given [operation] with the [StackNav] at [MultiStackNav.currentIndex]
  */
-private fun MultiStackNav.atCurrentIndex(operation: StackNav.() -> StackNav) = copy(
+private inline fun MultiStackNav.atCurrentIndex(operation: StackNav.() -> StackNav) = copy(
     stacks = stacks.mapIndexed { index, stack ->
         if (index == currentIndex) operation(stack)
         else stack
