@@ -12,6 +12,7 @@ taken as anything more than its face value.
 `treenav` is available on mavenCentral with the latest version indicated by the badge at the top of this readme file.
 
 `implementation com.tunjid.treenav:treenav:version`
+
 `implementation com.tunjid.treenav:strings:version`
 
 ## Introduction
