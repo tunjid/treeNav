@@ -28,10 +28,11 @@ interface UrlRouteMatcher<T : Route> {
 }
 
 /**
- * Creates a [RouteParser] from a list of [UrlRouteMatcher]s
+ * Creates a [RouteParser] from a list of [UrlRouteMatcher]s.
+ * Note that the order of [UrlRouteMatcher]s matter. Place more complex url first.
  */
 fun <T : Route> routeParserFrom(
-    parsers: List<UrlRouteMatcher<T>>
+    vararg parsers: UrlRouteMatcher<T>
 ): RouteParser<T> = object : RouteParser<T> {
     val regexMap = parsers.fold(mapOf<Regex, UrlRouteMatcher<T>>()) { map, parser ->
         map + parser.patterns.map { Regex(it) to parser }
@@ -61,7 +62,6 @@ fun <T : Route> urlRouteMatcher(
     routePattern: String,
     routeMapper: (RouteParams) -> T
 ) = object : UrlRouteMatcher<T> {
-
     init {
         pathKeys = mutableListOf()
         val basicPattern = routePattern.replace(regex = pathRegex) {
@@ -73,8 +73,9 @@ fun <T : Route> urlRouteMatcher(
             )
             "(.*?)"
         }
-        val queryPattern = "$basicPattern?(.*?)"
-        patterns = listOf(basicPattern, queryPattern)
+        val queryPattern = "$basicPattern\\?(.*?)"
+        // Match the query pattern first
+        patterns = listOf(queryPattern, basicPattern)
     }
 
     override val pathKeys: List<String>
