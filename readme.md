@@ -7,6 +7,13 @@ Please note, this is not an official Google repository. It is a Kotlin multiplat
 about API stability or long term support. None of the works presented here are production tested, and should not be
 taken as anything more than its face value.
 
+## Get it
+
+`treenav` is available on mavenCentral with the latest version indicated by the badge at the top of this readme file.
+
+`implementation com.tunjid.treenav:treenav:version`
+`implementation com.tunjid.treenav:strings:version`
+
 ## Introduction
 
 TreeNav is a kotlin multiplatform experiment for representing app navigation with tree like data structures. This
