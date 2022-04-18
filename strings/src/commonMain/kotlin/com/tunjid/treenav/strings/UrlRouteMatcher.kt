@@ -29,7 +29,7 @@ interface UrlRouteMatcher<T : Route> {
 
 /**
  * Creates a [RouteParser] from a list of [UrlRouteMatcher]s.
- * Note that the order of [UrlRouteMatcher]s matter. Place more complex url first.
+ * Note that the order of [UrlRouteMatcher]s matter; place more specific matchers first.
  */
 fun <T : Route> routeParserFrom(
     vararg parsers: UrlRouteMatcher<T>
