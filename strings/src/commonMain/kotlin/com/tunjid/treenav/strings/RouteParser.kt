@@ -36,6 +36,6 @@ data class RouteParams(
     val queryArgs: Map<String, List<String>>,
 )
 
-fun interface RouteParser<T: Route> {
+fun interface RouteParser<out T: Route> {
     fun parse(routeString: String): T?
 }
