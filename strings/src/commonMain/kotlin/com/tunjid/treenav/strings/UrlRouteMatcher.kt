@@ -21,7 +21,7 @@ import com.tunjid.treenav.Route
 /**
  * Matches route [String] representations into concrete [Route] instances
  */
-interface UrlRouteMatcher<T : Route> {
+interface UrlRouteMatcher<out T : Route> {
     val patterns: List<String>
     val pathKeys: List<String>
     fun route(params: RouteParams): T
@@ -29,7 +29,7 @@ interface UrlRouteMatcher<T : Route> {
 
 /**
  * Creates a [RouteParser] from a list of [UrlRouteMatcher]s.
- * Note that the order of [UrlRouteMatcher]s matter. Place more complex url first.
+ * Note that the order of [UrlRouteMatcher]s matter; place more specific matchers first.
  */
 fun <T : Route> routeParserFrom(
     vararg parsers: UrlRouteMatcher<T>
@@ -85,7 +85,9 @@ fun <T : Route> urlRouteMatcher(
     override fun route(params: RouteParams): T = routeMapper(params)
 }
 
-private val pathRegex = "\\{.*?}".toRegex()
+// Android's icu regex implementation needs the escape
+@Suppress("RegExpRedundantEscape")
+private val pathRegex = "\\{(.*?)\\}".toRegex()
 private val pathArgRegex = "[{}]".toRegex()
 
 /**
