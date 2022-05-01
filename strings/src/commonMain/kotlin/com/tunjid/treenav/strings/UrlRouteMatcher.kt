@@ -85,6 +85,8 @@ fun <T : Route> urlRouteMatcher(
     override fun route(params: RouteParams): T = routeMapper(params)
 }
 
+// Android's icu regex implementation needs the escape
+@Suppress("RegExpRedundantEscape")
 private val pathRegex = "\\{(.*?)\\}".toRegex()
 private val pathArgRegex = "[{}]".toRegex()
 
