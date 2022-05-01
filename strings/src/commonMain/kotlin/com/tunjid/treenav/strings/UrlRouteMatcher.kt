@@ -21,7 +21,7 @@ import com.tunjid.treenav.Route
 /**
  * Matches route [String] representations into concrete [Route] instances
  */
-interface UrlRouteMatcher<T : Route> {
+interface UrlRouteMatcher<out T : Route> {
     val patterns: List<String>
     val pathKeys: List<String>
     fun route(params: RouteParams): T
@@ -85,7 +85,7 @@ fun <T : Route> urlRouteMatcher(
     override fun route(params: RouteParams): T = routeMapper(params)
 }
 
-private val pathRegex = "\\{.*?}".toRegex()
+private val pathRegex = "\\{(.*?)\\}".toRegex()
 private val pathArgRegex = "[{}]".toRegex()
 
 /**
