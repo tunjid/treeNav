@@ -39,7 +39,7 @@ fun <T : Route> routeParserFrom(
     }
 
     override fun parse(routeString: String): T? {
-        val regex = regexMap.keys.firstOrNull { it.matches(input = routeString) } ?: return null
+        val regex = regexMap.keys.firstOrNull { it.containsMatchIn(input = routeString) } ?: return null
         val result = regex.matchEntire(input = routeString) ?: return null
 
         val routeParser = regexMap.getValue(regex)
