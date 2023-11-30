@@ -36,7 +36,7 @@ import kotlin.test.assertTrue
  * limitations under the License.
  */
 
-data class TestRoute(val name: String) : Route {
+data class TestNode(val name: String) : Node {
     override val id: String get() = name
 }
 
@@ -52,39 +52,39 @@ class StackNavTest {
     @Test
     fun testFlatten() {
         val pushed = subject
-            .push(TestRoute(name = "A"))
-            .push(TestRoute(name = "B"))
-            .push(TestRoute(name = "C"))
+            .push(TestNode(name = "A"))
+            .push(TestNode(name = "B"))
+            .push(TestNode(name = "C"))
 
         assertEquals(
-            expected = listOf(pushed) + listOf("A", "B", "C").map(::TestRoute),
+            expected = listOf(pushed) + listOf("A", "B", "C").map(::TestNode),
             actual = pushed.flatten(order = Order.DepthFirst)
         )
     }
 
     @Test
     fun testPushing() {
-        val singlePush = subject.push(TestRoute(name = "A"))
-        assertTrue { singlePush.current == TestRoute(name = "A") }
-        assertEquals(setOf(TestRoute(name = "A")), singlePush - subject)
+        val singlePush = subject.push(TestNode(name = "A"))
+        assertTrue { singlePush.current == TestNode(name = "A") }
+        assertEquals(setOf(TestNode(name = "A")), singlePush - subject)
 
         val multiPush = subject
-            .push(TestRoute(name = "A"))
-            .push(TestRoute(name = "B"))
-            .push(TestRoute(name = "C"))
+            .push(TestNode(name = "A"))
+            .push(TestNode(name = "B"))
+            .push(TestNode(name = "C"))
 
-        assertTrue { multiPush.current == TestRoute(name = "C") }
+        assertTrue { multiPush.current == TestNode(name = "C") }
 
         assertEquals(
-            expected = setOf(TestRoute(name = "A")),
+            expected = setOf(TestNode(name = "A")),
             actual = singlePush - subject
         )
         assertEquals(
-            expected = listOf("A", "B", "C").map(::TestRoute).toSet(),
+            expected = listOf("A", "B", "C").map(::TestNode).toSet(),
             actual = multiPush - subject
         )
         assertEquals(
-            expected = listOf("B", "C").map(::TestRoute).toSet(),
+            expected = listOf("B", "C").map(::TestNode).toSet(),
             actual = multiPush - singlePush
         )
     }
@@ -92,27 +92,27 @@ class StackNavTest {
     @Test
     fun testPopping() {
         val multiPush = subject
-            .push(TestRoute(name = "A"))
-            .push(TestRoute(name = "B"))
-            .push(TestRoute(name = "C"))
+            .push(TestNode(name = "A"))
+            .push(TestNode(name = "B"))
+            .push(TestNode(name = "C"))
 
-        assertTrue { multiPush.current == TestRoute(name = "C") }
+        assertTrue { multiPush.current == TestNode(name = "C") }
 
         assertEquals(
-            expected = listOf(TestRoute(name = "A"), TestRoute(name = "B")),
+            expected = listOf(TestNode(name = "A"), TestNode(name = "B")),
             actual = multiPush
                 .pop()
                 .children
         )
         assertEquals(
-            expected = listOf(TestRoute(name = "A")),
+            expected = listOf(TestNode(name = "A")),
             actual = multiPush
                 .pop()
                 .pop()
                 .children
         )
         assertEquals(
-            expected = listOf(TestRoute(name = "A")),
+            expected = listOf(TestNode(name = "A")),
             actual = multiPush
                 .pop()
                 .pop()

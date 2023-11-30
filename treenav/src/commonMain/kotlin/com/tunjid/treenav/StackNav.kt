@@ -21,37 +21,36 @@ package com.tunjid.treenav
  */
 data class StackNav(
     val name: String,
-    val routes: List<Route> = listOf()
+    override val children: List<Node> = listOf()
 ) : Node {
     override val id: String get() = name
-    override val children: List<Node> get() = routes
 }
 
 /**
- * Swaps the top of the stack with the specified [Route]
+ * Swaps the top of the stack with the specified [Node]
  */
-fun StackNav.swap(route: Route) = if (routes.lastOrNull() == route) this else copy(
-    routes = routes.dropLast(1) + route
-)
+fun StackNav.swap(node: Node): StackNav =
+    if (children.lastOrNull() == node) this
+    else copy(children = children.dropLast(1) + node)
 
 /**
- * Pushes the [route] unto the top of the navigation stack if [current] is not equal to [route]
+ * Pushes the [node] unto the top of the navigation stack if [current] is not equal to [node]
  */
-fun StackNav.push(route: Route) = if (routes.lastOrNull() == route) this else copy(
-    routes = routes + route
-)
+fun StackNav.push(node: Node): StackNav =
+    if (children.lastOrNull() == node) this
+    else copy(children = children + node)
 
 /**
- * Pops the top route off if the stack is larger than 1 or [popLast] is true, otherwise it no ops
+ * Pops the top node off if the stack is larger than 1 or [popLast] is true, otherwise it no ops
  */
 fun StackNav.pop(popLast: Boolean = false) = when {
-    routes.size == 1 && !popLast -> this
-    else -> copy(routes = routes.dropLast(1))
+    children.size == 1 && !popLast -> this
+    else -> copy(children = children.dropLast(1))
 }
 
 /**
- * Indicates if there's a [Route] available to pop up to
+ * Indicates if there's a [Node] available to pop up to
  */
-val StackNav.canGoUp get() = routes.size > 1
+val StackNav.canPop get() = children.size > 1
 
-val StackNav.current get() = routes.lastOrNull()
+val StackNav.current get() = children.lastOrNull()

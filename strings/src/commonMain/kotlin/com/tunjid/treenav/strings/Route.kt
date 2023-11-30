@@ -16,7 +16,14 @@
 
 package com.tunjid.treenav.strings
 
-import com.tunjid.treenav.Route
+import com.tunjid.treenav.Node
+
+/**
+ * A navigation node that represents a navigation destination on the screen.
+ */
+interface Route : Node {
+    val routeParams: RouteParams
+}
 
 /**
  * Class holding pertinent information for a [String] representation of a [Route]
@@ -33,9 +40,24 @@ data class RouteParams(
     /**
      * Arguments for query parameters in the string
      */
-    val queryArgs: Map<String, List<String>>,
+    val queryParams: Map<String, List<String>>,
 )
 
-fun interface RouteParser<out T: Route> {
+fun routeString(
+    path: String,
+    queryParams: Map<String, List<String>>
+) = when {
+    queryParams.isEmpty() -> path
+    else -> {
+        val queryParameters = queryParams.entries.joinToString(separator = "&") { (key, values) ->
+            values.joinToString(separator = "&") { value ->
+                "$key=$value"
+            }
+        }
+        "$path?$queryParameters"
+    }
+}
+
+fun interface RouteParser<out T : Route> {
     fun parse(routeString: String): T?
 }

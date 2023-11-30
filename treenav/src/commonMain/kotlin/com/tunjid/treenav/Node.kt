@@ -17,18 +17,13 @@
 package com.tunjid.treenav
 
 /**
- * A representation of a navigation node with child nodes [children]
+ * A representation of a navigation node with child children [children]
  */
 interface Node {
     val id: String
 
     val children: List<Node> get() = listOf()
 }
-
-/**
- * A navigation node that represents a navigation destination on the screen.
- */
-interface Route : Node
 
 sealed class Order {
     object BreadthFirst : Order()
@@ -47,7 +42,7 @@ inline fun Node.traverse(order: Order, crossinline onNodeVisited: (Node) -> Unit
             val node = queue.removeAt(0)
             // Visit node.
             onNodeVisited(node)
-            // Push child nodes on the queue.
+            // Push child children on the queue.
             for (element in node.children) queue.add(element)
         }
     }
@@ -58,7 +53,7 @@ inline fun Node.traverse(order: Order, crossinline onNodeVisited: (Node) -> Unit
             val node = stack.removeAt(stack.lastIndex)
             // Visit node.
             onNodeVisited(node)
-            // Push child nodes on the stack.
+            // Push child children on the stack.
             for (i in node.children.lastIndex downTo 0) stack.add(node.children[i])
         }
     }
@@ -74,7 +69,7 @@ fun Node.flatten(order: Order): List<Node> {
 }
 
 /**
- * Returns the set of nodes in [this] that are not present in [node]
+ * Returns the set of children in [this] that are not present in [node]
  */
 operator fun Node.minus(node: Node): Set<Node> {
     val left = mutableSetOf<Node>().let { set ->

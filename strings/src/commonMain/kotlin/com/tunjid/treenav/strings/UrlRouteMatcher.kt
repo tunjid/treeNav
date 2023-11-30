@@ -16,8 +16,6 @@
 
 package com.tunjid.treenav.strings
 
-import com.tunjid.treenav.Route
-
 /**
  * Matches route [String] representations into concrete [Route] instances
  */
@@ -49,7 +47,7 @@ fun <T : Route> routeParserFrom(
                 pathArgs = routeParser.pathKeys
                     .zip(result.groupValues.drop(1))
                     .toMap(),
-                queryArgs = result.groupValues.lastOrNull()?.queryParams() ?: mapOf(),
+                queryParams = result.groupValues.lastOrNull()?.queryParams() ?: mapOf(),
             )
         )
     }

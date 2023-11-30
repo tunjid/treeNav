@@ -50,34 +50,34 @@ class MultiStackNavTest {
     @Test
     fun testFlattenDepthFirst() {
         val pushed = subject
-            .push(TestRoute("A"))
-            .push(TestRoute("B"))
-            .push(TestRoute("C"))
+            .push(TestNode("A"))
+            .push(TestNode("B"))
+            .push(TestNode("C"))
             .switch(toIndex = 2)
-            .push(TestRoute("D"))
-            .push(TestRoute("E"))
+            .push(TestNode("D"))
+            .push(TestNode("E"))
             .switch(toIndex = 1)
-            .push(TestRoute("F"))
+            .push(TestNode("F"))
 
         assertEquals(
             expected = listOf(
                 pushed,
                 StackNav(
                     name = "0",
-                    routes = listOf("A", "B", "C").map(::TestRoute)
+                    children = listOf("A", "B", "C").map(::TestNode)
                 )
             )
-                + listOf("A", "B", "C").map(::TestRoute)
+                + listOf("A", "B", "C").map(::TestNode)
                 + StackNav(
                 name = "1",
-                routes = listOf("F").map(::TestRoute)
+                children = listOf("F").map(::TestNode)
             )
-                + listOf("F").map(::TestRoute)
+                + listOf("F").map(::TestNode)
                 + StackNav(
                 name = "2",
-                routes = listOf("D", "E").map(::TestRoute)
+                children = listOf("D", "E").map(::TestNode)
             )
-                + listOf("D", "E").map(::TestRoute),
+                + listOf("D", "E").map(::TestNode),
             actual = pushed.flatten(order = Order.DepthFirst)
         )
     }
@@ -85,34 +85,34 @@ class MultiStackNavTest {
     @Test
     fun testFlattenBreathFirst() {
         val pushed = subject
-            .push(TestRoute("A"))
-            .push(TestRoute("B"))
-            .push(TestRoute("C"))
+            .push(TestNode("A"))
+            .push(TestNode("B"))
+            .push(TestNode("C"))
             .switch(toIndex = 2)
-            .push(TestRoute("D"))
-            .push(TestRoute("E"))
+            .push(TestNode("D"))
+            .push(TestNode("E"))
             .switch(toIndex = 1)
-            .push(TestRoute("F"))
+            .push(TestNode("F"))
 
         assertEquals(
             expected = listOf(
                 pushed,
                 StackNav(
                     name = "0",
-                    routes = listOf("A", "B", "C").map(::TestRoute)
+                    children = listOf("A", "B", "C").map(::TestNode)
                 ),
                 StackNav(
                     name = "1",
-                    routes = listOf("F").map(::TestRoute)
+                    children = listOf("F").map(::TestNode)
                 ),
                 StackNav(
                     name = "2",
-                    routes = listOf("D", "E").map(::TestRoute)
+                    children = listOf("D", "E").map(::TestNode)
                 )
             )
-                + listOf("A", "B", "C").map(::TestRoute)
-                + listOf("F").map(::TestRoute)
-                + listOf("D", "E").map(::TestRoute),
+                + listOf("A", "B", "C").map(::TestNode)
+                + listOf("F").map(::TestNode)
+                + listOf("D", "E").map(::TestNode),
             actual = pushed.flatten(order = Order.BreadthFirst)
         )
     }
@@ -120,14 +120,14 @@ class MultiStackNavTest {
     @Test
     fun testPopping() {
         val pushed = subject
-            .push(TestRoute("A"))
-            .push(TestRoute("B"))
-            .push(TestRoute("C"))
+            .push(TestNode("A"))
+            .push(TestNode("B"))
+            .push(TestNode("C"))
             .switch(toIndex = 2)
-            .push(TestRoute("D"))
-            .push(TestRoute("E"))
+            .push(TestNode("D"))
+            .push(TestNode("E"))
             .switch(toIndex = 1)
-            .push(TestRoute("F"))
+            .push(TestNode("F"))
 
         // Should switch stack but leave last route on stack "2"
         assertEquals(
@@ -138,15 +138,15 @@ class MultiStackNavTest {
                 stacks = listOf(
                     StackNav(
                         name = "0",
-                        routes = listOf("A", "B", "C").map(::TestRoute)
+                        children = listOf("A", "B", "C").map(::TestNode)
                     ),
                     StackNav(
                         name = "1",
-                        routes = listOf("F").map(::TestRoute)
+                        children = listOf("F").map(::TestNode)
                     ),
                     StackNav(
                         name = "2",
-                        routes = listOf("D", "E").map(::TestRoute)
+                        children = listOf("D", "E").map(::TestNode)
                     )
                 )
             ),
@@ -163,15 +163,15 @@ class MultiStackNavTest {
                 stacks = listOf(
                     StackNav(
                         name = "0",
-                        routes = listOf("A", "B", "C").map(::TestRoute)
+                        children = listOf("A", "B", "C").map(::TestNode)
                     ),
                     StackNav(
                         name = "1",
-                        routes = listOf("F").map(::TestRoute)
+                        children = listOf("F").map(::TestNode)
                     ),
                     StackNav(
                         name = "2",
-                        routes = listOf("D").map(::TestRoute)
+                        children = listOf("D").map(::TestNode)
                     )
                 )
             ),
@@ -189,15 +189,15 @@ class MultiStackNavTest {
                 stacks = listOf(
                     StackNav(
                         name = "0",
-                        routes = listOf("A", "B", "C").map(::TestRoute)
+                        children = listOf("A", "B", "C").map(::TestNode)
                     ),
                     StackNav(
                         name = "1",
-                        routes = listOf("F").map(::TestRoute)
+                        children = listOf("F").map(::TestNode)
                     ),
                     StackNav(
                         name = "2",
-                        routes = listOf("D").map(::TestRoute)
+                        children = listOf("D").map(::TestNode)
                     )
                 )
             ),
@@ -216,15 +216,15 @@ class MultiStackNavTest {
                 stacks = listOf(
                     StackNav(
                         name = "0",
-                        routes = listOf("A", "B").map(::TestRoute)
+                        children = listOf("A", "B").map(::TestNode)
                     ),
                     StackNav(
                         name = "1",
-                        routes = listOf("F").map(::TestRoute)
+                        children = listOf("F").map(::TestNode)
                     ),
                     StackNav(
                         name = "2",
-                        routes = listOf("D").map(::TestRoute)
+                        children = listOf("D").map(::TestNode)
                     )
                 )
             ),
@@ -239,31 +239,31 @@ class MultiStackNavTest {
     @Test
     fun testSwapping() {
         val multiPush = subject
-            .push(TestRoute(name = "A"))
-            .push(TestRoute(name = "B"))
-            .push(TestRoute(name = "C"))
+            .push(TestNode(name = "A"))
+            .push(TestNode(name = "B"))
+            .push(TestNode(name = "C"))
 
         assertEquals(
-            expected = listOf("A", "B", "D").map(::TestRoute),
-            actual = multiPush.swap(TestRoute(name = "D"))
+            expected = listOf("A", "B", "D").map(::TestNode),
+            actual = multiPush.swap(TestNode(name = "D"))
                 .flatten(Order.DepthFirst)
-                .filterIsInstance<TestRoute>()
+                .filterIsInstance<TestNode>()
         )
     }
 
     @Test
     fun testSubtraction() {
         val multiPush = subject
-            .push(TestRoute(name = "A"))
-            .push(TestRoute(name = "B"))
-            .push(TestRoute(name = "C"))
+            .push(TestNode(name = "A"))
+            .push(TestNode(name = "B"))
+            .push(TestNode(name = "C"))
 
         assertEquals(
             expected = listOf("A", "B", "C")
-                .map(::TestRoute)
+                .map(::TestNode)
                 .toSet(),
             actual = (multiPush - subject)
-                .filterIsInstance<Route>()
+                .filterIsInstance<TestNode>()
                 .toSet()
         )
     }

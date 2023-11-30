@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-import com.tunjid.treenav.Route
+import com.tunjid.treenav.strings.Route
+import com.tunjid.treenav.strings.RouteParams
 import com.tunjid.treenav.strings.routeParserFrom
+import com.tunjid.treenav.strings.routeString
 import com.tunjid.treenav.strings.urlRouteMatcher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 data class TestRoute(
-    val name: String,
-    val queryParams: Map<String, List<String>> = mapOf()
+    override val routeParams: RouteParams
 ) : Route {
-    override val id: String get() = name
+    override val id: String get() = routeParams.route.split("?").first()
+
 }
 
 class UrlRouteMatcherTest {
@@ -32,45 +34,66 @@ class UrlRouteMatcherTest {
     @Test
     fun testSimpleUrlRouteMatching() {
         val routeParser = routeParserFrom(
-            urlRouteMatcher(routePattern = "users/{id}") { params ->
-                TestRoute(name = params.pathArgs.getValue("id"))
-            }
+            urlRouteMatcher(
+                routePattern = "users/{id}",
+                routeMapper = ::TestRoute
+            )
         )
         val route = routeParser.parse("users/jeff")
 
         assertEquals(
+            expected = "users/jeff",
+            actual = route?.id
+        )
+        assertEquals(
             expected = "jeff",
-            actual = route?.name
+            actual = route?.routeParams?.pathArgs?.get("id")
         )
     }
 
     @Test
     fun testSimpleUrlRouteMatchingWithQueryParams() {
         val routeParser = routeParserFrom(
-            urlRouteMatcher(routePattern = "users/{id}") { params ->
-                TestRoute(
-                    name = params.pathArgs.getValue("id"),
-                    queryParams = params.queryArgs
-                )
-            }
+            urlRouteMatcher(
+                routePattern = "users/{id}",
+                routeMapper = ::TestRoute
+            )
         )
-        val route = routeParser.parse("users/jeff?age=27&job=dev&hobby=running&hobby=reading")
+        val routeString = routeString(
+            path = "users/jeff",
+            queryParams = mapOf(
+                "age" to listOf("27"),
+                "job" to listOf("dev"),
+                "hobby" to listOf("running", "reading"),
+            )
+        )
 
         assertEquals(
+            expected = "users/jeff?age=27&job=dev&hobby=running&hobby=reading",
+            actual = routeString,
+        )
+
+        val route = routeParser.parse(routeString)
+
+        assertEquals(
+            expected = "users/jeff",
+            actual = route?.id
+        )
+        assertEquals(
             expected = "jeff",
-            actual = route?.name
+            actual = route?.routeParams?.pathArgs?.get("id")
         )
         assertEquals(
             expected = "27",
-            actual = route?.queryParams?.get("age")?.first()
+            actual = route?.routeParams?.queryParams?.get("age")?.first()
         )
         assertEquals(
             expected = "dev",
-            actual = route?.queryParams?.get("job")?.first()
+            actual = route?.routeParams?.queryParams?.get("job")?.first()
         )
         assertEquals(
             expected = listOf("running", "reading"),
-            actual = route?.queryParams?.get("hobby")
+            actual = route?.routeParams?.queryParams?.get("hobby")
         )
     }
 }

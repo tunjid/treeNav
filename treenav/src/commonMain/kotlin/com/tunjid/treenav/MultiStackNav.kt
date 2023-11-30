@@ -31,20 +31,20 @@ data class MultiStackNav(
 }
 
 /**
- * Switches out the [current] for [Route]
+ * Switches out the [current] for [Node]
  */
-fun MultiStackNav.swap(route: Route) = atCurrentIndex { swap(route) }
+fun MultiStackNav.swap(node: Node): MultiStackNav = atCurrentIndex { swap(node) }
 
 /**
- * Pushes [route] on top of the [StackNav] at [MultiStackNav.currentIndex]
+ * Pushes [node] on top of the [StackNav] at [MultiStackNav.currentIndex]
  */
-fun MultiStackNav.push(route: Route) = atCurrentIndex { push(route) }
+fun MultiStackNav.push(node: Node): MultiStackNav = atCurrentIndex { push(node) }
 
 /**
  * Tries to pop the active [StackNav]. If unsuccessful, it tries to go to the last
  * [MultiStackNav.currentIndex] before the active [MultiStackNav.currentIndex]
  */
-fun MultiStackNav.pop() = when (val changed = atCurrentIndex(StackNav::pop)) {
+fun MultiStackNav.pop(): MultiStackNav = when (val changed = atCurrentIndex(StackNav::pop)) {
     // There was nothing to pop, try switching the active index
     this -> indexHistory.dropLast(1).let { newIndexHistory ->
         when (val newIndex = newIndexHistory.lastOrNull()) {
@@ -61,7 +61,7 @@ fun MultiStackNav.pop() = when (val changed = atCurrentIndex(StackNav::pop)) {
 /**
  * Switches the [MultiStackNav.currentIndex] to [toIndex]
  */
-fun MultiStackNav.switch(toIndex: Int) = copy(
+fun MultiStackNav.switch(toIndex: Int): MultiStackNav = copy(
     currentIndex = toIndex,
     indexHistory = (indexHistory - toIndex) + toIndex
 )
@@ -76,4 +76,4 @@ private inline fun MultiStackNav.atCurrentIndex(operation: StackNav.() -> StackN
     }
 )
 
-val MultiStackNav.current get() = stacks.getOrNull(currentIndex)?.routes?.lastOrNull()
+val MultiStackNav.current: Node? get() = stacks.getOrNull(currentIndex)?.children?.lastOrNull()
