@@ -24,10 +24,7 @@ import kotlin.test.assertEquals
 
 data class TestRoute(
     override val routeParams: RouteParams
-) : Route {
-    override val id: String get() = routeParams.route.split("?").first()
-
-}
+) : Route()
 
 class UrlRouteMatcherTest {
 
@@ -35,14 +32,14 @@ class UrlRouteMatcherTest {
     fun testSimpleUrlRouteMatching() {
         val routeParser = routeParserFrom(
             urlRouteMatcher(
-                routePattern = "users/{id}",
+                routePattern = "/users/{id}",
                 routeMapper = ::TestRoute
             )
         )
-        val route = routeParser.parse("users/jeff")
+        val route = routeParser.parse("/users/jeff")
 
         assertEquals(
-            expected = "users/jeff",
+            expected = "/users/jeff",
             actual = route?.id
         )
         assertEquals(
@@ -55,12 +52,12 @@ class UrlRouteMatcherTest {
     fun testSimpleUrlRouteMatchingWithQueryParams() {
         val routeParser = routeParserFrom(
             urlRouteMatcher(
-                routePattern = "users/{id}",
+                routePattern = "/users/{id}",
                 routeMapper = ::TestRoute
             )
         )
         val routeString = routeString(
-            path = "users/jeff",
+            path = "/users/jeff",
             queryParams = mapOf(
                 "age" to listOf("27"),
                 "job" to listOf("dev"),
@@ -69,14 +66,14 @@ class UrlRouteMatcherTest {
         )
 
         assertEquals(
-            expected = "users/jeff?age=27&job=dev&hobby=running&hobby=reading",
+            expected = "/users/jeff?age=27&job=dev&hobby=running&hobby=reading",
             actual = routeString,
         )
 
         val route = routeParser.parse(routeString)
 
         assertEquals(
-            expected = "users/jeff",
+            expected = "/users/jeff",
             actual = route?.id
         )
         assertEquals(

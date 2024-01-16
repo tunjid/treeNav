@@ -21,14 +21,17 @@ import com.tunjid.treenav.Node
 /**
  * A navigation node that represents a navigation destination on the screen.
  */
-interface Route : Node {
-    val routeParams: RouteParams
+abstract class Route : Node {
+    override val id: String
+        get() = routeParams.route.split("?").first()
+
+    abstract val routeParams: RouteParams
 }
 
 /**
  * Class holding pertinent information for a [String] representation of a [Route]
  */
-data class RouteParams(
+class RouteParams(
     /**
      * The full route represented as a string
      */
