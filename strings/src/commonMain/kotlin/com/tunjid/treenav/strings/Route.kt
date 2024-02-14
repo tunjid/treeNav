@@ -21,11 +21,11 @@ import com.tunjid.treenav.Node
 /**
  * A navigation node that represents a navigation destination on the screen.
  */
-abstract class Route : Node {
-    override val id: String
-        get() = routeParams.route.split("?").first()
+interface Route : Node {
+    val routeParams: RouteParams
 
-    abstract val routeParams: RouteParams
+    override val id: String
+        get() = routeParams.pathAndQueries.split("?").first()
 }
 
 /**
@@ -33,9 +33,9 @@ abstract class Route : Node {
  */
 class RouteParams(
     /**
-     * The full route represented as a string
+     * The path and query strings of a url concatenated
      */
-    val route: String,
+    val pathAndQueries: String,
     /**
      * Arguments for path variables in the string
      */
@@ -61,6 +61,7 @@ fun routeString(
     }
 }
 
-fun interface RouteParser<out T : Route> {
-    fun parse(routeString: String): T?
+
+fun interface RouteParser {
+    fun parse(pathAndQueries: String): Route?
 }

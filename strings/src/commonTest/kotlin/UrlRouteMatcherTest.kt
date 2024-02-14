@@ -24,7 +24,7 @@ import kotlin.test.assertEquals
 
 data class TestRoute(
     override val routeParams: RouteParams
-) : Route()
+) : Route
 
 class UrlRouteMatcherTest {
 
