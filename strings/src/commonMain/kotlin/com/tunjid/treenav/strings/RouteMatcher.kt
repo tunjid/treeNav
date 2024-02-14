@@ -19,21 +19,21 @@ package com.tunjid.treenav.strings
 /**
  * Matches route [String] representations into concrete [Route] instances
  */
-interface UrlRouteMatcher<out T : Route> {
+interface RouteMatcher {
     val pattern: PathPattern
-    fun route(params: RouteParams): T
+    fun route(params: RouteParams): Route
 }
 
 /**
- * Creates a [RouteParser] from a list of [UrlRouteMatcher]s.
- * Note that the order of [UrlRouteMatcher]s matter; place more specific matchers first.
+ * Creates a [RouteParser] from a list of [RouteMatcher]s.
+ * Note that the order of [RouteMatcher]s matter; place more specific matchers first.
  */
-fun <T : Route> routeParserFrom(
-    vararg matchers: UrlRouteMatcher<T>
-): RouteParser<T> = object : RouteParser<T> {
+fun routeParserFrom(
+    vararg matchers: RouteMatcher
+): RouteParser = object : RouteParser {
 
     private val rootTrieNode = matchers.fold(
-        TrieNode<UrlRouteMatcher<T>>()
+        TrieNode<RouteMatcher>()
     ) { routeNode, matcher ->
         routeNode.insert(
             pattern = matcher.pattern,
@@ -42,27 +42,27 @@ fun <T : Route> routeParserFrom(
         routeNode
     }
 
-    override fun parse(routeString: String): T? {
+    override fun parse(pathAndQueries: String): Route? {
         val matcher = rootTrieNode.find(
-            path = routeString,
+            path = pathAndQueries,
         ) ?: return null
 
         return matcher.route(
-            routeString.routeParams(matcher.pattern)
+            pathAndQueries.routeParams(matcher.pattern)
         )
     }
 }
 
 /**
- * Convenience function for creating a [UrlRouteMatcher] for parsing
+ * Convenience function for creating a [RouteMatcher] for parsing
  * URL-like [String] representations of [Route]s
  */
-fun <T : Route> urlRouteMatcher(
+fun urlRouteMatcher(
     routePattern: String,
-    routeMapper: (RouteParams) -> T
-) = object : UrlRouteMatcher<T> {
+    routeMapper: (RouteParams) -> Route
+) = object : RouteMatcher {
 
     override val pattern = PathPattern(routePattern)
 
-    override fun route(params: RouteParams): T = routeMapper(params)
+    override fun route(params: RouteParams): Route = routeMapper(params)
 }

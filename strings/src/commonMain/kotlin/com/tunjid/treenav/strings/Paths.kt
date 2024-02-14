@@ -18,6 +18,13 @@ package com.tunjid.treenav.strings
 
 import kotlin.jvm.JvmInline
 
+/**
+ * Defines the pattern for a URL path that may have path arguments within.
+ *
+ * Patterns are in the format of /users/{id}.
+ *
+ * Patterns support multiple path arguments, and path arguments must have unique names.
+ */
 @JvmInline
 value class PathPattern(
     val template: String
@@ -29,10 +36,14 @@ value class PathPattern(
     }
 }
 
+/**
+ * Converts a properly formatted string of a url path and its queries to an instance of
+ * [RouteParams]
+ */
 internal fun String.routeParams(
     pattern: PathPattern
 ) = RouteParams(
-    route = this,
+    pathAndQueries = this,
     pathArgs = pathArgs(pattern.template),
     queryParams = queryParams(),
 )
