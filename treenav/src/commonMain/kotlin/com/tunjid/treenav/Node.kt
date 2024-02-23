@@ -26,8 +26,8 @@ interface Node {
 }
 
 sealed class Order {
-    object BreadthFirst : Order()
-    object DepthFirst : Order()
+    data object BreadthFirst : Order()
+    data object DepthFirst : Order()
 }
 
 /**
