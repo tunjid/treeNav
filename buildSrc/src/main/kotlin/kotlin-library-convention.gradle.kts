@@ -38,15 +38,19 @@ kotlin {
         }
     }
 
-    ios()
+    iosX64()
+    iosArm64()
     iosSimulatorArm64()
     linuxX64()
     macosX64()
     macosArm64()
     mingwX64()
-    tvos()
+    tvosArm64()
+    tvosX64()
     tvosSimulatorArm64()
-    watchos()
+    tvosSimulatorArm64()
+    watchosArm64()
+    watchosX64()
     watchosSimulatorArm64()
 
     sourceSets {
@@ -76,9 +80,9 @@ allprojects {
 
 val dokkaHtml by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
     dokkaSourceSets {
-        named("iosTest") {
-            suppress.set(true)
-        }
+//        named("iosTest") {
+//            suppress.set(true)
+//        }
     }
 }
 
