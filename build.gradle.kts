@@ -32,20 +32,18 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-    }
-
-    dependencies {
-        classpath(libs.kotlin.gradlePlugin)
-        classpath(libs.dokka.gradlePlugin)
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven("https://plugins.gradle.org/m2/")
     }
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.androidx.benchmark) apply false
+    alias(libs.plugins.compose.compiler) apply false
+    alias(libs.plugins.jetbrains.compose) apply false
+    alias(libs.plugins.jetbrains.dokka) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
 }

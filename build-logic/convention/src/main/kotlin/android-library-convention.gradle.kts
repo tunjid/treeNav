@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,5 +15,22 @@
  */
 
 plugins {
-    `kotlin-library-convention`
+    id("com.android.library")
+}
+
+android {
+    androidConfiguration(this)
+
+    sourceSets {
+        named("main") {
+            // Pull Android manifest from src/androidMain in multiplatform dirs
+            if (file("src/androidMain").exists()) {
+                manifest.srcFile("src/androidMain/AndroidManifest.xml")
+                res.srcDirs("src/androidMain/res")
+            }
+        }
+    }
+    configurations.all {
+        coerceComposeVersion(this)
+    }
 }

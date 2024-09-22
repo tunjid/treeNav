@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-dependencyResolutionManagement {
-    versionCatalogs {
-        create("libs") {
-            from(files("../gradle/libs.versions.toml"))
-        }
-    }
+plugins {
+    `kotlin-dsl`
+}
+
+group = "com.tunjid.treenav.buildlogic"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    implementation(libs.jetbrains.compose.gradlePlugin)
+    implementation(libs.kotlin.gradlePlugin)
+    implementation(libs.android.gradlePlugin)
+    implementation(libs.compose.compiler.plugin)
+    implementation(libs.dokka.gradlePlugin)
 }
