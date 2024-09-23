@@ -11,10 +11,6 @@ plugins {
 
 kotlin {
     applyDefaultHierarchyTemplate()
-    js(IR) {
-        nodejs()
-        browser()
-    }
     jvm {
         withJava()
         testRuns["test"].executionTask.configure {
@@ -36,17 +32,19 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(project(":library:treenav"))
+
                 implementation(libs.jetbrains.compose.runtime)
                 implementation(libs.jetbrains.compose.foundation)
                 implementation(libs.jetbrains.compose.foundation.layout)
                 implementation(libs.jetbrains.compose.material3.adaptive)
+
+                implementation(libs.jetbrains.lifecycle.runtime)
+                implementation(libs.jetbrains.lifecycle.viewmodel)
+                implementation(libs.jetbrains.lifecycle.viewmodel.compose)
             }
         }
         val jvmMain by getting
         val jvmTest by getting
-
-        val jsMain by getting
-        val jsTest by getting
 
         all {
             languageSettings.apply {
