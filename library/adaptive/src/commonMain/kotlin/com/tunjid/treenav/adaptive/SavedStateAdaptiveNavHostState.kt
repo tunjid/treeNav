@@ -1,23 +1,24 @@
 package com.tunjid.treenav.adaptive
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
@@ -26,48 +27,75 @@ import com.tunjid.treenav.adaptive.lifecycle.NodeViewModelStoreCreator
 import com.tunjid.treenav.traverse
 
 
+/**
+ * A host for adaptive navigation for panes [Pane] and destinations [Destination].
+ */
 @Stable
-interface AdaptiveNavHostState<T, R : Node> {
+interface AdaptiveNavHostState<Pane, Destination : Node> {
 
+    /**
+     * Creates the scope that provides context about individual panes [Pane] in an [AdaptiveNavHost].
+     */
     @Composable
-    fun scope(): AdaptiveHostScope<T, R>
+    fun scope(): AdaptiveNavHostScope<Pane, Destination>
 }
 
+/**
+ * Scope that provides context about individual panes [Pane] in an [AdaptiveNavHost].
+ */
 @Stable
-interface AdaptiveHostScope<T, R : Node> {
+interface AdaptiveNavHostScope<Pane, Destination : Node> {
 
     @Composable
-    fun AdaptivePaneScope<T, R>.Destination(pane: T)
+    fun Destination(
+        pane: Pane
+    )
 
     fun adaptationIn(
-        pane: T,
+        pane: Pane,
     ): Adaptation?
 
     fun nodeFor(
-        pane: T,
-    ): R?
+        pane: Pane,
+    ): Destination?
 }
 
-
+/**
+ * An implementation of an [AdaptiveNavHostState] that provides a [SaveableStateHolder] for each
+ * navigation destination that shows up in its panes.
+ *
+ * @param panes a list of panes that is possible to show in the [AdaptiveNavHost] in all
+ * possible configurations. The panes should consist of enum class instances, or a sealed class
+ * hierarchy of kotlin objects.
+ * @param configuration the [AdaptiveNavHostConfiguration] that applies adaptive semantics and
+ * strategies for each navigation destination shown in the [AdaptiveNavHost].
+ */
 @Stable
-class SavedStateAdaptiveNavHostState<T, R : Node>(
-    panes: List<T>,
-    private val adaptiveRouter: AdaptiveRouter<T, R>,
-    saveableStateHolder: SaveableStateHolder,
-) : AdaptiveNavHostState<T, R> {
-
-    private val adaptiveContentScope = SavedStateAdaptiveHostScope(
-        panes = panes,
-        adaptiveRouter = adaptiveRouter,
-        saveableStateHolder = saveableStateHolder,
-    )
+class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
+    private val panes: List<Pane>,
+    private val configuration: AdaptiveNavHostConfiguration<Pane, *, Destination>,
+) : AdaptiveNavHostState<Pane, Destination> {
 
     @Composable
-    override fun scope(): AdaptiveHostScope<T, R> {
-        val navigationState = adaptiveRouter.navigationState
+    override fun scope(): AdaptiveNavHostScope<Pane, Destination> {
+        val navigationState by configuration.navigationState
+        val panesToNodes = configuration.paneMapping()
+        val saveableStateHolder = rememberSaveableStateHolder()
 
-        LaunchedEffect(navigationState) {
-            adaptiveContentScope.onNewNavigationState(navigationState)
+        val adaptiveContentScope = remember {
+            SavedStateAdaptiveNavHostScope(
+                panes = panes,
+                navHostConfiguration = configuration,
+                initialPanesToNodes = panesToNodes,
+                saveableStateHolder = saveableStateHolder,
+            )
+        }
+
+        LaunchedEffect(navigationState, panesToNodes) {
+            adaptiveContentScope.onNewNavigationState(
+                navigationState = navigationState,
+                panesToNodes = panesToNodes
+            )
         }
 
         return adaptiveContentScope
@@ -75,27 +103,32 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
 
     companion object {
         @Stable
-        private class SavedStateAdaptiveHostScope<T, R : Node>(
-            panes: List<T>,
-            val adaptiveRouter: AdaptiveRouter<T, R>,
+        private class SavedStateAdaptiveNavHostScope<Pane, Destination : Node>(
+            panes: List<Pane>,
+            initialPanesToNodes: Map<Pane, Destination?>,
             saveableStateHolder: SaveableStateHolder,
-        ) : AdaptiveHostScope<T, R>, SaveableStateHolder by saveableStateHolder {
+            val navHostConfiguration: AdaptiveNavHostConfiguration<Pane, *, Destination>,
+        ) : AdaptiveNavHostScope<Pane, Destination>, SaveableStateHolder by saveableStateHolder {
 
-            val slots = List(panes.size, Adaptive::Slot).toSet()
+            private val nodeViewModelStoreCreator = NodeViewModelStoreCreator(
+                rootNodeProvider = navHostConfiguration.navigationState::value
+            )
+
+            val slots = List(
+                size = panes.size,
+                init = ::Slot
+            ).toSet()
 
             var adaptiveNavigationState by mutableStateOf(
-                value = SlotBasedAdaptiveNavigationState.initial<T, R>(slots = slots).adaptTo(
+                value = SlotBasedAdaptiveNavigationState.initial<Pane, Destination>(slots = slots).adaptTo(
                     slots = slots,
-                    panesToNodes = adaptiveRouter.paneMapping(),
-                    backStackIds = adaptiveRouter.navigationState.backStackIds(),
+                    panesToNodes = initialPanesToNodes,
+                    backStackIds = navHostConfiguration.navigationState.value.backStackIds(),
                 )
-            )
-            private val nodeViewModelStoreCreator = NodeViewModelStoreCreator(
-                rootNodeProvider = adaptiveRouter::navigationState
             )
 
             private val slotsToRoutes =
-                mutableStateMapOf<Adaptive.Slot?, @Composable () -> Unit>().also { map ->
+                mutableStateMapOf<Slot?, @Composable () -> Unit>().also { map ->
                     map[null] = {}
                     slots.forEach { slot ->
                         map[slot] = movableContentOf { Render(slot) }
@@ -103,24 +136,27 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                 }
 
             @Composable
-            override fun AdaptivePaneScope<T, R>.Destination(pane: T) {
+            override fun Destination(pane: Pane) {
                 val slot = adaptiveNavigationState.slotFor(pane)
                 slotsToRoutes[slot]?.invoke()
             }
 
             override fun adaptationIn(
-                pane: T
+                pane: Pane
             ): Adaptation? = adaptiveNavigationState.adaptationIn(pane)
 
             override fun nodeFor(
-                pane: T
-            ): R? = adaptiveNavigationState.nodeFor(pane)
+                pane: Pane
+            ): Destination? = adaptiveNavigationState.destinationFor(pane)
 
-            fun onNewNavigationState(navigationState: Node) {
+            fun onNewNavigationState(
+                navigationState: Node,
+                panesToNodes: Map<Pane, Destination?>,
+            ) {
                 updateAdaptiveNavigationState {
                     adaptTo(
                         slots = slots.toSet(),
-                        panesToNodes = adaptiveRouter.paneMapping(),
+                        panesToNodes = panesToNodes,
                         backStackIds = navigationState.backStackIds()
                     )
                 }
@@ -132,21 +168,29 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
              */
             @Composable
             private fun Render(
-                slot: Adaptive.Slot,
+                slot: Slot,
             ) {
                 val paneTransition = updateTransition(
                     targetState = adaptiveNavigationState.paneStateFor(slot),
                     label = "$slot-PaneTransition",
                 )
                 paneTransition.AnimatedContent(
-                    contentKey = { it.currentNode?.id },
+                    contentKey = { it.currentDestination?.id },
                     transitionSpec = {
-                        EnterTransition.None togetherWith ExitTransition.None
+                        ContentTransform(
+                            targetContentEnter = EnterTransition.None,
+                            initialContentExit = ExitTransition.None,
+                            sizeTransform = null,
+                        )
                     }
                 ) { targetPaneState ->
                     val scope = remember {
                         AnimatedAdaptivePaneScope(
                             paneState = targetPaneState,
+                            activeState = derivedStateOf {
+                                val activePaneState = adaptiveNavigationState.paneStateFor(slot)
+                                activePaneState.currentDestination?.id == targetPaneState.currentDestination?.id
+                            },
                             animatedContentScope = this@AnimatedContent,
                         )
                     }
@@ -155,21 +199,18 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                     // correct at first composition
                     scope.paneState = targetPaneState
 
-                    when (val node = targetPaneState.currentNode) {
+                    when (val destination = targetPaneState.currentDestination) {
                         null -> Unit
-                        else -> Box {
-                            CompositionLocalProvider(
-                                LocalViewModelStoreOwner provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(
-                                    node
-                                ),
-                            ) {
-                                SaveableStateProvider(node.id) {
-                                    adaptiveRouter.Destination()
-                                    DisposableEffect(Unit) {
-                                        onDispose {
-                                            val routeIds = adaptiveNavigationState.nodeIds
-                                            if (!routeIds.contains(node.id)) removeState(node.id)
-                                        }
+                        else -> CompositionLocalProvider(
+                            LocalViewModelStoreOwner
+                                    provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(destination),
+                        ) {
+                            SaveableStateProvider(destination.id) {
+                                navHostConfiguration.Destination(paneScope = scope)
+                                DisposableEffect(Unit) {
+                                    onDispose {
+                                        val destinationIds = adaptiveNavigationState.destinationIds
+                                        if (!destinationIds.contains(destination.id)) removeState(destination.id)
                                     }
                                 }
                             }
@@ -179,27 +220,27 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
                     // Add routes ids that are animating out
                     LaunchedEffect(transition.isRunning) {
                         if (transition.targetState == EnterExitState.PostExit) {
-                            val routeId = targetPaneState.currentNode?.id ?: return@LaunchedEffect
+                            val destinationId = targetPaneState.currentDestination?.id ?: return@LaunchedEffect
                             updateAdaptiveNavigationState {
-                                copy(nodeIdsAnimatingOut = nodeIdsAnimatingOut + routeId)
+                                copy(destinationIdsAnimatingOut = destinationIdsAnimatingOut + destinationId)
                             }
                         }
                     }
                     // Remove route ids that have animated out
                     DisposableEffect(Unit) {
                         onDispose {
-                            val routeId = targetPaneState.currentNode?.id ?: return@onDispose
+                            val routeId = targetPaneState.currentDestination?.id ?: return@onDispose
                             updateAdaptiveNavigationState {
-                                copy(nodeIdsAnimatingOut = nodeIdsAnimatingOut - routeId).prune()
+                                copy(destinationIdsAnimatingOut = destinationIdsAnimatingOut - routeId).prune()
                             }
-                            targetPaneState.currentNode?.let(nodeViewModelStoreCreator::clearStoreFor)
+                            targetPaneState.currentDestination?.let(nodeViewModelStoreCreator::clearStoreFor)
                         }
                     }
                 }
             }
 
             private inline fun updateAdaptiveNavigationState(
-                block: SlotBasedAdaptiveNavigationState<T, R>.() -> SlotBasedAdaptiveNavigationState<T, R>
+                block: SlotBasedAdaptiveNavigationState<Pane, Destination>.() -> SlotBasedAdaptiveNavigationState<Pane, Destination>
             ) {
                 adaptiveNavigationState = adaptiveNavigationState.block()
             }
@@ -209,6 +250,5 @@ class SavedStateAdaptiveNavHostState<T, R : Node>(
             mutableSetOf<String>().apply {
                 traverse(Order.DepthFirst) { add(it.id) }
             }
-
     }
 }

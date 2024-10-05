@@ -16,30 +16,30 @@
 
 package com.tunjid.treenav.adaptive
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+/**
+ * Creates a host for adaptive navigation for panes [Pane] and destinations [Destination].
+ *
+ * @param state the [AdaptiveNavHostState] producing the [AdaptiveNavHostScope] that provides
+ * context about the panes in [AdaptiveNavHost].
+ * @param modifier The modifier to be applied to the layout.
+ * @param content [AdaptiveNavHostScope] receiving lambda allowing for placing each pane in its
+ * appropriate slot.
+ *
+ */
 @Composable
-fun <T, R : Node> AdaptiveNavHost(
-    state: AdaptiveNavHostState<T, R>,
+fun <Pane, Destination : Node> AdaptiveNavHost(
+    state: AdaptiveNavHostState<Pane, Destination>,
     modifier: Modifier = Modifier,
-    content: @Composable AdaptiveHostScope<T, R>.() -> Unit
+    content: @Composable AdaptiveNavHostScope<Pane, Destination>.() -> Unit
 ) {
-
-    LaunchedEffect(state) {
-
-    }
-
-    SharedTransitionLayout(
+    Box(
         modifier = modifier
     ) {
-//        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-//        }
-        content(state.scope())
+        state.scope().content()
     }
 }

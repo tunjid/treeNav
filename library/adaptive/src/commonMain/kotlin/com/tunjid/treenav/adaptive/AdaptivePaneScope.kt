@@ -18,49 +18,79 @@ package com.tunjid.treenav.adaptive
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.Adaptive.key
 
 /**
- * Scope for adaptive content that can show up in an arbitrary [Pane]
+ * Scope for adaptive content that can show up in an arbitrary pane.
  */
 @Stable
-sealed interface AdaptivePaneScope<T, R : Node> : AnimatedVisibilityScope {
+interface AdaptivePaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
 
     /**
-     * Unique key to identify this scope
+     * Provides information about the adaptive context that created this [AdaptivePaneScope].
      */
-    val key: String
+    val paneState: AdaptivePaneState<Pane, Destination>
 
-    val paneState: AdaptivePaneState<T, R>
-}
+    /**
+     * Whether or not this [AdaptivePaneScope] is active in its current pane. It is inactive when
+     * it is animating out of its [AnimatedVisibilityScope].
+     */
+    val isActive: Boolean
 
-/**
- * Information about content in an [Adaptive.Pane]
- */
-@Stable
-sealed interface AdaptivePaneState<T, R : Node> {
-    val currentNode: R?
-    val previousNode: R?
-    val pane: T?
-    val adaptation: Adaptation
+    /**
+     * Describes how a destination transitions after an adaptive change
+     */
+    data class Transitions(
+        val enter: EnterTransition,
+        val exit: ExitTransition,
+    )
 }
 
 /**
  * An implementation of [AdaptivePaneScope] that supports animations and shared elements
  */
 @Stable
-internal class AnimatedAdaptivePaneScope<T, R : Node>(
-    paneState: AdaptivePaneState<T, R>,
+internal class AnimatedAdaptivePaneScope<Pane, Destination : Node>(
+    paneState: AdaptivePaneState<Pane, Destination>,
+    activeState: State<Boolean>,
     val animatedContentScope: AnimatedContentScope
-) : AdaptivePaneScope<T, R>, AnimatedVisibilityScope by animatedContentScope {
-
-    override val key: String by derivedStateOf { paneState.key }
+) : AdaptivePaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
 
     override var paneState by mutableStateOf(paneState)
+
+    override val isActive: Boolean by activeState
 }
+
+/**
+ * Information about content in a pane
+ */
+@Stable
+sealed interface AdaptivePaneState<Pane, Destination : Node> {
+    val currentDestination: Destination?
+    val pane: Pane?
+    val adaptation: Adaptation
+}
+
+/**
+ * [Slot] based implementation of [AdaptivePaneState]
+ */
+internal data class SlotPaneState<Pane, Destination : Node>(
+    val slot: Slot?,
+    val previousDestination: Destination?,
+    override val currentDestination: Destination?,
+    override val pane: Pane?,
+    override val adaptation: Adaptation,
+) : AdaptivePaneState<Pane, Destination>
+
+/**
+ * A spot taken by an [AdaptivePaneStrategy] that may be moved in from pane to pane.
+ */
+@JvmInline
+internal value class Slot internal constructor(val index: Int)

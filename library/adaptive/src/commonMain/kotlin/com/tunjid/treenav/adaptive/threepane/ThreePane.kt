@@ -16,20 +16,21 @@
 
 package com.tunjid.treenav.adaptive.threepane
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.neverEqualPolicy
-import androidx.window.core.layout.WindowSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
-import com.tunjid.treenav.adaptive.AdaptiveRouteConfiguration
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.runtime.Composable
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.Adaptive
 import com.tunjid.treenav.adaptive.Adaptation.Swap
-import com.tunjid.treenav.adaptive.AdaptiveRouter
+import com.tunjid.treenav.adaptive.AdaptivePaneScope
+import com.tunjid.treenav.adaptive.AdaptivePaneStrategy
+import com.tunjid.treenav.adaptive.adaptivePaneStrategy
 
 /**
- * A layout in the hierarchy that hosts an [AdaptiveRouteConfiguration]
+ * A layout in the hierarchy that hosts an [AdaptivePaneStrategy]
  */
 enum class ThreePane {
     Primary,
@@ -39,8 +40,6 @@ enum class ThreePane {
     Overlay;
 
     companion object {
-        internal val slots = ThreePane.entries.indices.map(Adaptive::Slot)
-
         val PrimaryToSecondary = Swap(
             from = Primary,
             to = Secondary
@@ -58,54 +57,54 @@ enum class ThreePane {
     }
 }
 
-fun <R : Node> AdaptiveRouter<ThreePane, R>.adaptFor(
-    windowSizeClassState: State<WindowSizeClass>,
-) = object : AdaptiveRouter<ThreePane, R> by this {
+fun <R : Node> threePaneAdaptiveNodeConfiguration(
+    transitions: AdaptivePaneScope<ThreePane, R>.() -> AdaptivePaneScope.Transitions = {
+        val state = paneState
+        when (state.pane) {
+            ThreePane.Primary,
+            ThreePane.Secondary -> when (state.adaptation) {
+                ThreePane.PrimaryToSecondary,
+                ThreePane.SecondaryToPrimary -> NoTransition
 
-    override val navigationState: Node by derivedStateOf(
-        calculation = {
-            // Consider navigation state different if window size class changes
-            windowSizeClassState.value
-            this@adaptFor.navigationState
-        },
-        policy = neverEqualPolicy()
+                else -> DefaultTransition
+            }
+
+            ThreePane.TransientPrimary -> when (state.adaptation) {
+                ThreePane.PrimaryToTransient -> when (state.pane) {
+                    ThreePane.Secondary -> DefaultTransition
+                    else -> NoTransition
+                }
+
+                else -> DefaultTransition
+            }
+
+            else -> NoTransition
+        }
+    },
+    paneMapping: @Composable (R) -> Map<ThreePane, R?> = {
+        mapOf(ThreePane.Primary to it)
+    },
+    render: @Composable AdaptivePaneScope<ThreePane, R>.(R) -> Unit
+) = adaptivePaneStrategy(
+    paneMapping = paneMapping,
+    transitions = transitions,
+    render = render
+)
+
+private val RouteTransitionAnimationSpec: FiniteAnimationSpec<Float> = tween(
+    durationMillis = 700
+)
+
+private val DefaultTransition = AdaptivePaneScope.Transitions(
+    enter = fadeIn(
+        animationSpec = RouteTransitionAnimationSpec,
+    ),
+    exit = fadeOut(
+        animationSpec = RouteTransitionAnimationSpec
     )
+)
 
-    override fun paneMapping(node: R): Map<ThreePane, R?> {
-        val originalMapping = this@adaptFor.paneMapping(node)
-        val primaryNode = originalMapping[ThreePane.Primary]
-        return mapOf(
-            ThreePane.Primary to primaryNode,
-            ThreePane.Secondary to originalMapping[ThreePane.Secondary].takeIf { secondaryNode ->
-                secondaryNode?.id != primaryNode?.id
-                        && windowSizeClassState.value.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
-            },
-        )
-    }
-}
-
-//fun <R : Node> AdaptiveRouter<ThreePane, R>.adaptFor(
-//    predictiveBackState: State<Boolean>,
-//) = object : AdaptiveRouter<ThreePane, R> by this {
-//
-//    override val navigationState: Node by derivedStateOf(
-//        calculation = {
-//            // Consider navigation state different if window size class changes
-//            windowSizeClassState.value
-//            this@adaptFor.navigationState
-//        },
-//        policy = neverEqualPolicy()
-//    )
-//
-//    override fun paneMapping(node: R): Map<ThreePane, R?> {
-//        val originalMapping = this@adaptFor.paneMapping(node)
-//        val primaryNode = originalMapping[ThreePane.Primary]
-//        return mapOf(
-//            ThreePane.Primary to primaryNode,
-//            ThreePane.Secondary to originalMapping[ThreePane.Secondary].takeIf { secondaryNode ->
-//                secondaryNode?.id != primaryNode?.id
-//                        && windowSizeClassState.value.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
-//            },
-//        )
-//    }
-//}
+private val NoTransition = AdaptivePaneScope.Transitions(
+    enter = EnterTransition.None,
+    exit = ExitTransition.None,
+)
