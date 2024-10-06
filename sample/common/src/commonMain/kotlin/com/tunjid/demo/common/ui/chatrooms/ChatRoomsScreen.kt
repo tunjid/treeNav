@@ -16,12 +16,36 @@
 
 package com.tunjid.demo.common.ui.chatrooms
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.tunjid.demo.common.ui.SampleCollapsingHeader
+import com.tunjid.demo.common.ui.data.ChatRoom
 
 @Composable
 fun ChatRoomsScreen(
     state: State,
     onAction: (Action) -> Unit,
-){
-
+) {
+    SampleCollapsingHeader(
+        title = "Chat Rooms",
+        headerColor = MaterialTheme.colorScheme.primaryContainer,
+        onBackPressed = {}
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(
+                items = state.chatRooms,
+                key = ChatRoom::name,
+                itemContent = { room ->
+                    Text(room.name)
+                }
+            )
+        }
+    }
 }

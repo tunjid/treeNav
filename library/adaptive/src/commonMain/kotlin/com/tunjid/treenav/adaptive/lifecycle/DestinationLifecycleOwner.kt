@@ -7,6 +7,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.AdaptivePaneScope
 import com.tunjid.treenav.adaptive.SlotBasedAdaptiveNavigationState
@@ -15,7 +16,7 @@ import com.tunjid.treenav.adaptive.SlotBasedAdaptiveNavigationState
 internal fun rememberDestinationLifecycleOwner(
     destination: Node,
 ): DestinationLifecycleOwner {
-    val hostLifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val hostLifecycleOwner = LocalLifecycleOwner.current
     val destinationLifecycleOwner = remember(hostLifecycleOwner) {
         DestinationLifecycleOwner(
             destination = destination,
@@ -39,6 +40,7 @@ internal class DestinationLifecycleOwner(
     val hostLifecycleState = host.lifecycle
 
     fun update(
+        hostLifecycleState: State,
         adaptivePaneScope: AdaptivePaneScope<*, *>,
         adaptiveNavigationState: SlotBasedAdaptiveNavigationState<*, *>,
     ) {
@@ -46,14 +48,13 @@ internal class DestinationLifecycleOwner(
         val exists = adaptiveNavigationState.backStackIds.contains(
             destination.id
         )
-        val lifecycleState = when {
+        val derivedLifecycleState = when {
             !exists -> State.DESTROYED
             !active -> State.STARTED
-            active -> State.RESUMED
-            else -> host.lifecycle.currentState
+            else -> hostLifecycleState
         }
         lifecycleRegistry.currentState =
-            if (host.lifecycle.currentState.ordinal < lifecycleState.ordinal) host.lifecycle.currentState
-            else lifecycleState
+            if (host.lifecycle.currentState.ordinal < derivedLifecycleState.ordinal) hostLifecycleState
+            else derivedLifecycleState
     }
 }

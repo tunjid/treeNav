@@ -217,6 +217,7 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
                         ) {
                             SaveableStateProvider(destination.id) {
                                 navHostConfiguration.Destination(paneScope = scope)
+
                                 DisposableEffect(Unit) {
                                     onDispose {
                                         val backstackIds = adaptiveNavigationState.backStackIds
@@ -225,17 +226,21 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
                                         )
                                     }
                                 }
+
+                                val hostLifecycleState by destinationLifecycleOwner.hostLifecycleState.currentStateAsState()
                                 DisposableEffect(
+                                    hostLifecycleState,
                                     scope.isActive,
                                     adaptiveNavigationState,
-                                    destinationLifecycleOwner.hostLifecycleState.currentStateAsState(),
                                 ) {
                                     destinationLifecycleOwner.update(
+                                        hostLifecycleState = hostLifecycleState,
                                         adaptivePaneScope = scope,
                                         adaptiveNavigationState = adaptiveNavigationState
                                     )
                                     onDispose {
                                         destinationLifecycleOwner.update(
+                                            hostLifecycleState = hostLifecycleState,
                                             adaptivePaneScope = scope,
                                             adaptiveNavigationState = adaptiveNavigationState
                                         )

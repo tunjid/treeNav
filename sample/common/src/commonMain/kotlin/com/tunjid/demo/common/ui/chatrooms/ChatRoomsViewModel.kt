@@ -20,8 +20,10 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.ChatsRepository
+import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
-import kotlinx.coroutines.CoroutineScope
+import com.tunjid.mutator.coroutines.mapToMutation
+import kotlinx.coroutines.flow.Flow
 
 class ChatRoomsViewModel(
     coroutineScope: LifecycleCoroutineScope,
@@ -29,11 +31,18 @@ class ChatRoomsViewModel(
 ) : ViewModel() {
     private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
         initialState = State(),
+        inputs = listOf(
+            chatsRepository.loadMutations()
+        )
     )
 
     val state = mutator.state
 
     val accept = mutator.accept
+}
+
+private fun ChatsRepository.loadMutations(): Flow<Mutation<State>> = rooms.mapToMutation {
+    copy(chatRooms = it)
 }
 
 data class State(

@@ -21,6 +21,12 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
+import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldValue
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.chat.ChatRoomScreen
@@ -55,7 +62,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun Root(
     appState: SampleAppState = remember { SampleAppState() },
@@ -84,7 +91,23 @@ fun Root(
                     .fillMaxSize()
                         then sharedTransitionModifier
             ) {
-
+                ListDetailPaneScaffold(
+                    directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()),
+                    value = ThreePaneScaffoldValue(
+                        primary = if (nodeFor(ThreePane.Primary) == null) PaneAdaptedValue.Hidden else PaneAdaptedValue.Expanded,
+                        secondary = if (nodeFor(ThreePane.Secondary) == null) PaneAdaptedValue.Hidden else PaneAdaptedValue.Expanded,
+                        tertiary = if (nodeFor(ThreePane.Tertiary) == null) PaneAdaptedValue.Hidden else PaneAdaptedValue.Expanded,
+                    ),
+                    listPane = {
+                        Destination(ThreePane.Secondary)
+                    },
+                    detailPane = {
+                        Destination(ThreePane.Primary)
+                    },
+                    extraPane = {
+                        Destination(ThreePane.Tertiary)
+                    }
+                )
             }
         }
     }
