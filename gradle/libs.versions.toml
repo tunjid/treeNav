@@ -18,7 +18,10 @@ jetbrainsMaterial3Adaptive = "1.0.0-rc01"
 junit4 = "4.13.2"
 kotlin = "2.0.20"
 kotlinxCoroutines = "1.9.0"
+kotlinxDatetime = "0.6.1"
 lifecycle-runtime = "2.8.6"
+tunjidStateHolder = "1.1.0"
+tunjidComposables = "0.0.4"
 junit = "4.13.2"
 runner = "1.0.2"
 espressoCore = "3.0.2"
@@ -50,7 +53,6 @@ jetbrains-compose-animation = { group = "org.jetbrains.compose.animation", name 
 jetbrains-compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "jetbrainsCompose" }
 jetbrains-compose-foundation-layout = { group = "org.jetbrains.compose.foundation", name = "foundation-layout", version.ref = "jetbrainsCompose" }
 jetbrains-compose-gradlePlugin = { group = "org.jetbrains.compose", name = "compose-gradle-plugin", version.ref = "jetbrainsCompose" }
-jetbrains-compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "jetbrainsCompose" }
 jetbrains-compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "jetbrainsCompose" }
 jetbrains-compose-ui-test = { group = "org.jetbrains.compose.ui", name = "ui-test-junit4", version.ref = "jetbrainsCompose" }
 jetbrains-compose-ui-testManifest = { group = "org.jetbrains.compose.ui", name = "ui-test-manifest", version.ref = "jetbrainsCompose" }
@@ -58,12 +60,22 @@ jetbrains-compose-ui-testManifest = { group = "org.jetbrains.compose.ui", name =
 jetbrains-compose-ui-tooling = { group = "org.jetbrains.compose.ui", name = "ui-tooling-preview-desktop", version.ref = "jetbrainsCompose" }
 jetbrains-compose-ui-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "jetbrainsCompose" }
 jetbrains-compose-ui-util = { group = "org.jetbrains.compose.ui", name = "ui-util", version.ref = "jetbrainsCompose" }
+jetbrains-compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "jetbrainsCompose" }
+jetbrains-compose-material3-adaptive-navigation-suite = { group = "org.jetbrains.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "jetbrainsCompose" }
 jetbrains-compose-material3-adaptive = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive", version.ref = "jetbrainsMaterial3Adaptive" }
 jetbrains-compose-material3-adaptive-layout = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-layout", version.ref = "jetbrainsMaterial3Adaptive" }
 jetbrains-lifecycle-runtime = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime", version.ref = "jetbrainsLifecycle" }
 jetbrains-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "jetbrainsLifecycle" }
 jetbrains-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "jetbrainsLifecycle" }
 jetbrains-lifecycle-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "jetbrainsLifecycle" }
+
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
+
+tunjid-mutator-core-common = { group = "com.tunjid.mutator", name = "core", version.ref = "tunjidStateHolder" }
+tunjid-mutator-coroutines-common = { group = "com.tunjid.mutator", name = "coroutines", version.ref = "tunjidStateHolder" }
+tunjid-composables = { group = "com.tunjid.composables", name = "composables", version.ref = "tunjidComposables" }
 
 dokka-gradlePlugin = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "dokka" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }

@@ -39,10 +39,28 @@ kotlin {
                 implementation(project(":library:strings"))
                 implementation(project(":library:adaptive"))
 
+                implementation(compose.components.resources)
+
                 implementation(libs.jetbrains.compose.runtime)
                 implementation(libs.jetbrains.compose.animation)
                 implementation(libs.jetbrains.compose.material3)
                 implementation(libs.jetbrains.compose.foundation.layout)
+
+                implementation(libs.jetbrains.lifecycle.runtime)
+                implementation(libs.jetbrains.lifecycle.runtime.compose)
+                implementation(libs.jetbrains.lifecycle.viewmodel)
+                implementation(libs.jetbrains.lifecycle.viewmodel.compose)
+
+                implementation(libs.jetbrains.compose.material3.adaptive)
+                implementation(libs.jetbrains.compose.material3.adaptive.layout)
+                implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)
+
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.datetime)
+
+                implementation(libs.tunjid.mutator.core.common)
+                implementation(libs.tunjid.mutator.coroutines.common)
+                implementation(libs.tunjid.composables)
             }
         }
         named("androidMain") {
