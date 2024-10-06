@@ -24,7 +24,7 @@ import com.tunjid.treenav.Order
 import com.tunjid.treenav.flatten
 
 @Stable
-internal class NodeViewModelStoreCreator(
+internal class DestinationViewModelStoreCreator(
     private val rootNodeProvider: () -> Node
 ) {
     private val nodeIdsToViewModelStoreOwner = mutableMapOf<String, ViewModelStoreOwner>()

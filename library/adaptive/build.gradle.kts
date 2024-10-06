@@ -39,6 +39,7 @@ kotlin {
                 implementation(libs.jetbrains.compose.material3.adaptive)
 
                 implementation(libs.jetbrains.lifecycle.runtime)
+                implementation(libs.jetbrains.lifecycle.runtime.compose)
                 implementation(libs.jetbrains.lifecycle.viewmodel)
                 implementation(libs.jetbrains.lifecycle.viewmodel.compose)
             }

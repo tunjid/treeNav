@@ -20,10 +20,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.Order
-import com.tunjid.treenav.adaptive.lifecycle.NodeViewModelStoreCreator
+import com.tunjid.treenav.adaptive.lifecycle.DestinationViewModelStoreCreator
+import com.tunjid.treenav.adaptive.lifecycle.rememberDestinationLifecycleOwner
 import com.tunjid.treenav.traverse
 
 
@@ -110,7 +113,7 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
             val navHostConfiguration: AdaptiveNavHostConfiguration<Pane, *, Destination>,
         ) : AdaptiveNavHostScope<Pane, Destination>, SaveableStateHolder by saveableStateHolder {
 
-            private val nodeViewModelStoreCreator = NodeViewModelStoreCreator(
+            private val destinationViewModelStoreCreator = DestinationViewModelStoreCreator(
                 rootNodeProvider = navHostConfiguration.navigationState::value
             )
 
@@ -120,11 +123,12 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
             ).toSet()
 
             var adaptiveNavigationState by mutableStateOf(
-                value = SlotBasedAdaptiveNavigationState.initial<Pane, Destination>(slots = slots).adaptTo(
-                    slots = slots,
-                    panesToNodes = initialPanesToNodes,
-                    backStackIds = navHostConfiguration.navigationState.value.backStackIds(),
-                )
+                value = SlotBasedAdaptiveNavigationState.initial<Pane, Destination>(slots = slots)
+                    .adaptTo(
+                        slots = slots,
+                        panesToNodes = initialPanesToNodes,
+                        backStackIds = navHostConfiguration.navigationState.value.backStackIds(),
+                    )
             )
 
             private val slotsToRoutes =
@@ -199,28 +203,53 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
                     // correct at first composition
                     scope.paneState = targetPaneState
 
-                    when (val destination = targetPaneState.currentDestination) {
-                        null -> Unit
-                        else -> CompositionLocalProvider(
-                            LocalViewModelStoreOwner
-                                    provides nodeViewModelStoreCreator.viewModelStoreOwnerFor(destination),
+                    val destination = targetPaneState.currentDestination
+                    if (destination != null) {
+                        val destinationLifecycleOwner = rememberDestinationLifecycleOwner(
+                            destination
+                        )
+                        val destinationViewModelOwner = destinationViewModelStoreCreator
+                            .viewModelStoreOwnerFor(destination)
+
+                        CompositionLocalProvider(
+                            LocalLifecycleOwner provides destinationLifecycleOwner,
+                            LocalViewModelStoreOwner provides destinationViewModelOwner,
                         ) {
                             SaveableStateProvider(destination.id) {
                                 navHostConfiguration.Destination(paneScope = scope)
                                 DisposableEffect(Unit) {
                                     onDispose {
-                                        val destinationIds = adaptiveNavigationState.destinationIds
-                                        if (!destinationIds.contains(destination.id)) removeState(destination.id)
+                                        val backstackIds = adaptiveNavigationState.backStackIds
+                                        if (!backstackIds.contains(destination.id)) removeState(
+                                            destination.id
+                                        )
+                                    }
+                                }
+                                DisposableEffect(
+                                    scope.isActive,
+                                    adaptiveNavigationState,
+                                    destinationLifecycleOwner.hostLifecycleState.currentStateAsState(),
+                                ) {
+                                    destinationLifecycleOwner.update(
+                                        adaptivePaneScope = scope,
+                                        adaptiveNavigationState = adaptiveNavigationState
+                                    )
+                                    onDispose {
+                                        destinationLifecycleOwner.update(
+                                            adaptivePaneScope = scope,
+                                            adaptiveNavigationState = adaptiveNavigationState
+                                        )
                                     }
                                 }
                             }
                         }
                     }
 
-                    // Add routes ids that are animating out
+                    // Add destination ids that are animating out
                     LaunchedEffect(transition.isRunning) {
                         if (transition.targetState == EnterExitState.PostExit) {
-                            val destinationId = targetPaneState.currentDestination?.id ?: return@LaunchedEffect
+                            val destinationId = targetPaneState.currentDestination?.id
+                                ?: return@LaunchedEffect
                             updateAdaptiveNavigationState {
                                 copy(destinationIdsAnimatingOut = destinationIdsAnimatingOut + destinationId)
                             }
@@ -233,7 +262,7 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
                             updateAdaptiveNavigationState {
                                 copy(destinationIdsAnimatingOut = destinationIdsAnimatingOut - routeId).prune()
                             }
-                            targetPaneState.currentDestination?.let(nodeViewModelStoreCreator::clearStoreFor)
+                            targetPaneState.currentDestination?.let(destinationViewModelStoreCreator::clearStoreFor)
                         }
                     }
                 }

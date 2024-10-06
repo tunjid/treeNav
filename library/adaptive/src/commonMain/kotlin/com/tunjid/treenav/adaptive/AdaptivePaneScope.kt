@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.tunjid.treenav.Node
+import kotlin.jvm.JvmInline
 
 /**
  * Scope for adaptive content that can show up in an arbitrary pane.
