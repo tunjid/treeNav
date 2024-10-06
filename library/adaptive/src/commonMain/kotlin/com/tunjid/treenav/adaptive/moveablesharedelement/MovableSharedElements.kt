@@ -41,6 +41,7 @@ interface MovableSharedElementScope {
      * @param sharedElement a factory function to create the shared element if it does not
      * currently exist.
      */
+    @OptIn(ExperimentalSharedTransitionApi::class)
     fun <T> movableSharedElementOf(
         key: Any,
         boundsTransform: BoundsTransform = DefaultBoundsTransform,
@@ -125,6 +126,7 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
 
     var paneScope by mutableStateOf(paneScope)
 
+    @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
         key: Any,
         boundsTransform: BoundsTransform,

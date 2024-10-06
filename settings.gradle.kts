@@ -40,5 +40,7 @@ include(
     ":library:treenav",
     ":library:strings",
     ":library:adaptive",
+    ":sample:common",
+    ":sample:desktop",
 )
 
