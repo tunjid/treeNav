@@ -21,17 +21,33 @@ import androidx.lifecycle.ViewModel
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.Message
+import com.tunjid.demo.common.ui.data.Profile
+import com.tunjid.demo.common.ui.data.ProfileRepository
 import com.tunjid.demo.common.ui.data.SampleDestinations
+import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
-import kotlinx.coroutines.CoroutineScope
+import com.tunjid.mutator.coroutines.mapToMutation
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 
 class ChatRoomViewModel(
     coroutineScope: LifecycleCoroutineScope,
     chatsRepository: ChatsRepository,
+    profileRepository: ProfileRepository,
     room: SampleDestinations.Room,
 ) : ViewModel() {
     private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
         initialState = State(),
+        inputs = listOf(
+            profileRepository.meMutations(),
+            chatsRepository.chatRoomMutations(room),
+            chatLoadMutations(
+                room = room,
+                chatsRepository = chatsRepository,
+                profileRepository = profileRepository
+            )
+        )
     )
 
     val state = mutator.state
@@ -39,8 +55,46 @@ class ChatRoomViewModel(
     val accept = mutator.accept
 }
 
+private fun ProfileRepository.meMutations(): Flow<Mutation<State>> =
+    me.mapToMutation { copy(me = it) }
+
+private fun ChatsRepository.chatRoomMutations(
+    room: SampleDestinations.Room
+): Flow<Mutation<State>> =
+    room(roomName = room.roomName)
+        .mapToMutation { copy(room = it) }
+
+private fun chatLoadMutations(
+    room: SampleDestinations.Room,
+    chatsRepository: ChatsRepository,
+    profileRepository: ProfileRepository,
+): Flow<Mutation<State>> =
+    chatsRepository.chatsFor(room.roomName).flatMapLatest { chats ->
+        combine(
+            flows = chats.map { message -> profileRepository.profileFor(message.sender) }
+        ) { profiles ->
+            val namesToProfiles = profiles.associateBy(Profile::name)
+            chats.map { message ->
+                MessageItem(
+                    message = message,
+                    sender = namesToProfiles.getValue(message.sender)
+                )
+            }
+        }
+    }
+        .mapToMutation {
+            copy(chats = it)
+        }
+
 data class State(
-    val chats: List<Message> = emptyList()
+    val me: Profile? = null,
+    val room: ChatRoom? = null,
+    val chats: List<MessageItem> = emptyList()
+)
+
+data class MessageItem(
+    val message: Message,
+    val sender: Profile,
 )
 
 sealed class Action

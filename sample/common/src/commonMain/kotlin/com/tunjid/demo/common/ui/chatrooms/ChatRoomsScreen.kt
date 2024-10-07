@@ -16,6 +16,7 @@
 
 package com.tunjid.demo.common.ui.chatrooms
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,7 +44,13 @@ fun ChatRoomsScreen(
                 items = state.chatRooms,
                 key = ChatRoom::name,
                 itemContent = { room ->
-                    Text(room.name)
+                    Text(
+                        text = room.name,
+                        modifier = Modifier
+                            .clickable {
+                                onAction(Action.Navigation.ToRoom(roomName = room.name))
+                            }
+                    )
                 }
             )
         }

@@ -18,15 +18,16 @@ package com.tunjid.demo.common.ui.data
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.push
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 sealed interface SampleDestinations : Node {
 
@@ -38,10 +39,11 @@ sealed interface SampleDestinations : Node {
 
         override val id: String get() = title
 
-        val icon get() = when(this) {
-            ChatRooms -> Icons.AutoMirrored.Filled.List
-            Profile -> Icons.Default.Person
-        }
+        val icon
+            get() = when (this) {
+                ChatRooms -> Icons.AutoMirrored.Filled.List
+                Profile -> Icons.Default.Person
+            }
     }
 
     val threePaneMapping: Map<ThreePane, SampleDestinations> get() = emptyMap()
@@ -64,10 +66,22 @@ sealed interface SampleDestinations : Node {
     }
 }
 
-object NavigationRepository {
-    private val mutableNavigationState = MutableStateFlow(InitialNavState)
+fun interface NavigationAction {
+    fun navigate(multiStackNav: MultiStackNav): MultiStackNav
+}
 
-    val navigationStateFlow: StateFlow<MultiStackNav> = mutableNavigationState.asStateFlow()
+fun navigationAction(
+    block: MultiStackNav.() -> MultiStackNav
+) = NavigationAction(block)
+
+object NavigationRepository {
+    private val mutableNavigationStateFlow = MutableStateFlow(InitialNavState)
+
+    val navigationStateFlow: StateFlow<MultiStackNav> = mutableNavigationStateFlow.asStateFlow()
+
+    fun navigate(action: NavigationAction) {
+        mutableNavigationStateFlow.update(action::navigate)
+    }
 }
 
 private val InitialNavState = MultiStackNav(

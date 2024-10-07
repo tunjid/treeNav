@@ -20,20 +20,39 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.ChatsRepository
+import com.tunjid.demo.common.ui.data.NavigationAction
+import com.tunjid.demo.common.ui.data.NavigationRepository
+import com.tunjid.demo.common.ui.data.SampleDestinations
+import com.tunjid.demo.common.ui.data.navigationAction
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
+import com.tunjid.mutator.coroutines.mapToManyMutations
 import com.tunjid.mutator.coroutines.mapToMutation
+import com.tunjid.mutator.coroutines.toMutationStream
+import com.tunjid.treenav.push
 import kotlinx.coroutines.flow.Flow
 
 class ChatRoomsViewModel(
     coroutineScope: LifecycleCoroutineScope,
-    chatsRepository: ChatsRepository
+    chatsRepository: ChatsRepository = ChatsRepository,
+    navigationRepository: NavigationRepository = NavigationRepository,
 ) : ViewModel() {
     private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
         initialState = State(),
         inputs = listOf(
             chatsRepository.loadMutations()
-        )
+        ),
+        actionTransform = { actions ->
+            actions.toMutationStream(
+                keySelector = Action::key
+            ) {
+                when (val type = type()) {
+                    is Action.Navigation -> navigationRepository.navigationMutations(
+                        type.flow
+                    )
+                }
+            }
+        }
     )
 
     val state = mutator.state
@@ -45,8 +64,25 @@ private fun ChatsRepository.loadMutations(): Flow<Mutation<State>> = rooms.mapTo
     copy(chatRooms = it)
 }
 
+private fun NavigationRepository.navigationMutations(
+    navigationActions: Flow<Action.Navigation>
+): Flow<Mutation<State>> =
+    navigationActions.mapToManyMutations {
+        navigate(it)
+    }
+
 data class State(
     val chatRooms: List<ChatRoom> = emptyList()
 )
 
-sealed class Action
+sealed class Action(
+    val key: String
+) {
+    sealed class Navigation : Action("Navigation"), NavigationAction {
+        data class ToRoom(
+            val roomName: String,
+        ) : Navigation(), NavigationAction by navigationAction(
+            { push(SampleDestinations.Room(roomName)) }
+        )
+    }
+}

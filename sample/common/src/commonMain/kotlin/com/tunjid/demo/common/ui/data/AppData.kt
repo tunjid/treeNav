@@ -49,12 +49,19 @@ object ChatsRepository {
         chatData.chatRooms.values.toList()
     )
 
-    fun chatsFor(room: String): Flow<List<Message>> = flowOf(
-        chatData.chatRooms[room]?.messages ?: emptyList()
+    fun room(roomName: String): Flow<ChatRoom> = flowOf(
+        chatData.chatRooms.getValue(roomName)
+    )
+
+    fun chatsFor(roomName: String): Flow<List<Message>> = flowOf(
+        chatData.chatRooms[roomName]?.messages ?: emptyList()
     )
 }
 
 object ProfileRepository {
+    val me: Flow<Profile> = flowOf(
+        chatData.profiles.values.random()
+    )
     fun profileFor(name: String): Flow<Profile> = flow {
         chatData.profiles[name]?.let { emit(it) }
     }

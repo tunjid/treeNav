@@ -47,6 +47,7 @@ import com.tunjid.demo.common.ui.chatrooms.ChatRoomsScreen
 import com.tunjid.demo.common.ui.chatrooms.ChatRoomsViewModel
 import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.NavigationRepository
+import com.tunjid.demo.common.ui.data.ProfileRepository
 import com.tunjid.demo.common.ui.data.SampleDestinations
 import com.tunjid.demo.common.ui.profile.ProfileScreen
 import com.tunjid.demo.common.ui.profile.ProfileViewModel
@@ -184,6 +185,7 @@ private fun sampleAppAdaptiveConfiguration(
                         ChatRoomViewModel(
                             coroutineScope = scope,
                             chatsRepository = ChatsRepository,
+                            profileRepository = ProfileRepository,
                             room = destinations,
                         )
                     }
