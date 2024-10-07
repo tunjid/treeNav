@@ -22,7 +22,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -35,7 +34,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -74,8 +72,9 @@ fun ChatScreen(
         )
         Messages(
             me = state.me,
+            roomName = state.room?.name,
             messages = state.chats,
-            navigateToProfile = { },
+            navigateToProfile = onAction,
             modifier = Modifier.weight(1f),
             scrollState = scrollState
         )
@@ -86,8 +85,9 @@ fun ChatScreen(
 @Composable
 fun Messages(
     me: Profile?,
+    roomName: String?,
     messages: List<MessageItem>,
-    navigateToProfile: (String) -> Unit,
+    navigateToProfile: (Action.Navigation.GoToProfile) -> Unit,
     scrollState: LazyListState,
     modifier: Modifier = Modifier
 ) {
@@ -107,7 +107,8 @@ fun Messages(
                 val isLastMessageByAuthor = nextAuthor != content.sender
 
                 Message(
-                    onAuthorClick = { name -> navigateToProfile(name) },
+                    onAuthorClick = navigateToProfile,
+                    roomName = roomName,
                     item = content,
                     isUserMe = content.sender.name == me?.name,
                     isFirstMessageByAuthor = isFirstMessageByAuthor,
@@ -120,8 +121,9 @@ fun Messages(
 
 @Composable
 fun Message(
-    onAuthorClick: (String) -> Unit,
+    onAuthorClick: (Action.Navigation.GoToProfile) -> Unit,
     item: MessageItem,
+    roomName: String?,
     isUserMe: Boolean,
     isFirstMessageByAuthor: Boolean,
     isLastMessageByAuthor: Boolean
@@ -147,7 +149,18 @@ fun Message(
                     .border(1.5.dp, borderColor, CircleShape)
                     .border(3.dp, MaterialTheme.colorScheme.surface, CircleShape)
                     .clip(CircleShape)
-                    .align(Alignment.Top),
+                    .align(Alignment.Top)
+                    .clickable {
+                      roomName?.let {
+                          onAuthorClick(
+                              Action.Navigation.GoToProfile(
+                                  profileName = item.sender.name,
+                                  roomName = it
+                              )
+                          )
+                      }
+                    }
+                ,
                 painter = painterResource(item.sender.profilePhotoResource()),
                 contentScale = ContentScale.Crop,
                 contentDescription = null,
@@ -161,7 +174,6 @@ fun Message(
             isUserMe = isUserMe,
             isFirstMessageByAuthor = isFirstMessageByAuthor,
             isLastMessageByAuthor = isLastMessageByAuthor,
-            authorClicked = onAuthorClick,
             modifier = Modifier
                 .padding(end = 16.dp)
                 .weight(1f)
@@ -175,14 +187,13 @@ fun AuthorAndTextMessage(
     isUserMe: Boolean,
     isFirstMessageByAuthor: Boolean,
     isLastMessageByAuthor: Boolean,
-    authorClicked: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
         if (isLastMessageByAuthor) {
             AuthorNameTimestamp(item)
         }
-        ChatItemBubble(item, isUserMe, authorClicked = authorClicked)
+        ChatItemBubble(item, isUserMe)
         if (isFirstMessageByAuthor) {
             // Last bubble before next author
             Spacer(modifier = Modifier.height(8.dp))
@@ -216,43 +227,11 @@ private fun AuthorNameTimestamp(
     }
 }
 
-private val ChatBubbleShape = RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)
-
-@Composable
-fun DayHeader(dayString: String) {
-    Row(
-        modifier = Modifier
-            .padding(vertical = 8.dp, horizontal = 16.dp)
-            .height(16.dp)
-    ) {
-        DayHeaderLine()
-        Text(
-            text = dayString,
-            modifier = Modifier.padding(horizontal = 16.dp),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        DayHeaderLine()
-    }
-}
-
-@Composable
-private fun RowScope.DayHeaderLine() {
-    Divider(
-        modifier = Modifier
-            .weight(1f)
-            .align(Alignment.CenterVertically),
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-    )
-}
-
 @Composable
 fun ChatItemBubble(
     item: MessageItem,
-    isUserMe: Boolean,
-    authorClicked: (String) -> Unit
+    isUserMe: Boolean
 ) {
-
     val backgroundBubbleColor = if (isUserMe) {
         MaterialTheme.colorScheme.primary
     } else {
@@ -266,32 +245,26 @@ fun ChatItemBubble(
         ) {
             ChatMessage(
                 message = item.message,
-                isUserMe = isUserMe,
-                authorClicked = authorClicked
             )
         }
 
         Spacer(modifier = Modifier.height(4.dp))
-
     }
 }
 
 @Composable
 fun ChatMessage(
     message: Message,
-    isUserMe: Boolean,
-    authorClicked: (String) -> Unit
 ) {
     Text(
         text = message.content,
         style = MaterialTheme.typography.bodyLarge.copy(color = LocalContentColor.current),
         modifier = Modifier.padding(16.dp),
-
-        )
+    )
 }
 
 @OptIn(ExperimentalResourceApi::class)
-private fun Profile.profilePhotoResource() =
+fun Profile.profilePhotoResource() =
     Res.allDrawableResources.getValue("${name.lowercase()}_1")
 
 fun Instant.toTimestamp(): String {
@@ -302,3 +275,5 @@ fun Instant.toTimestamp(): String {
     val amOrPm = if (localDateTime.hour > 12) "PM" else "AM"
     return "${localDateTime.hour}.$minute $amOrPm"
 }
+
+private val ChatBubbleShape = RoundedCornerShape(4.dp, 20.dp, 20.dp, 20.dp)

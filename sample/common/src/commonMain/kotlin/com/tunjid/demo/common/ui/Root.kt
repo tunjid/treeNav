@@ -216,10 +216,25 @@ private fun sampleAppAdaptiveConfiguration(
             SampleDestinations.NavTabs.Profile -> threePaneAdaptiveNodeConfiguration(
                 render = {
                     val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
+//                    val viewModel = viewModel<ProfileViewModel> {
+//                        ProfileViewModel(
+//                            coroutineScope = scope,
+//                        )
+//                    }
+//                    ProfileScreen(
+//                        state = viewModel.state.collectAsStateWithLifecycle().value,
+//                        onAction = viewModel.accept
+//                    )
+                }
+            )
+
+            is SampleDestinations.Profile -> threePaneAdaptiveNodeConfiguration(
+                render = {
+                    val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
                     val viewModel = viewModel<ProfileViewModel> {
                         ProfileViewModel(
                             coroutineScope = scope,
-                            chatsRepository = ChatsRepository
+                            destination = destinations,
                         )
                     }
                     ProfileScreen(

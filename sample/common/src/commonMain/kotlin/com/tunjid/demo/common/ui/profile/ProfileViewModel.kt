@@ -18,16 +18,43 @@ package com.tunjid.demo.common.ui.profile
 
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
-import com.tunjid.demo.common.ui.data.ChatsRepository
-import com.tunjid.demo.common.ui.data.Message
+import com.tunjid.demo.common.ui.data.NavigationAction
+import com.tunjid.demo.common.ui.data.NavigationRepository
+import com.tunjid.demo.common.ui.data.Profile
+import com.tunjid.demo.common.ui.data.ProfileRepository
+import com.tunjid.demo.common.ui.data.SampleDestinations
+import com.tunjid.demo.common.ui.data.navigationAction
+import com.tunjid.demo.common.ui.data.navigationMutations
+import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
+import com.tunjid.mutator.coroutines.mapToMutation
+import com.tunjid.mutator.coroutines.toMutationStream
+import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.pop
+import kotlinx.coroutines.flow.Flow
 
 class ProfileViewModel(
     coroutineScope: LifecycleCoroutineScope,
-    chatsRepository: ChatsRepository,
+    profileRepository: ProfileRepository = ProfileRepository,
+    navigationRepository: NavigationRepository = NavigationRepository,
+    destination: SampleDestinations.Profile,
 ) : ViewModel() {
     private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
         initialState = State(),
+        inputs = listOf(
+            profileRepository.profileMutations(destination)
+        ),
+        actionTransform = { actions ->
+            actions.toMutationStream(
+                keySelector = Action::key
+            ) {
+                when (val type = type()) {
+                    is Action.Navigation -> navigationRepository.navigationMutations(
+                        type.flow
+                    )
+                }
+            }
+        }
     )
 
     val state = mutator.state
@@ -35,8 +62,21 @@ class ProfileViewModel(
     val accept = mutator.accept
 }
 
+private fun ProfileRepository.profileMutations(
+    destination: SampleDestinations.Profile,
+): Flow<Mutation<State>> =
+    profileFor(destination.profileName).mapToMutation { copy(profile = it) }
+
 data class State(
-    val chats: List<Message> = emptyList()
+    val profile: Profile? = null
 )
 
-sealed class Action
+sealed class Action(
+    val key: String
+) {
+    sealed class Navigation : Action("Navigation"), NavigationAction {
+        data object Pop : Navigation(), NavigationAction by navigationAction(
+            MultiStackNav::pop
+        )
+    }
+}

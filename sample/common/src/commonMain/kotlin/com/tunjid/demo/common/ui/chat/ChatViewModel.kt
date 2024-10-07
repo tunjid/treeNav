@@ -34,6 +34,7 @@ import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.pop
+import com.tunjid.treenav.push
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -122,6 +123,20 @@ sealed class Action(
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data object Pop : Navigation(), NavigationAction by navigationAction(
             MultiStackNav::pop
+        )
+
+        data class GoToProfile(
+            val profileName: String,
+            val roomName: String,
+        ) : Navigation(), NavigationAction by navigationAction(
+            {
+                push(
+                    SampleDestinations.Profile(
+                        profileName = profileName,
+                        roomName = roomName,
+                    )
+                )
+            }
         )
     }
 }

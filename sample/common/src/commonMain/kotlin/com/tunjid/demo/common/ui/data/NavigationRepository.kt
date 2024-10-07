@@ -48,7 +48,7 @@ sealed interface SampleDestinations : Node {
             }
     }
 
-    val threePaneMapping: Map<ThreePane, SampleDestinations> get() = emptyMap()
+    val threePaneMapping: Map<ThreePane, SampleDestinations?> get() = emptyMap()
 
     data class Room(
         val roomName: String,
@@ -64,6 +64,25 @@ sealed interface SampleDestinations : Node {
 
         override val children: List<Node>
             get() = threePaneMapping.values.filterNot(::equals)
+
+    }
+
+    data class Profile(
+        val profileName: String,
+        val roomName: String?,
+    ) : SampleDestinations {
+
+        override val id: String
+            get() = "$profileName-$roomName"
+
+        override val threePaneMapping: Map<ThreePane, SampleDestinations?> = mapOf(
+            ThreePane.Primary to this,
+            ThreePane.Secondary to roomName?.let(::Room),
+            ThreePane.Tertiary to roomName?.let { NavTabs.ChatRooms },
+        )
+
+        override val children: List<Node>
+            get() = threePaneMapping.values.filterNot(::equals).filterNotNull()
 
     }
 }
