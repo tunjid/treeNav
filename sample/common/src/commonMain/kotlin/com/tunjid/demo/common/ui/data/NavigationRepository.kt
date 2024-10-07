@@ -18,13 +18,12 @@ package com.tunjid.demo.common.ui.data
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.mapToManyMutations
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.StackNav
-import com.tunjid.treenav.adaptive.threepane.ThreePane
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,14 +36,14 @@ sealed interface SampleDestination : Node {
         val title: String,
     ) : SampleDestination {
         ChatRooms("Chat Rooms"),
-        Profile("Profile");
+        Settings("Settings");
 
         override val id: String get() = title
 
         val icon
             get() = when (this) {
                 ChatRooms -> Icons.AutoMirrored.Filled.List
-                Profile -> Icons.Default.Person
+                Settings -> Icons.Default.Settings
             }
     }
 
@@ -57,7 +56,6 @@ sealed interface SampleDestination : Node {
 
         override val children: List<Node>
             get() = listOf(NavTabs.ChatRooms)
-
     }
 
     data class Profile(

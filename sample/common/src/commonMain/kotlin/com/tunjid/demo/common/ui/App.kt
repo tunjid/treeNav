@@ -39,13 +39,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.coroutineScope
+import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberAdaptiveNavHostState
 import com.tunjid.demo.common.ui.chat.chatAdaptiveConfiguration
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneConfiguration
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.profile.profileAdaptiveConfiguration
+import com.tunjid.demo.common.ui.settings.settingsPaneConfiguration
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHost
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
@@ -53,7 +53,6 @@ import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
 import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.configurations.threePaneAdaptiveConfiguration
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
 import com.tunjid.treenav.current
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -136,25 +135,31 @@ class SampleAppState(
         navigationState
     )
 
-    @Composable
-    fun rememberAdaptiveNavHostState(
-        configurationBlock: AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>.() -> AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>
-    ): SavedStateAdaptiveNavHostState<ThreePane, SampleDestination> {
-        val adaptiveNavHostState = remember {
-            SavedStateAdaptiveNavHostState(
-                panes = ThreePane.entries.toList(),
-                configuration = adaptiveNavHostConfiguration.configurationBlock(),
-            )
-        }
-        DisposableEffect(Unit) {
-            val job = CoroutineScope(Dispatchers.Main.immediate).launch {
-                navigationRepository.navigationStateFlow.collect { multiStackNav ->
-                    navigationState.value = multiStackNav
-                }
+    companion object {
+        @Composable
+        fun SampleAppState.rememberAdaptiveNavHostState(
+            configurationBlock: AdaptiveNavHostConfiguration<
+                    ThreePane,
+                    MultiStackNav,
+                    SampleDestination
+                    >.() -> AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>
+        ): SavedStateAdaptiveNavHostState<ThreePane, SampleDestination> {
+            val adaptiveNavHostState = remember {
+                SavedStateAdaptiveNavHostState(
+                    panes = ThreePane.entries.toList(),
+                    configuration = adaptiveNavHostConfiguration.configurationBlock(),
+                )
             }
-            onDispose { job.cancel() }
+            DisposableEffect(Unit) {
+                val job = CoroutineScope(Dispatchers.Main.immediate).launch {
+                    navigationRepository.navigationStateFlow.collect { multiStackNav ->
+                        navigationState.value = multiStackNav
+                    }
+                }
+                onDispose { job.cancel() }
+            }
+            return adaptiveNavHostState
         }
-        return adaptiveNavHostState
     }
 }
 
@@ -173,24 +178,9 @@ private fun sampleAppAdaptiveConfiguration(
 
             is SampleDestination.Chat -> chatAdaptiveConfiguration(destination)
 
-            SampleDestination.NavTabs.Profile -> threePaneAdaptiveNodeConfiguration(
-                render = {
-                    val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
-//                    val viewModel = viewModel<ProfileViewModel> {
-//                        ProfileViewModel(
-//                            coroutineScope = scope,
-//                        )
-//                    }
-//                    ProfileScreen(
-//                        state = viewModel.state.collectAsStateWithLifecycle().value,
-//                        onAction = viewModel.accept
-//                    )
-                }
-            )
+            SampleDestination.NavTabs.Settings -> settingsPaneConfiguration()
 
-            is SampleDestination.Profile -> profileAdaptiveConfiguration(
-                destination
-            )
+            is SampleDestination.Profile -> profileAdaptiveConfiguration(destination)
         }
     }
 )
