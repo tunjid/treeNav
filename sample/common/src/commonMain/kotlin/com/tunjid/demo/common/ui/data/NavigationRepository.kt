@@ -61,7 +61,7 @@ sealed interface SampleDestinations : Node {
         )
 
         override val children: List<Node>
-            get() = threePaneMapping.values.toList()
+            get() = threePaneMapping.values.filterNot(::equals)
 
     }
 }

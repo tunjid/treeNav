@@ -322,7 +322,7 @@ fun ChatItemBubble(
 
 @OptIn(ExperimentalResourceApi::class)
 private fun Profile.profilePhotoResource() =
-    Res.allDrawableResources.getValue("${name.lowercase()}-1")
+    Res.allDrawableResources.getValue("${name.lowercase()}_1")
 
 @Composable
 fun ClickableMessage(
