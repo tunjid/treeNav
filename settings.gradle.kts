@@ -40,6 +40,7 @@ include(
     ":library:treenav",
     ":library:strings",
     ":library:adaptive",
+    ":sample:android",
     ":sample:common",
     ":sample:desktop",
 )

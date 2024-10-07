@@ -26,10 +26,13 @@ junit = "4.13.2"
 runner = "1.0.2"
 espressoCore = "3.0.2"
 appcompatV7 = "28.0.0"
+googleMaterial = "1.12.0"
 
 [libraries]
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
 compose-compiler-plugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-compose-foundation-foundation = { group = "androidx.compose.foundation", name = "foundation"}
@@ -76,6 +79,8 @@ kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime",
 tunjid-mutator-core-common = { group = "com.tunjid.mutator", name = "core", version.ref = "tunjidStateHolder" }
 tunjid-mutator-coroutines-common = { group = "com.tunjid.mutator", name = "coroutines", version.ref = "tunjidStateHolder" }
 tunjid-composables = { group = "com.tunjid.composables", name = "composables", version.ref = "tunjidComposables" }
+
+google-material = { group = "com.google.android.material", name = "material", version.ref = "googleMaterial" }
 
 dokka-gradlePlugin = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "dokka" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
