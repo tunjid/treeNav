@@ -19,11 +19,13 @@ package com.tunjid.demo.common.ui.data
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Person
+import com.tunjid.mutator.Mutation
+import com.tunjid.mutator.coroutines.mapToManyMutations
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.adaptive.threepane.ThreePane
-import com.tunjid.treenav.push
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -83,6 +85,13 @@ object NavigationRepository {
         mutableNavigationStateFlow.update(action::navigate)
     }
 }
+
+fun <T> NavigationRepository.navigationMutations(
+    navigationActions: Flow<NavigationAction>
+): Flow<Mutation<T>> =
+    navigationActions.mapToManyMutations {
+        navigate(it)
+    }
 
 private val InitialNavState = MultiStackNav(
     name = "Sample",

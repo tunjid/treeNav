@@ -17,7 +17,6 @@
 package com.tunjid.demo.common.ui.chat
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -36,57 +35,42 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Divider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.data.Profile
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import treenavigation.sample.common.generated.resources.Res
 import treenavigation.sample.common.generated.resources.allDrawableResources
 
 @Composable
-fun ChatRoomScreen(
+fun ChatScreen(
     state: State,
     onAction: (Action) -> Unit,
 ) {
     val scrollState = rememberLazyListState()
-    var background by remember {
-        mutableStateOf(Color.Transparent)
-    }
-
-    var borderStroke by remember {
-        mutableStateOf(Color.Transparent)
-    }
-
     Column(
         Modifier.fillMaxSize()
-            .background(color = background)
-            .border(width = 2.dp, color = borderStroke)
     ) {
         SampleTopAppBar(
             title = state.room?.name ?: "",
-            onBackPressed = { },
+            onBackPressed = { onAction(Action.Navigation.Pop) },
         )
         Messages(
             me = state.me,
@@ -99,8 +83,6 @@ fun ChatRoomScreen(
 }
 
 
-const val ConversationTestTag = "ConversationTestTag"
-
 @Composable
 fun Messages(
     me: Profile?,
@@ -111,39 +93,26 @@ fun Messages(
 ) {
     Box(modifier = modifier) {
         LazyColumn(
-            reverseLayout = true,
             state = scrollState,
             modifier = Modifier
-                .testTag(ConversationTestTag)
                 .fillMaxSize()
         ) {
-            for (index in messages.indices) {
+            items(
+                count = messages.size
+            ) { index ->
                 val prevAuthor = messages.getOrNull(index - 1)?.sender
                 val nextAuthor = messages.getOrNull(index + 1)?.sender
                 val content = messages[index]
                 val isFirstMessageByAuthor = prevAuthor != content.sender
                 val isLastMessageByAuthor = nextAuthor != content.sender
 
-                // Hardcode day dividers for simplicity
-                if (index == messages.size - 1) {
-                    item {
-                        DayHeader("20 Aug")
-                    }
-                } else if (index == 2) {
-                    item {
-                        DayHeader("Today")
-                    }
-                }
-
-                item {
-                    Message(
-                        onAuthorClick = { name -> navigateToProfile(name) },
-                        item = content,
-                        isUserMe = content.sender.name == me?.name,
-                        isFirstMessageByAuthor = isFirstMessageByAuthor,
-                        isLastMessageByAuthor = isLastMessageByAuthor
-                    )
-                }
+                Message(
+                    onAuthorClick = { name -> navigateToProfile(name) },
+                    item = content,
+                    isUserMe = content.sender.name == me?.name,
+                    isFirstMessageByAuthor = isFirstMessageByAuthor,
+                    isLastMessageByAuthor = isLastMessageByAuthor
+                )
             }
         }
     }
@@ -164,6 +133,7 @@ fun Message(
     }
 
     val spaceBetweenAuthors = if (isLastMessageByAuthor) Modifier.padding(top = 8.dp) else Modifier
+
     Row(modifier = spaceBetweenAuthors) {
         if (isLastMessageByAuthor) {
             // Avatar
@@ -238,7 +208,7 @@ private fun AuthorNameTimestamp(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = item.message.content,
+            text = item.message.timestamp.toTimestamp(),
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.alignBy(LastBaseline),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -276,7 +246,6 @@ private fun RowScope.DayHeaderLine() {
     )
 }
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ChatItemBubble(
     item: MessageItem,
@@ -295,7 +264,7 @@ fun ChatItemBubble(
             color = backgroundBubbleColor,
             shape = ChatBubbleShape
         ) {
-            ClickableMessage(
+            ChatMessage(
                 message = item.message,
                 isUserMe = isUserMe,
                 authorClicked = authorClicked
@@ -303,37 +272,33 @@ fun ChatItemBubble(
         }
 
         Spacer(modifier = Modifier.height(4.dp))
-        Surface(
-            color = backgroundBubbleColor,
-            shape = ChatBubbleShape
-        ) {
-            Image(
-                painter = painterResource(
-                    item.sender.profilePhotoResource()
-                ),
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.size(160.dp),
-                contentDescription = null,
-            )
-        }
 
     }
+}
+
+@Composable
+fun ChatMessage(
+    message: Message,
+    isUserMe: Boolean,
+    authorClicked: (String) -> Unit
+) {
+    Text(
+        text = message.content,
+        style = MaterialTheme.typography.bodyLarge.copy(color = LocalContentColor.current),
+        modifier = Modifier.padding(16.dp),
+
+        )
 }
 
 @OptIn(ExperimentalResourceApi::class)
 private fun Profile.profilePhotoResource() =
     Res.allDrawableResources.getValue("${name.lowercase()}_1")
 
-@Composable
-fun ClickableMessage(
-    message: Message,
-    isUserMe: Boolean,
-    authorClicked: (String) -> Unit
-) {
-    Text(
-        text =  message.content,
-        style = MaterialTheme.typography.bodyLarge.copy(color = LocalContentColor.current),
-        modifier = Modifier.padding(16.dp),
+fun Instant.toTimestamp(): String {
+    // Convert Instant to LocalDateTime in the system's default time zone
+    val localDateTime = this.toLocalDateTime(TimeZone.currentSystemDefault())
 
-    )
+    val minute = if (localDateTime.minute < 10) "0${localDateTime.minute}" else localDateTime.minute
+    val amOrPm = if (localDateTime.hour > 12) "PM" else "AM"
+    return "${localDateTime.hour}.$minute $amOrPm"
 }

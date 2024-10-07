@@ -21,20 +21,28 @@ import androidx.lifecycle.ViewModel
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.Message
+import com.tunjid.demo.common.ui.data.NavigationAction
+import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.demo.common.ui.data.ProfileRepository
 import com.tunjid.demo.common.ui.data.SampleDestinations
+import com.tunjid.demo.common.ui.data.navigationAction
+import com.tunjid.demo.common.ui.data.navigationMutations
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
+import com.tunjid.mutator.coroutines.toMutationStream
+import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.pop
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 
-class ChatRoomViewModel(
+class ChatViewModel(
     coroutineScope: LifecycleCoroutineScope,
     chatsRepository: ChatsRepository,
     profileRepository: ProfileRepository,
+    navigationRepository: NavigationRepository = NavigationRepository,
     room: SampleDestinations.Room,
 ) : ViewModel() {
     private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
@@ -47,7 +55,18 @@ class ChatRoomViewModel(
                 chatsRepository = chatsRepository,
                 profileRepository = profileRepository
             )
-        )
+        ),
+        actionTransform = { actions ->
+            actions.toMutationStream(
+                keySelector = Action::key
+            ) {
+                when (val type = type()) {
+                    is Action.Navigation -> navigationRepository.navigationMutations(
+                        type.flow
+                    )
+                }
+            }
+        }
     )
 
     val state = mutator.state
@@ -97,4 +116,12 @@ data class MessageItem(
     val sender: Profile,
 )
 
-sealed class Action
+sealed class Action(
+    val key: String
+) {
+    sealed class Navigation : Action("Navigation"), NavigationAction {
+        data object Pop : Navigation(), NavigationAction by navigationAction(
+            MultiStackNav::pop
+        )
+    }
+}

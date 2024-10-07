@@ -43,8 +43,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tunjid.demo.common.ui.chat.ChatRoomScreen
-import com.tunjid.demo.common.ui.chat.ChatRoomViewModel
+import com.tunjid.demo.common.ui.chat.ChatScreen
+import com.tunjid.demo.common.ui.chat.ChatViewModel
 import com.tunjid.demo.common.ui.chatrooms.ChatRoomsScreen
 import com.tunjid.demo.common.ui.chatrooms.ChatRoomsViewModel
 import com.tunjid.demo.common.ui.data.ChatsRepository
@@ -195,15 +195,15 @@ private fun sampleAppAdaptiveConfiguration(
             is SampleDestinations.Room -> threePaneAdaptiveNodeConfiguration(
                 render = {
                     val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
-                    val viewModel = viewModel<ChatRoomViewModel> {
-                        ChatRoomViewModel(
+                    val viewModel = viewModel<ChatViewModel> {
+                        ChatViewModel(
                             coroutineScope = scope,
                             chatsRepository = ChatsRepository,
                             profileRepository = ProfileRepository,
                             room = destinations,
                         )
                     }
-                    ChatRoomScreen(
+                    ChatScreen(
                         state = viewModel.state.collectAsStateWithLifecycle().value,
                         onAction = viewModel.accept
                     )

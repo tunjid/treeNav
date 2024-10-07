@@ -24,9 +24,9 @@ import com.tunjid.demo.common.ui.data.NavigationAction
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestinations
 import com.tunjid.demo.common.ui.data.navigationAction
+import com.tunjid.demo.common.ui.data.navigationMutations
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
-import com.tunjid.mutator.coroutines.mapToManyMutations
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.treenav.push
@@ -64,12 +64,6 @@ private fun ChatsRepository.loadMutations(): Flow<Mutation<State>> = rooms.mapTo
     copy(chatRooms = it)
 }
 
-private fun NavigationRepository.navigationMutations(
-    navigationActions: Flow<Action.Navigation>
-): Flow<Mutation<State>> =
-    navigationActions.mapToManyMutations {
-        navigate(it)
-    }
 
 data class State(
     val chatRooms: List<ChatRoom> = emptyList()
