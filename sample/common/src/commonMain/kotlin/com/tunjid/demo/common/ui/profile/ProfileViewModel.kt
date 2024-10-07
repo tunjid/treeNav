@@ -22,7 +22,7 @@ import com.tunjid.demo.common.ui.data.NavigationAction
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.demo.common.ui.data.ProfileRepository
-import com.tunjid.demo.common.ui.data.SampleDestinations
+import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.navigationAction
 import com.tunjid.demo.common.ui.data.navigationMutations
 import com.tunjid.mutator.Mutation
@@ -37,7 +37,7 @@ class ProfileViewModel(
     coroutineScope: LifecycleCoroutineScope,
     profileRepository: ProfileRepository = ProfileRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
-    destination: SampleDestinations.Profile,
+    destination: SampleDestination.Profile,
 ) : ViewModel() {
     private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
         initialState = State(),
@@ -63,7 +63,7 @@ class ProfileViewModel(
 }
 
 private fun ProfileRepository.profileMutations(
-    destination: SampleDestinations.Profile,
+    destination: SampleDestination.Profile,
 ): Flow<Mutation<State>> =
     profileFor(destination.profileName).mapToMutation { copy(profile = it) }
 

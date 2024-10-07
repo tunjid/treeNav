@@ -40,19 +40,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tunjid.demo.common.ui.chat.ChatScreen
-import com.tunjid.demo.common.ui.chat.ChatViewModel
-import com.tunjid.demo.common.ui.chatrooms.ChatRoomsScreen
-import com.tunjid.demo.common.ui.chatrooms.ChatRoomsViewModel
-import com.tunjid.demo.common.ui.data.ChatsRepository
+import com.tunjid.demo.common.ui.chat.chatAdaptiveConfiguration
+import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneConfiguration
 import com.tunjid.demo.common.ui.data.NavigationRepository
-import com.tunjid.demo.common.ui.data.ProfileRepository
-import com.tunjid.demo.common.ui.data.SampleDestinations
-import com.tunjid.demo.common.ui.profile.ProfileScreen
-import com.tunjid.demo.common.ui.profile.ProfileViewModel
+import com.tunjid.demo.common.ui.data.SampleDestination
+import com.tunjid.demo.common.ui.profile.profileAdaptiveConfiguration
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHost
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
@@ -69,12 +62,12 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun Root(
+fun App(
     appState: SampleAppState = remember { SampleAppState() },
 ) {
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            SampleDestinations.NavTabs.entries.forEach {
+            SampleDestination.NavTabs.entries.forEach {
                 item(
                     icon = {
                         Icon(
@@ -145,8 +138,8 @@ class SampleAppState(
 
     @Composable
     fun rememberAdaptiveNavHostState(
-        configurationBlock: AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, SampleDestinations>.() -> AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, SampleDestinations>
-    ): SavedStateAdaptiveNavHostState<ThreePane, SampleDestinations> {
+        configurationBlock: AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>.() -> AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>
+    ): SavedStateAdaptiveNavHostState<ThreePane, SampleDestination> {
         val adaptiveNavHostState = remember {
             SavedStateAdaptiveNavHostState(
                 panes = ThreePane.entries.toList(),
@@ -170,50 +163,17 @@ private fun sampleAppAdaptiveConfiguration(
 ) = adaptiveNavHostConfiguration(
     navigationState = multiStackNavState,
     destinationTransform = { multiStackNav ->
-        multiStackNav.current as? SampleDestinations ?: throw IllegalArgumentException(
+        multiStackNav.current as? SampleDestination ?: throw IllegalArgumentException(
             "MultiStackNav leaf node ${multiStackNav.current} must be an AppDestination"
         )
     },
-    strategyTransform = { destinations ->
-        when (destinations) {
-            SampleDestinations.NavTabs.ChatRooms -> threePaneAdaptiveNodeConfiguration(
-                render = {
-                    val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
-                    val viewModel = viewModel<ChatRoomsViewModel> {
-                        ChatRoomsViewModel(
-                            coroutineScope = scope,
-                            chatsRepository = ChatsRepository
-                        )
-                    }
-                    ChatRoomsScreen(
-                        state = viewModel.state.collectAsStateWithLifecycle().value,
-                        onAction = viewModel.accept
-                    )
-                }
-            )
+    strategyTransform = { destination ->
+        when (destination) {
+            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneConfiguration()
 
-            is SampleDestinations.Room -> threePaneAdaptiveNodeConfiguration(
-                render = {
-                    val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
-                    val viewModel = viewModel<ChatViewModel> {
-                        ChatViewModel(
-                            coroutineScope = scope,
-                            chatsRepository = ChatsRepository,
-                            profileRepository = ProfileRepository,
-                            room = destinations,
-                        )
-                    }
-                    ChatScreen(
-                        state = viewModel.state.collectAsStateWithLifecycle().value,
-                        onAction = viewModel.accept
-                    )
-                },
-                paneMapping = {
-                    destinations.threePaneMapping
-                }
-            )
+            is SampleDestination.Chat -> chatAdaptiveConfiguration(destination)
 
-            SampleDestinations.NavTabs.Profile -> threePaneAdaptiveNodeConfiguration(
+            SampleDestination.NavTabs.Profile -> threePaneAdaptiveNodeConfiguration(
                 render = {
                     val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
 //                    val viewModel = viewModel<ProfileViewModel> {
@@ -228,20 +188,8 @@ private fun sampleAppAdaptiveConfiguration(
                 }
             )
 
-            is SampleDestinations.Profile -> threePaneAdaptiveNodeConfiguration(
-                render = {
-                    val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
-                    val viewModel = viewModel<ProfileViewModel> {
-                        ProfileViewModel(
-                            coroutineScope = scope,
-                            destination = destinations,
-                        )
-                    }
-                    ProfileScreen(
-                        state = viewModel.state.collectAsStateWithLifecycle().value,
-                        onAction = viewModel.accept
-                    )
-                }
+            is SampleDestination.Profile -> profileAdaptiveConfiguration(
+                destination
             )
         }
     }

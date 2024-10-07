@@ -22,7 +22,7 @@ import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.NavigationAction
 import com.tunjid.demo.common.ui.data.NavigationRepository
-import com.tunjid.demo.common.ui.data.SampleDestinations
+import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.navigationAction
 import com.tunjid.demo.common.ui.data.navigationMutations
 import com.tunjid.mutator.Mutation
@@ -76,7 +76,7 @@ sealed class Action(
         data class ToRoom(
             val roomName: String,
         ) : Navigation(), NavigationAction by navigationAction(
-            { push(SampleDestinations.Room(roomName)) }
+            { push(SampleDestination.Chat(roomName)) }
         )
     }
 }

@@ -25,7 +25,7 @@ import com.tunjid.demo.common.ui.data.NavigationAction
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.demo.common.ui.data.ProfileRepository
-import com.tunjid.demo.common.ui.data.SampleDestinations
+import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.navigationAction
 import com.tunjid.demo.common.ui.data.navigationMutations
 import com.tunjid.mutator.Mutation
@@ -44,15 +44,15 @@ class ChatViewModel(
     chatsRepository: ChatsRepository,
     profileRepository: ProfileRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
-    room: SampleDestinations.Room,
+    chat: SampleDestination.Chat,
 ) : ViewModel() {
     private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
         initialState = State(),
         inputs = listOf(
             profileRepository.meMutations(),
-            chatsRepository.chatRoomMutations(room),
+            chatsRepository.chatRoomMutations(chat),
             chatLoadMutations(
-                room = room,
+                chat = chat,
                 chatsRepository = chatsRepository,
                 profileRepository = profileRepository
             )
@@ -79,17 +79,17 @@ private fun ProfileRepository.meMutations(): Flow<Mutation<State>> =
     me.mapToMutation { copy(me = it) }
 
 private fun ChatsRepository.chatRoomMutations(
-    room: SampleDestinations.Room
+    chat: SampleDestination.Chat
 ): Flow<Mutation<State>> =
-    room(roomName = room.roomName)
+    room(roomName = chat.roomName)
         .mapToMutation { copy(room = it) }
 
 private fun chatLoadMutations(
-    room: SampleDestinations.Room,
+    chat: SampleDestination.Chat,
     chatsRepository: ChatsRepository,
     profileRepository: ProfileRepository,
 ): Flow<Mutation<State>> =
-    chatsRepository.chatsFor(room.roomName).flatMapLatest { chats ->
+    chatsRepository.chatsFor(chat.roomName).flatMapLatest { chats ->
         combine(
             flows = chats.map { message -> profileRepository.profileFor(message.sender) }
         ) { profiles ->
@@ -131,7 +131,7 @@ sealed class Action(
         ) : Navigation(), NavigationAction by navigationAction(
             {
                 push(
-                    SampleDestinations.Profile(
+                    SampleDestination.Profile(
                         profileName = profileName,
                         roomName = roomName,
                     )

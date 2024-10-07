@@ -31,11 +31,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-sealed interface SampleDestinations : Node {
+sealed interface SampleDestination : Node {
 
     enum class NavTabs(
         val title: String,
-    ) : SampleDestinations {
+    ) : SampleDestination {
         ChatRooms("Chat Rooms"),
         Profile("Profile");
 
@@ -48,42 +48,31 @@ sealed interface SampleDestinations : Node {
             }
     }
 
-    val threePaneMapping: Map<ThreePane, SampleDestinations?> get() = emptyMap()
-
-    data class Room(
+    data class Chat(
         val roomName: String,
-    ) : SampleDestinations {
+    ) : SampleDestination {
 
         override val id: String
             get() = roomName
 
-        override val threePaneMapping: Map<ThreePane, SampleDestinations> = mapOf(
-            ThreePane.Primary to this,
-            ThreePane.Secondary to NavTabs.ChatRooms,
-        )
-
         override val children: List<Node>
-            get() = threePaneMapping.values.filterNot(::equals)
+            get() = listOf(NavTabs.ChatRooms)
 
     }
 
     data class Profile(
         val profileName: String,
         val roomName: String?,
-    ) : SampleDestinations {
+    ) : SampleDestination {
 
         override val id: String
             get() = "$profileName-$roomName"
 
-        override val threePaneMapping: Map<ThreePane, SampleDestinations?> = mapOf(
-            ThreePane.Primary to this,
-            ThreePane.Secondary to roomName?.let(::Room),
-            ThreePane.Tertiary to roomName?.let { NavTabs.ChatRooms },
-        )
-
         override val children: List<Node>
-            get() = threePaneMapping.values.filterNot(::equals).filterNotNull()
-
+            get() = listOfNotNull(
+                roomName?.let(::Chat),
+                roomName?.let { NavTabs.ChatRooms }
+            )
     }
 }
 
@@ -118,7 +107,7 @@ private val InitialNavState = MultiStackNav(
         StackNav(
             name = "chatrooms",
             children = listOf(
-                SampleDestinations.NavTabs.ChatRooms,
+                SampleDestination.NavTabs.ChatRooms,
             )
         )
     )
