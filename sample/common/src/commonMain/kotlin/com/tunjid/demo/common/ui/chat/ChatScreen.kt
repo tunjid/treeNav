@@ -16,7 +16,7 @@
 
 package com.tunjid.demo.common.ui.chat
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -46,19 +46,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.tunjid.demo.common.ui.ProfilePhoto
+import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.data.Profile
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
-import treenavigation.sample.common.generated.resources.Res
-import treenavigation.sample.common.generated.resources.allDrawableResources
 
 @Composable
 fun ChatScreen(
+    movableSharedElementScope: MovableSharedElementScope,
     state: State,
     onAction: (Action) -> Unit,
 ) {
@@ -76,7 +76,8 @@ fun ChatScreen(
             messages = state.chats,
             navigateToProfile = onAction,
             modifier = Modifier.weight(1f),
-            scrollState = scrollState
+            scrollState = scrollState,
+            movableSharedElementScope = movableSharedElementScope,
         )
     }
 }
@@ -89,7 +90,8 @@ fun Messages(
     messages: List<MessageItem>,
     navigateToProfile: (Action.Navigation.GoToProfile) -> Unit,
     scrollState: LazyListState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    movableSharedElementScope: MovableSharedElementScope,
 ) {
     Box(modifier = modifier) {
         LazyColumn(
@@ -112,13 +114,15 @@ fun Messages(
                     item = content,
                     isUserMe = content.sender.name == me?.name,
                     isFirstMessageByAuthor = isFirstMessageByAuthor,
-                    isLastMessageByAuthor = isLastMessageByAuthor
+                    isLastMessageByAuthor = isLastMessageByAuthor,
+                    movableSharedElementScope = movableSharedElementScope,
                 )
             }
         }
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun Message(
     onAuthorClick: (Action.Navigation.GoToProfile) -> Unit,
@@ -126,7 +130,8 @@ fun Message(
     roomName: String?,
     isUserMe: Boolean,
     isFirstMessageByAuthor: Boolean,
-    isLastMessageByAuthor: Boolean
+    isLastMessageByAuthor: Boolean,
+    movableSharedElementScope: MovableSharedElementScope
 ) {
     val borderColor = if (isUserMe) {
         MaterialTheme.colorScheme.primary
@@ -138,12 +143,15 @@ fun Message(
 
     Row(modifier = spaceBetweenAuthors) {
         if (isLastMessageByAuthor) {
+            val sharedImage = movableSharedElementScope.movableSharedElementOf(
+                key = item.sender.name,
+                sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
+                    ProfilePhoto(args, innerModifier)
+                }
+            )
             // Avatar
-            Image(
+            Box(
                 modifier = Modifier
-                    .clickable(
-                        onClick = { }
-                    )
                     .padding(horizontal = 16.dp)
                     .size(42.dp)
                     .border(1.5.dp, borderColor, CircleShape)
@@ -151,20 +159,26 @@ fun Message(
                     .clip(CircleShape)
                     .align(Alignment.Top)
                     .clickable {
-                      roomName?.let {
-                          onAuthorClick(
-                              Action.Navigation.GoToProfile(
-                                  profileName = item.sender.name,
-                                  roomName = it
-                              )
-                          )
-                      }
-                    }
-                ,
-                painter = painterResource(item.sender.profilePhotoResource()),
-                contentScale = ContentScale.Crop,
-                contentDescription = null,
-            )
+                        roomName?.let {
+                            onAuthorClick(
+                                Action.Navigation.GoToProfile(
+                                    profileName = item.sender.name,
+                                    roomName = it
+                                )
+                            )
+                        }
+                    },
+            ) {
+                sharedImage(
+                    ProfilePhotoArgs(
+                        profileName = item.sender.name,
+                        contentScale = ContentScale.Crop,
+                        cornerRadius = 42.dp,
+                        contentDescription = null,
+                    ),
+                    Modifier.matchParentSize(),
+                )
+            }
         } else {
             // Space under avatar
             Spacer(modifier = Modifier.width(74.dp))
@@ -262,10 +276,6 @@ fun ChatMessage(
         modifier = Modifier.padding(16.dp),
     )
 }
-
-@OptIn(ExperimentalResourceApi::class)
-fun Profile.profilePhotoResource() =
-    Res.allDrawableResources.getValue("${name.lowercase()}_1")
 
 fun Instant.toTimestamp(): String {
     // Convert Instant to LocalDateTime in the system's default time zone

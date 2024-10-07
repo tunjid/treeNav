@@ -16,9 +16,9 @@
 
 package com.tunjid.demo.common.ui.profile
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.splineBasedDecay
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,20 +33,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.collapsingheader.CollapsingHeader
 import com.tunjid.composables.collapsingheader.CollapsingHeaderState
+import com.tunjid.demo.common.ui.ProfilePhoto
+import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
-import com.tunjid.demo.common.ui.chat.profilePhotoResource
-import org.jetbrains.compose.resources.painterResource
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import kotlin.math.max
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ProfileScreen(
+    movableSharedElementScope: MovableSharedElementScope,
     state: State,
     onAction: (Action) -> Unit,
 ) {
@@ -85,15 +89,23 @@ fun ProfileScreen(
                         }
                         .background(animatedColor)
                 ) {
-                    val profile = state.profile
-                    if (profile != null)
-                        Image(
-                            painter = painterResource(
-                                resource = profile.profilePhotoResource()
-                            ),
-                            modifier = Modifier.fillMaxSize(),
-                            contentDescription = null
+                    val profileName = state.profileName ?: state.profile?.name
+                    if (profileName != null) {
+                        val sharedImage = movableSharedElementScope.movableSharedElementOf(
+                            key = profileName,
+                            sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
+                                ProfilePhoto(args, innerModifier)
+                            }
                         )
+                        sharedImage(
+                            ProfilePhotoArgs(
+                                profileName = profileName,
+                                contentScale = ContentScale.Crop,
+                                contentDescription = null,
+                            ),
+                            Modifier.fillMaxSize(),
+                        )
+                    }
                 }
                 SampleTopAppBar(
                     title = state.profile?.name ?: "",

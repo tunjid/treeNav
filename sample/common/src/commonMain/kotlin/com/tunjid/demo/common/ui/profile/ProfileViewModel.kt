@@ -40,7 +40,9 @@ class ProfileViewModel(
     destination: SampleDestination.Profile,
 ) : ViewModel() {
     private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
-        initialState = State(),
+        initialState = State(
+            profileName = destination.profileName
+        ),
         inputs = listOf(
             profileRepository.profileMutations(destination)
         ),
@@ -68,6 +70,7 @@ private fun ProfileRepository.profileMutations(
     profileFor(destination.profileName).mapToMutation { copy(profile = it) }
 
 data class State(
+    val profileName: String? = null,
     val profile: Profile? = null
 )
 

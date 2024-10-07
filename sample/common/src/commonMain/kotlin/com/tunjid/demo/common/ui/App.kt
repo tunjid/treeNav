@@ -46,12 +46,16 @@ import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.profile.profileAdaptiveConfiguration
 import com.tunjid.demo.common.ui.settings.settingsPaneConfiguration
+import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.AdaptiveNavHost
 import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
+import com.tunjid.treenav.adaptive.AdaptivePaneState
 import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
 import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.adaptive.threepane.configurations.canAnimateOnStartingFrames
+import com.tunjid.treenav.adaptive.threepane.configurations.movableSharedElementConfiguration
 import com.tunjid.treenav.adaptive.threepane.configurations.threePaneAdaptiveConfiguration
 import com.tunjid.treenav.current
 import kotlinx.coroutines.CoroutineScope
@@ -84,11 +88,20 @@ fun App(
         SharedTransitionScope { sharedTransitionModifier ->
             val windowWidthDp = remember { mutableIntStateOf(0) }
             val density = LocalDensity.current
+            val movableSharedElementHostState = remember {
+                MovableSharedElementHostState(
+                    sharedTransitionScope = this,
+                    canAnimateOnStartingFrames = AdaptivePaneState<ThreePane, SampleDestination>::canAnimateOnStartingFrames
+                )
+            }
             AdaptiveNavHost(
                 state = appState.rememberAdaptiveNavHostState {
                     this
                         .threePaneAdaptiveConfiguration(
                             windowWidthDpState = windowWidthDp
+                        )
+                        .movableSharedElementConfiguration(
+                            movableSharedElementHostState = movableSharedElementHostState
                         )
                 },
                 modifier = Modifier
@@ -99,6 +112,10 @@ fun App(
                         then sharedTransitionModifier
             ) {
                 ListDetailPaneScaffold(
+                    modifier = Modifier
+                        .fillMaxSize()
+                            then movableSharedElementHostState.modifier
+                            then sharedTransitionModifier,
                     directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()),
                     value = ThreePaneScaffoldValue(
                         primary = if (nodeFor(ThreePane.Primary) == null) PaneAdaptedValue.Hidden else PaneAdaptedValue.Expanded,
