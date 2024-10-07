@@ -31,7 +31,7 @@ fun <NavigationState : Node, Destination : Node> AdaptiveNavHostConfiguration<Th
                 ThreePane.Primary to primaryNode,
                 ThreePane.Secondary to originalMapping[ThreePane.Secondary].takeIf { secondaryDestination ->
                     secondaryDestination?.id != primaryNode?.id
-                            && windowWidthDp < PRIMARY_PANE_MIN_WIDTH_BREAKPOINT_DP
+                            && windowWidthDp >= PRIMARY_PANE_MIN_WIDTH_BREAKPOINT_DP
                 },
                 ThreePane.Tertiary to originalMapping[ThreePane.Tertiary].takeIf { tertiaryDestination ->
                     tertiaryDestination?.id != primaryNode?.id

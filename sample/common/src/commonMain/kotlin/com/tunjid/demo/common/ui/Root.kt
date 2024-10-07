@@ -33,12 +33,14 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.chat.ChatRoomScreen
@@ -57,11 +59,13 @@ import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
 import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
 import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.adaptive.threepane.configurations.threePaneAdaptiveConfiguration
 import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
 import com.tunjid.treenav.current
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -86,10 +90,20 @@ fun Root(
         }
     ) {
         SharedTransitionScope { sharedTransitionModifier ->
+            val windowWidthDp = remember { mutableIntStateOf(0) }
+            val density = LocalDensity.current
             AdaptiveNavHost(
-                state = appState.rememberAdaptiveNavHostState { this },
+                state = appState.rememberAdaptiveNavHostState {
+                    this
+                        .threePaneAdaptiveConfiguration(
+                            windowWidthDpState = windowWidthDp
+                        )
+                },
                 modifier = Modifier
                     .fillMaxSize()
+                    .onSizeChanged {
+                        windowWidthDp.value = (it.width / density.density).roundToInt()
+                    }
                         then sharedTransitionModifier
             ) {
                 ListDetailPaneScaffold(
