@@ -15,23 +15,33 @@
  */
 
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
-        gradlePluginPortal()
+        google()
         mavenCentral()
-    }
-
-    plugins {
-        val kotlinVersion = "1.6.10"
-
-        kotlin("jvm").version(kotlinVersion)
-        kotlin("dokka").version(kotlinVersion)
-        kotlin("multiplatform").version(kotlinVersion)
+        gradlePluginPortal()
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 }
-rootProject.name = "TreeNav"
+
+dependencyResolutionManagement {
+    // Workaround for KT-51379
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    }
+}
+
+rootProject.name = "TreeNavigation"
 
 include(
-    ":treenav",
-    ":strings",
+    ":library:treenav",
+    ":library:strings",
+    ":library:adaptive",
+    ":sample:android",
+    ":sample:common",
+    ":sample:desktop",
 )
 
