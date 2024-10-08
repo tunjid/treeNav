@@ -60,80 +60,85 @@ class SlotBasedAdaptiveNavigationStateTest {
 
     @Test
     fun testFirstSinglePaneAdaptation() {
-        val adapted = subject.testAdaptTo(
+        subject.testAdaptTo(
             panesToNodes = mapOf(
                 ThreePane.Primary to TestNode(name = "A"),
             )
         )
-        assertEquals(
-            expected = adapted.destinationFor(ThreePane.Primary),
-            actual = TestNode(name = "A"),
-        )
-        assertEquals(
-            expected = adapted.adaptationsIn(ThreePane.Primary),
-            actual = setOf(Adaptation.Change),
-        )
-        assertEquals(
-            expected = adapted.slotFor(ThreePane.Primary),
-            actual = Slot(0),
-        )
+            .apply {
+                assertEquals(
+                    expected = destinationFor(ThreePane.Primary),
+                    actual = TestNode(name = "A"),
+                )
+                assertEquals(
+                    expected = adaptationsIn(ThreePane.Primary),
+                    actual = setOf(Adaptation.Change),
+                )
+                assertEquals(
+                    expected = slotFor(ThreePane.Primary),
+                    actual = Slot(0),
+                )
+            }
     }
 
     @Test
     fun testFirstTriplePaneAdaptation() {
-        val adapted = subject.testAdaptTo(
-            panesToNodes = mapOf(
-                ThreePane.Primary to TestNode(name = "A"),
-                ThreePane.Secondary to TestNode(name = "B"),
-                ThreePane.Tertiary to TestNode(name = "C"),
+        subject
+            .testAdaptTo(
+                panesToNodes = mapOf(
+                    ThreePane.Primary to TestNode(name = "A"),
+                    ThreePane.Secondary to TestNode(name = "B"),
+                    ThreePane.Tertiary to TestNode(name = "C"),
+                )
             )
-        )
-        // Primary
-        assertEquals(
-            expected = adapted.destinationFor(ThreePane.Primary),
-            actual = TestNode(name = "A")
-        )
-        assertEquals(
-            expected = adapted.adaptationsIn(ThreePane.Primary),
-            actual = setOf(Adaptation.Change)
-        )
-        assertEquals(
-            expected = adapted.slotFor(ThreePane.Primary),
-            actual = Slot(0)
-        )
+            .apply {
+                // Primary
+                assertEquals(
+                    expected = destinationFor(ThreePane.Primary),
+                    actual = TestNode(name = "A")
+                )
+                assertEquals(
+                    expected = adaptationsIn(ThreePane.Primary),
+                    actual = setOf(Adaptation.Change)
+                )
+                assertEquals(
+                    expected = slotFor(ThreePane.Primary),
+                    actual = Slot(0)
+                )
 
-        // Secondary
-        assertEquals(
-            expected = adapted.destinationFor(ThreePane.Secondary),
-            actual = TestNode(name = "B")
-        )
-        assertEquals(
-            expected = adapted.adaptationsIn(ThreePane.Secondary),
-            actual = setOf(Adaptation.Change)
-        )
-        assertEquals(
-            expected = adapted.slotFor(ThreePane.Secondary),
-            actual = Slot(1)
-        )
+                // Secondary
+                assertEquals(
+                    expected = destinationFor(ThreePane.Secondary),
+                    actual = TestNode(name = "B")
+                )
+                assertEquals(
+                    expected = adaptationsIn(ThreePane.Secondary),
+                    actual = setOf(Adaptation.Change)
+                )
+                assertEquals(
+                    expected = slotFor(ThreePane.Secondary),
+                    actual = Slot(1)
+                )
 
-        // Tertiary
-        assertEquals(
-            expected = adapted.destinationFor(ThreePane.Tertiary),
-            actual = TestNode(name = "C")
-        )
-        assertEquals(
-            expected = adapted.adaptationsIn(ThreePane.Tertiary),
-            actual = setOf(Adaptation.Change)
-        )
-        assertEquals(
-            expected = adapted.slotFor(ThreePane.Tertiary),
-            actual = Slot(2)
-        )
+                // Tertiary
+                assertEquals(
+                    expected = destinationFor(ThreePane.Tertiary),
+                    actual = TestNode(name = "C")
+                )
+                assertEquals(
+                    expected = adaptationsIn(ThreePane.Tertiary),
+                    actual = setOf(Adaptation.Change)
+                )
+                assertEquals(
+                    expected = slotFor(ThreePane.Tertiary),
+                    actual = Slot(2)
+                )
+            }
     }
 
     @Test
     fun testSameAdaptationInSinglePane() {
-        val adapted = subject
+        subject
             .testAdaptTo(
                 panesToNodes = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
@@ -144,23 +149,25 @@ class SlotBasedAdaptiveNavigationStateTest {
                     ThreePane.Primary to TestNode(name = "A"),
                 )
             )
-        assertEquals(
-            expected = TestNode(name = "A"),
-            actual = adapted.destinationFor(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = setOf(Adaptation.Same),
-            actual = adapted.adaptationsIn(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = Slot(0),
-            actual = adapted.slotFor(ThreePane.Primary),
-        )
+            .apply {
+                assertEquals(
+                    expected = TestNode(name = "A"),
+                    actual = destinationFor(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = setOf(Adaptation.Same),
+                    actual = adaptationsIn(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = Slot(0),
+                    actual = slotFor(ThreePane.Primary),
+                )
+            }
     }
 
     @Test
     fun testSameAdaptationInThreePanes() {
-        val adapted = subject
+        subject
             .testAdaptTo(
                 panesToNodes = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
@@ -175,52 +182,54 @@ class SlotBasedAdaptiveNavigationStateTest {
                     ThreePane.Tertiary to TestNode(name = "C"),
                 )
             )
-        // Primary
-        assertEquals(
-            expected = TestNode(name = "A"),
-            actual = adapted.destinationFor(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = setOf(Adaptation.Same),
-            actual = adapted.adaptationsIn(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = Slot(0),
-            actual = adapted.slotFor(ThreePane.Primary),
-        )
+            .apply {
+                // Primary
+                assertEquals(
+                    expected = TestNode(name = "A"),
+                    actual = destinationFor(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = setOf(Adaptation.Same),
+                    actual = adaptationsIn(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = Slot(0),
+                    actual = slotFor(ThreePane.Primary),
+                )
 
-        // Secondary
-        assertEquals(
-            expected = TestNode(name = "B"),
-            actual = adapted.destinationFor(ThreePane.Secondary),
-        )
-        assertEquals(
-            expected = setOf(Adaptation.Same),
-            actual = adapted.adaptationsIn(ThreePane.Secondary),
-        )
-        assertEquals(
-            expected = Slot(1),
-            actual = adapted.slotFor(ThreePane.Secondary),
-        )
+                // Secondary
+                assertEquals(
+                    expected = TestNode(name = "B"),
+                    actual = destinationFor(ThreePane.Secondary),
+                )
+                assertEquals(
+                    expected = setOf(Adaptation.Same),
+                    actual = adaptationsIn(ThreePane.Secondary),
+                )
+                assertEquals(
+                    expected = Slot(1),
+                    actual = slotFor(ThreePane.Secondary),
+                )
 
-        // Tertiary
-        assertEquals(
-            expected = TestNode(name = "C"),
-            actual = adapted.destinationFor(ThreePane.Tertiary),
-        )
-        assertEquals(
-            expected = setOf(Adaptation.Same),
-            actual = adapted.adaptationsIn(ThreePane.Tertiary),
-        )
-        assertEquals(
-            expected = Slot(2),
-            actual = adapted.slotFor(ThreePane.Tertiary),
-        )
+                // Tertiary
+                assertEquals(
+                    expected = TestNode(name = "C"),
+                    actual = destinationFor(ThreePane.Tertiary),
+                )
+                assertEquals(
+                    expected = setOf(Adaptation.Same),
+                    actual = adaptationsIn(ThreePane.Tertiary),
+                )
+                assertEquals(
+                    expected = Slot(2),
+                    actual = slotFor(ThreePane.Tertiary),
+                )
+            }
     }
 
     @Test
     fun testChangeAdaptationInThreePanes() {
-        val adapted = subject
+        subject
             .testAdaptTo(
                 panesToNodes = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
@@ -235,61 +244,63 @@ class SlotBasedAdaptiveNavigationStateTest {
                     ThreePane.Tertiary to TestNode(name = "A"),
                 )
             )
-        // Primary
-        assertEquals(
-            expected = TestNode(name = "B"),
-            actual = adapted.destinationFor(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = setOf(
-                Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.Tertiary),
-                Adaptation.Swap(from = ThreePane.Secondary, to = ThreePane.Primary),
-            ),
-            actual = adapted.adaptationsIn(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = Slot(1),
-            actual = adapted.slotFor(ThreePane.Primary),
-        )
+            .apply {
+                // Primary
+                assertEquals(
+                    expected = TestNode(name = "B"),
+                    actual = destinationFor(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = setOf(
+                        Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.Tertiary),
+                        Adaptation.Swap(from = ThreePane.Secondary, to = ThreePane.Primary),
+                    ),
+                    actual = adaptationsIn(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = Slot(1),
+                    actual = slotFor(ThreePane.Primary),
+                )
 
-        // Secondary
-        assertEquals(
-            expected = TestNode(name = "C"),
-            actual = adapted.destinationFor(ThreePane.Secondary),
-        )
-        assertEquals(
-            expected = setOf(
-                Adaptation.Swap(from = ThreePane.Tertiary, to = ThreePane.Secondary),
-                Adaptation.Swap(from = ThreePane.Secondary, to = ThreePane.Primary),
-            ),
-            actual = adapted.adaptationsIn(ThreePane.Secondary),
-        )
-        assertEquals(
-            expected = Slot(2),
-            actual = adapted.slotFor(ThreePane.Secondary),
-        )
+                // Secondary
+                assertEquals(
+                    expected = TestNode(name = "C"),
+                    actual = destinationFor(ThreePane.Secondary),
+                )
+                assertEquals(
+                    expected = setOf(
+                        Adaptation.Swap(from = ThreePane.Tertiary, to = ThreePane.Secondary),
+                        Adaptation.Swap(from = ThreePane.Secondary, to = ThreePane.Primary),
+                    ),
+                    actual = adaptationsIn(ThreePane.Secondary),
+                )
+                assertEquals(
+                    expected = Slot(2),
+                    actual = slotFor(ThreePane.Secondary),
+                )
 
-        // Tertiary
-        assertEquals(
-            expected = TestNode(name = "A"),
-            actual = adapted.destinationFor(ThreePane.Tertiary),
-        )
-        assertEquals(
-            expected = setOf(
-                Adaptation.Swap(from = ThreePane.Tertiary, to = ThreePane.Secondary),
-                Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.Tertiary),
-            ),
-            actual = adapted.adaptationsIn(ThreePane.Tertiary),
-        )
-        assertEquals(
-            expected = Slot(0),
-            actual = adapted.slotFor(ThreePane.Tertiary),
-        )
+                // Tertiary
+                assertEquals(
+                    expected = TestNode(name = "A"),
+                    actual = destinationFor(ThreePane.Tertiary),
+                )
+                assertEquals(
+                    expected = setOf(
+                        Adaptation.Swap(from = ThreePane.Tertiary, to = ThreePane.Secondary),
+                        Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.Tertiary),
+                    ),
+                    actual = adaptationsIn(ThreePane.Tertiary),
+                )
+                assertEquals(
+                    expected = Slot(0),
+                    actual = slotFor(ThreePane.Tertiary),
+                )
+            }
     }
 
     @Test
     fun testListToListDetailAdaptation() {
-        val adapted = subject
+        subject
             .testAdaptTo(
                 panesToNodes = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
@@ -301,44 +312,45 @@ class SlotBasedAdaptiveNavigationStateTest {
                     ThreePane.Secondary to TestNode(name = "A"),
                 )
             )
+            .apply {
+                // Destination assertions
+                assertEquals(
+                    expected = TestNode(name = "B"),
+                    actual = destinationFor(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = TestNode(name = "A"),
+                    actual = destinationFor(ThreePane.Secondary),
+                )
 
-        // Destination assertions
-        assertEquals(
-            expected = TestNode(name = "B"),
-            actual = adapted.destinationFor(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = TestNode(name = "A"),
-            actual = adapted.destinationFor(ThreePane.Secondary),
-        )
+                // Adaptation assertions
+                assertEquals(
+                    expected = setOf(
+                        Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.Secondary),
+                    ),
+                    actual = adaptationsIn(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = setOf(ThreePane.PrimaryToSecondary),
+                    actual = adaptationsIn(ThreePane.Secondary),
+                )
 
-        // Adaptation assertions
-        assertEquals(
-            expected = setOf(
-                Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.Secondary),
-            ),
-            actual = adapted.adaptationsIn(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = setOf(ThreePane.PrimaryToSecondary),
-            actual = adapted.adaptationsIn(ThreePane.Secondary),
-        )
-
-        // Slot assertions
-        assertEquals(
-            // Secondary should reuse slot 0
-            expected = Slot(0),
-            actual = adapted.slotFor(ThreePane.Secondary),
-        )
-        assertEquals(
-            expected = Slot(1),
-            actual = adapted.slotFor(ThreePane.Primary),
-        )
+                // Slot assertions
+                assertEquals(
+                    // Secondary should reuse slot 0
+                    expected = Slot(0),
+                    actual = slotFor(ThreePane.Secondary),
+                )
+                assertEquals(
+                    expected = Slot(1),
+                    actual = slotFor(ThreePane.Primary),
+                )
+            }
     }
 
     @Test
     fun testSinglePanePredictiveBackAdaptation() {
-        val adapted = subject
+        subject
             .testAdaptTo(
                 panesToNodes = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
@@ -367,41 +379,42 @@ class SlotBasedAdaptiveNavigationStateTest {
                     ThreePane.TransientPrimary to TestNode(name = "B"),
                 )
             )
+            .apply {
+                // Destination assertions
+                assertEquals(
+                    expected = TestNode(name = "A"),
+                    actual = destinationFor(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = TestNode(name = "B"),
+                    actual = destinationFor(ThreePane.TransientPrimary),
+                )
 
-        // Destination assertions
-        assertEquals(
-            expected = TestNode(name = "A"),
-            actual = adapted.destinationFor(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = TestNode(name = "B"),
-            actual = adapted.destinationFor(ThreePane.TransientPrimary),
-        )
+                // Adaptation assertions
+                assertEquals(
+                    expected = setOf(ThreePane.PrimaryToTransient),
+                    actual = adaptationsIn(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = setOf(ThreePane.PrimaryToTransient),
+                    actual = adaptationsIn(ThreePane.TransientPrimary),
+                )
 
-        // Adaptation assertions
-        assertEquals(
-            expected = setOf(ThreePane.PrimaryToTransient),
-            actual = adapted.adaptationsIn(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = setOf(ThreePane.PrimaryToTransient),
-            actual = adapted.adaptationsIn(ThreePane.TransientPrimary),
-        )
-
-        // Slot assertions
-        assertEquals(
-            expected = Slot(1),
-            actual = adapted.slotFor(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = Slot(0),
-            actual = adapted.slotFor(ThreePane.TransientPrimary),
-        )
+                // Slot assertions
+                assertEquals(
+                    expected = Slot(1),
+                    actual = slotFor(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = Slot(0),
+                    actual = slotFor(ThreePane.TransientPrimary),
+                )
+            }
     }
 
     @Test
     fun testDoublePaneToSinglePanePredictiveBackAdaptation() {
-        val adapted = subject
+        subject
             .testAdaptTo(
                 panesToNodes = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
@@ -414,47 +427,48 @@ class SlotBasedAdaptiveNavigationStateTest {
                     ThreePane.TransientPrimary to TestNode(name = "A"),
                 )
             )
+            .apply {
+                // Destination assertions
+                assertEquals(
+                    expected = TestNode(name = "C"),
+                    actual = destinationFor(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = TestNode(name = "A"),
+                    actual = destinationFor(ThreePane.TransientPrimary),
+                )
 
-        // Destination assertions
-        assertEquals(
-            expected = TestNode(name = "C"),
-            actual = adapted.destinationFor(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = TestNode(name = "A"),
-            actual = adapted.destinationFor(ThreePane.TransientPrimary),
-        )
+                // Adaptation assertions
+                assertEquals(
+                    expected = setOf(
+                        Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.TransientPrimary),
+                    ),
+                    actual = adaptationsIn(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = setOf(ThreePane.PrimaryToTransient),
+                    actual = adaptationsIn(ThreePane.TransientPrimary),
+                )
 
-        // Adaptation assertions
-        assertEquals(
-            expected = setOf(
-                Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.TransientPrimary),
-            ),
-            actual = adapted.adaptationsIn(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = setOf(ThreePane.PrimaryToTransient),
-            actual = adapted.adaptationsIn(ThreePane.TransientPrimary),
-        )
-
-        // Slot assertions
-        assertEquals(
-            expected = Slot(1),
-            actual = adapted.slotFor(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = Slot(0),
-            actual = adapted.slotFor(ThreePane.TransientPrimary),
-        )
-        assertEquals(
-            expected = null,
-            actual = adapted.slotFor(ThreePane.Secondary),
-        )
+                // Slot assertions
+                assertEquals(
+                    expected = Slot(1),
+                    actual = slotFor(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = Slot(0),
+                    actual = slotFor(ThreePane.TransientPrimary),
+                )
+                assertEquals(
+                    expected = null,
+                    actual = slotFor(ThreePane.Secondary),
+                )
+            }
     }
 
     @Test
     fun testDoublePaneToDoublePanePredictiveBackAdaptation() {
-        val adapted = subject
+        subject
             .testAdaptTo(
                 panesToNodes = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
@@ -468,52 +482,53 @@ class SlotBasedAdaptiveNavigationStateTest {
                     ThreePane.TransientPrimary to TestNode(name = "A"),
                 )
             )
+            .apply {
+                // Destination assertions
+                assertEquals(
+                    expected = TestNode(name = "C"),
+                    actual = destinationFor(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = TestNode(name = "D"),
+                    actual = destinationFor(ThreePane.Secondary),
+                )
+                assertEquals(
+                    expected = TestNode(name = "A"),
+                    actual = destinationFor(ThreePane.TransientPrimary),
+                )
 
-        // Destination assertions
-        assertEquals(
-            expected = TestNode(name = "C"),
-            actual = adapted.destinationFor(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = TestNode(name = "D"),
-            actual = adapted.destinationFor(ThreePane.Secondary),
-        )
-        assertEquals(
-            expected = TestNode(name = "A"),
-            actual = adapted.destinationFor(ThreePane.TransientPrimary),
-        )
+                // Adaptation assertions
+                assertEquals(
+                    expected = setOf(
+                        Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.TransientPrimary)
+                    ),
+                    actual = adaptationsIn(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = setOf(Adaptation.Change),
+                    actual = adaptationsIn(ThreePane.Secondary),
+                )
+                assertEquals(
+                    expected = setOf(
+                        Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.TransientPrimary)
+                    ),
+                    actual = adaptationsIn(ThreePane.TransientPrimary),
+                )
 
-        // Adaptation assertions
-        assertEquals(
-            expected = setOf(
-                Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.TransientPrimary)
-            ),
-            actual = adapted.adaptationsIn(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = setOf(Adaptation.Change),
-            actual = adapted.adaptationsIn(ThreePane.Secondary),
-        )
-        assertEquals(
-            expected = setOf(
-                Adaptation.Swap(from = ThreePane.Primary, to = ThreePane.TransientPrimary)
-            ),
-            actual = adapted.adaptationsIn(ThreePane.TransientPrimary),
-        )
-
-        // Slot assertions
-        assertEquals(
-            expected = Slot(1),
-            actual = adapted.slotFor(ThreePane.Primary),
-        )
-        assertEquals(
-            expected = Slot(2),
-            actual = adapted.slotFor(ThreePane.Secondary),
-        )
-        assertEquals(
-            expected = Slot(0),
-            actual = adapted.slotFor(ThreePane.TransientPrimary),
-        )
+                // Slot assertions
+                assertEquals(
+                    expected = Slot(1),
+                    actual = slotFor(ThreePane.Primary),
+                )
+                assertEquals(
+                    expected = Slot(2),
+                    actual = slotFor(ThreePane.Secondary),
+                )
+                assertEquals(
+                    expected = Slot(0),
+                    actual = slotFor(ThreePane.TransientPrimary),
+                )
+            }
     }
 
     private fun SlotBasedAdaptiveNavigationState<ThreePane, TestNode>.testAdaptTo(
