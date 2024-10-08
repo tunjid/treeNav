@@ -182,7 +182,7 @@ internal fun <T, R : Node> SlotBasedAdaptiveNavigationState<T, R>.adaptTo(
             panesToNodes.mapValues { it.value?.id } -> previous.swapAdaptations
             else -> swapAdaptations
         },
-        previousPanesToDestinations = previous.previousPanesToDestinations.keys.associateWith(
+        previousPanesToDestinations = previous.panesToDestinations.keys.associateWith(
             valueSelector = previous::destinationFor
         ),
         destinationIdsToAdaptiveSlots = nodeIdsToAdaptiveSlots,

@@ -61,9 +61,7 @@ class SlotBasedAdaptiveNavigationStateTest {
 
     @Test
     fun testFirstSinglePaneAdaptation() {
-        val adapted = subject.adaptTo(
-            slots = slots,
-            backStackIds = emptySet(),
+        val adapted = subject.testAdaptTo(
             panesToNodes = mapOf(
                 ThreePane.Primary to TestNode(name = "A"),
             )
@@ -84,9 +82,7 @@ class SlotBasedAdaptiveNavigationStateTest {
 
     @Test
     fun testFirstTriplePaneAdaptation() {
-        val adapted = subject.adaptTo(
-            slots = slots,
-            backStackIds = emptySet(),
+        val adapted = subject.testAdaptTo(
             panesToNodes = mapOf(
                 ThreePane.Primary to TestNode(name = "A"),
                 ThreePane.Secondary to TestNode(name = "B"),
@@ -136,4 +132,39 @@ class SlotBasedAdaptiveNavigationStateTest {
         )
     }
 
+    @Test
+    fun testSameAdaptationInSinglePane() {
+        val adapted = subject
+            .testAdaptTo(
+                panesToNodes = mapOf(
+                    ThreePane.Primary to TestNode(name = "A"),
+                )
+            )
+            .testAdaptTo(
+                panesToNodes = mapOf(
+                    ThreePane.Primary to TestNode(name = "A"),
+                )
+            )
+        assertEquals(
+            expected = TestNode(name = "A"),
+            actual = adapted.destinationFor(ThreePane.Primary),
+        )
+        assertEquals(
+            expected = Adaptation.Same,
+            actual = adapted.adaptationIn(ThreePane.Primary),
+        )
+        assertEquals(
+            expected = Slot(0),
+            actual = adapted.slotFor(ThreePane.Primary),
+        )
+    }
+
+    private fun SlotBasedAdaptiveNavigationState<ThreePane, TestNode>.testAdaptTo(
+        panesToNodes: Map<ThreePane, TestNode>
+    ) = adaptTo(
+        slots = slots,
+        backStackIds = emptySet(),
+        panesToNodes = panesToNodes
+    )
 }
+
