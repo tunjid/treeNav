@@ -11,9 +11,9 @@ interface AdaptiveNavigationState<Pane, Destination : Node> {
         pane: Pane,
     ): Destination?
 
-    fun adaptationIn(
+    fun adaptationsIn(
         pane: Pane,
-    ): Adaptation
+    ): Set<Adaptation>
 }
 
 /**

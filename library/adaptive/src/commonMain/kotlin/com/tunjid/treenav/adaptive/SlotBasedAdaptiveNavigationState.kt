@@ -75,8 +75,7 @@ internal data class SlotBasedAdaptiveNavigationState<Pane, Destination : Node>(
             currentDestination = node,
             previousDestination = previousPanesToDestinations[pane],
             pane = pane,
-            adaptation = swapAdaptations.firstOrNull { pane in it }
-                ?: Adaptation.Change,
+            adaptations = pane?.let(::adaptationsIn) ?: emptySet(),
         )
     }
 
@@ -106,13 +105,17 @@ internal data class SlotBasedAdaptiveNavigationState<Pane, Destination : Node>(
         pane: Pane
     ): Destination? = panesToDestinations[pane]
 
-    override fun adaptationIn(
+    override fun adaptationsIn(
         pane: Pane
-    ): Adaptation =
-        swapAdaptations.firstOrNull { pane in it } ?: when (panesToDestinations[pane]?.id) {
-            previousPanesToDestinations[pane]?.id -> Adaptation.Same
-            else -> Adaptation.Change
-        }
+    ): Set<Adaptation> =
+        swapAdaptations.filter { pane in it }
+            .let {
+                if (it.isEmpty()) when (panesToDestinations[pane]?.id) {
+                    previousPanesToDestinations[pane]?.id -> setOf(Adaptation.Same)
+                    else -> setOf(Adaptation.Change)
+                }
+                else it.toSet()
+            }
 }
 
 /**
