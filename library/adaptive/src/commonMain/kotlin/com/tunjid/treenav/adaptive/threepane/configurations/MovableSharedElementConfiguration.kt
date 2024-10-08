@@ -120,4 +120,4 @@ fun AdaptivePaneState<ThreePane, *>?.canAnimateOnStartingFrames() =
 
 private val AdaptivePaneScope<ThreePane, *>.isPreviewingBack: Boolean
     get() = paneState.pane == ThreePane.Primary
-            && paneState.adaptations == ThreePane.PrimaryToTransient
+            && paneState.adaptations.contains(ThreePane.PrimaryToTransient)
