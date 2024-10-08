@@ -76,7 +76,7 @@ internal class AnimatedAdaptivePaneScope<Pane, Destination : Node>(
 sealed interface AdaptivePaneState<Pane, Destination : Node> {
     val currentDestination: Destination?
     val pane: Pane?
-    val adaptation: Adaptation
+    val adaptations: Set<Adaptation>
 }
 
 /**
@@ -87,7 +87,7 @@ internal data class SlotPaneState<Pane, Destination : Node>(
     val previousDestination: Destination?,
     override val currentDestination: Destination?,
     override val pane: Pane?,
-    override val adaptation: Adaptation,
+    override val adaptations: Set<Adaptation>,
 ) : AdaptivePaneState<Pane, Destination>
 
 /**

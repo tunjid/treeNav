@@ -7,21 +7,35 @@ import com.tunjid.treenav.Node
  */
 interface AdaptiveNavigationState<Pane, Destination : Node> {
 
+    /**
+     * The current [Destination] in this [pane].
+     * @param pane the [Pane] to query.
+     */
     fun destinationFor(
         pane: Pane,
     ): Destination?
 
-    fun adaptationIn(
+    /**
+     * Adaptations involving this [pane] after the last navigation state change.
+     * @param pane the affected [Pane].
+     */
+    fun adaptationsIn(
         pane: Pane,
-    ): Adaptation?
+    ): Set<Adaptation>
 }
 
 /**
  * A description of the process that the layout undertook to adapt to its new configuration.
  */
 sealed class Adaptation {
+
     /**
-     * Destinations were changed in panes
+     * Destinations remained the same in the pane
+     */
+    data object Same : Adaptation()
+
+    /**
+     * Destinations were changed in the pane
      */
     data object Change : Adaptation()
 
