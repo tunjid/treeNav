@@ -36,12 +36,16 @@ kotlin {
                 implementation(libs.jetbrains.compose.runtime)
                 implementation(libs.jetbrains.compose.foundation)
                 implementation(libs.jetbrains.compose.foundation.layout)
-//                implementation(libs.jetbrains.compose.material3.adaptive)
 
                 implementation(libs.jetbrains.lifecycle.runtime)
                 implementation(libs.jetbrains.lifecycle.runtime.compose)
                 implementation(libs.jetbrains.lifecycle.viewmodel)
                 implementation(libs.jetbrains.lifecycle.viewmodel.compose)
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation(kotlin("test"))
             }
         }
         val jvmMain by getting

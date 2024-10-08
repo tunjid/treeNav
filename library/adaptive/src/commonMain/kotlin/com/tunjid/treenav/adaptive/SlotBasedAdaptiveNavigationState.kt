@@ -108,7 +108,11 @@ internal data class SlotBasedAdaptiveNavigationState<Pane, Destination : Node>(
 
     override fun adaptationIn(
         pane: Pane
-    ): Adaptation? = swapAdaptations.firstOrNull { pane in it }
+    ): Adaptation =
+        swapAdaptations.firstOrNull { pane in it } ?: when (panesToDestinations[pane]?.id) {
+            previousPanesToDestinations[pane]?.id -> Adaptation.Same
+            else -> Adaptation.Change
+        }
 }
 
 /**
