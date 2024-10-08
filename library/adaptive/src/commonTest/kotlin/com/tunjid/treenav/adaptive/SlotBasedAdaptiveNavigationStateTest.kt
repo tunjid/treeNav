@@ -16,12 +16,11 @@
 
 package com.tunjid.treenav.adaptive
 
-import com.tunjid.treenav.*
+import com.tunjid.treenav.Node
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 /*
  * Copyright 2021 Google LLC
@@ -323,6 +322,110 @@ class SlotBasedAdaptiveNavigationStateTest {
         assertEquals(
             expected = Slot(1),
             actual = adapted.slotFor(ThreePane.Primary),
+        )
+    }
+
+    @Test
+    fun testSinglePanePredictiveBackAdaptation() {
+        val adapted = subject
+            .testAdaptTo(
+                panesToNodes = mapOf(
+                    ThreePane.Primary to TestNode(name = "A"),
+                )
+            )
+            .testAdaptTo(
+                panesToNodes = mapOf(
+                    ThreePane.Primary to TestNode(name = "B"),
+                )
+            )
+            .testAdaptTo(
+                panesToNodes = mapOf(
+                    ThreePane.Primary to TestNode(name = "A"),
+                    ThreePane.TransientPrimary to TestNode(name = "B"),
+                )
+            )
+
+        // Destination assertions
+        assertEquals(
+            expected = TestNode(name = "A"),
+            actual = adapted.destinationFor(ThreePane.Primary),
+        )
+        assertEquals(
+            expected = TestNode(name = "B"),
+            actual = adapted.destinationFor(ThreePane.Secondary),
+        )
+
+        // Adaptation assertions
+        assertEquals(
+            expected = Adaptation.Change,
+            actual = adapted.adaptationIn(ThreePane.Primary),
+        )
+        assertEquals(
+            expected = ThreePane.PrimaryToTransient,
+            actual = adapted.adaptationIn(ThreePane.TransientPrimary),
+        )
+
+        // Slot assertions
+        assertEquals(
+            // Secondary should reuse slot 0
+            expected = Slot(0),
+            actual = adapted.slotFor(ThreePane.Primary),
+        )
+        assertEquals(
+            expected = Slot(1),
+            actual = adapted.slotFor(ThreePane.TransientPrimary),
+        )
+    }
+
+    @Test
+    fun testDoublePaneToSinglePanePredictiveBackAdaptation() {
+        val adapted = subject
+            .testAdaptTo(
+                panesToNodes = mapOf(
+                    ThreePane.Primary to TestNode(name = "A"),
+                    ThreePane.Secondary to TestNode(name = "B"),
+                )
+            )
+            .testAdaptTo(
+                panesToNodes = mapOf(
+                    ThreePane.Primary to TestNode(name = "C"),
+                    ThreePane.TransientPrimary to TestNode(name = "A"),
+                )
+            )
+
+        // Destination assertions
+        assertEquals(
+            expected = TestNode(name = "C"),
+            actual = adapted.destinationFor(ThreePane.Primary),
+        )
+        assertEquals(
+            expected = TestNode(name = "A"),
+            actual = adapted.destinationFor(ThreePane.TransientPrimary),
+        )
+
+        // Adaptation assertions
+        assertEquals(
+            expected = Adaptation.Change,
+            actual = adapted.adaptationIn(ThreePane.Primary),
+        )
+        assertEquals(
+            expected = ThreePane.PrimaryToTransient,
+            actual = adapted.adaptationIn(ThreePane.TransientPrimary),
+        )
+
+        // Slot assertions
+        assertEquals(
+            // Secondary should reuse slot 0
+            expected = Slot(0),
+            actual = adapted.slotFor(ThreePane.Primary),
+        )
+        assertEquals(
+            expected = Slot(1),
+            actual = adapted.slotFor(ThreePane.TransientPrimary),
+        )
+        assertEquals(
+            expected = null,
+            actual = adapted.slotFor(ThreePane.Secondary),
         )
     }
 
