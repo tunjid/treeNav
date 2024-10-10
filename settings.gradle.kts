@@ -39,7 +39,7 @@ rootProject.name = "TreeNavigation"
 include(
     ":library:treenav",
     ":library:strings",
-    ":library:adaptive",
+    ":library:compose",
     ":sample:android",
     ":sample:common",
     ":sample:desktop",
