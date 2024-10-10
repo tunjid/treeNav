@@ -35,6 +35,7 @@ import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
+import com.tunjid.treenav.swap
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -138,14 +139,15 @@ sealed class Action(
         data class GoToProfile(
             val profileName: String,
             val roomName: String,
+            val isInPrimaryPane: Boolean,
         ) : Navigation(), NavigationAction by navigationAction(
             {
-                push(
-                    SampleDestination.Profile(
-                        profileName = profileName,
-                        roomName = roomName,
-                    )
+                val profileDestination = SampleDestination.Profile(
+                    profileName = profileName,
+                    roomName = roomName,
                 )
+                if (isInPrimaryPane) push(profileDestination)
+                else swap(profileDestination)
             }
         )
     }
