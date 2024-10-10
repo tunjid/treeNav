@@ -16,6 +16,7 @@
 
 package com.tunjid.demo.common.ui.chat
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
@@ -46,6 +47,13 @@ fun chatAdaptiveConfiguration(
             state = viewModel.state.collectAsStateWithLifecycle().value,
             onAction = viewModel.accept
         )
+        LaunchedEffect(paneState.pane) {
+            viewModel.accept(
+                Action.UpdateInPrimaryPane(
+                    isInPrimaryPane = paneState.pane == ThreePane.Primary
+                )
+            )
+        }
     },
     paneMapping = {
         mapOf(

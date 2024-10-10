@@ -35,6 +35,7 @@ import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
+import com.tunjid.treenav.swap
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -62,6 +63,7 @@ class ChatViewModel(
                 keySelector = Action::key
             ) {
                 when (val type = type()) {
+                    is Action.UpdateInPrimaryPane -> type.flow.updateInPrimaryPaneMutations()
                     is Action.Navigation -> navigationRepository.navigationMutations(
                         type.flow
                     )
@@ -106,9 +108,13 @@ private fun chatLoadMutations(
             copy(chats = it)
         }
 
+private fun Flow<Action.UpdateInPrimaryPane>.updateInPrimaryPaneMutations(): Flow<Mutation<State>> =
+    mapToMutation { copy(isInPrimaryPane = it.isInPrimaryPane) }
+
 data class State(
     val me: Profile? = null,
     val room: ChatRoom? = null,
+    val isInPrimaryPane: Boolean = true,
     val chats: List<MessageItem> = emptyList()
 )
 
@@ -120,6 +126,11 @@ data class MessageItem(
 sealed class Action(
     val key: String
 ) {
+
+    data class UpdateInPrimaryPane(
+        val isInPrimaryPane: Boolean
+    ) : Action("UpdateInPrimaryPane")
+
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data object Pop : Navigation(), NavigationAction by navigationAction(
             MultiStackNav::pop
@@ -128,14 +139,15 @@ sealed class Action(
         data class GoToProfile(
             val profileName: String,
             val roomName: String,
+            val isInPrimaryPane: Boolean,
         ) : Navigation(), NavigationAction by navigationAction(
             {
-                push(
-                    SampleDestination.Profile(
-                        profileName = profileName,
-                        roomName = roomName,
-                    )
+                val profileDestination = SampleDestination.Profile(
+                    profileName = profileName,
+                    roomName = roomName,
                 )
+                if (isInPrimaryPane) push(profileDestination)
+                else swap(profileDestination)
             }
         )
     }

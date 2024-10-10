@@ -17,106 +17,145 @@
 package com.tunjid.demo.common.ui.profile
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.splineBasedDecay
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.collapsingheader.CollapsingHeader
-import com.tunjid.composables.collapsingheader.CollapsingHeaderState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
+import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
-import kotlin.math.max
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ProfileScreen(
     movableSharedElementScope: MovableSharedElementScope,
     state: State,
     onAction: (Action) -> Unit,
 ) {
-    val density = LocalDensity.current
-    val collapsedHeight = with(density) { 56.dp.toPx() } +
-            WindowInsets.statusBars.getTop(density).toFloat() +
-            WindowInsets.statusBars.getBottom(density).toFloat()
-    val headerState = remember {
-        CollapsingHeaderState(
-            collapsedHeight = collapsedHeight,
-            initialExpandedHeight = with(density) { 400.dp.toPx() },
-            decayAnimationSpec = splineBasedDecay(density)
-        )
-    }
-    val animatedColor by animateColorAsState(
-        MaterialTheme.colorScheme.primaryContainer.copy(
-            alpha = max(
-                1f - headerState.progress,
-                0.6f
-            )
-        )
-    )
+    val headerState = rememberAppBarCollapsingHeaderState(400.dp)
+
     CollapsingHeader(
         state = headerState,
         headerContent = {
-            Box {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(400.dp)
-                        .offset {
-                            IntOffset(
-                                x = 0,
-                                y = -headerState.translation.roundToInt()
-                            )
-                        }
-                        .background(animatedColor)
-                ) {
-                    val profileName = state.profileName ?: state.profile?.name
-                    if (profileName != null) {
-                        val sharedImage = movableSharedElementScope.movableSharedElementOf(
-                            key = profileName,
-                            sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
-                                ProfilePhoto(args, innerModifier)
-                            }
-                        )
-                        sharedImage(
-                            ProfilePhotoArgs(
-                                profileName = profileName,
-                                contentScale = ContentScale.Crop,
-                                contentDescription = null,
-                            ),
-                            Modifier.fillMaxSize(),
+            ProfileHeader(
+                state = state,
+                movableSharedElementScope = movableSharedElementScope,
+                onBackPressed = {
+                    onAction(Action.Navigation.Pop)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+                    .offset {
+                        IntOffset(
+                            x = 0,
+                            y = -headerState.translation.roundToInt()
                         )
                     }
-                }
-                SampleTopAppBar(
-                    title = state.profile?.name ?: "",
-                    onBackPressed = { onAction(Action.Navigation.Pop) },
-                    modifier = Modifier.onSizeChanged {
-                        headerState.collapsedHeight = it.height.toFloat()
-                    }
-                )
-            }
+            )
         },
         body = {
+            ProfileDetails(state)
         }
     )
+}
+
+@Composable
+private fun ProfileHeader(
+    state: State,
+    movableSharedElementScope: MovableSharedElementScope,
+    modifier: Modifier = Modifier,
+    onBackPressed: () -> Unit
+) {
+    Box {
+        Box(
+            modifier = modifier
+        ) {
+            ProfilePhoto(
+                state = state,
+                movableSharedElementScope = movableSharedElementScope,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        SampleTopAppBar(
+            title = "Profile",
+            onBackPressed = onBackPressed,
+        )
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun ProfilePhoto(
+    state: State,
+    movableSharedElementScope: MovableSharedElementScope,
+    modifier: Modifier = Modifier,
+) {
+    val profileName = state.profileName ?: state.profile?.name
+    if (profileName != null) {
+        val sharedImage = movableSharedElementScope.movableSharedElementOf(
+            key = profileName,
+            sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
+                ProfilePhoto(args, innerModifier)
+            }
+        )
+        sharedImage(
+            ProfilePhotoArgs(
+                profileName = profileName,
+                contentScale = ContentScale.Crop,
+                contentDescription = null,
+            ),
+            modifier,
+        )
+    }
+}
+
+@Composable
+private fun ProfileDetails(state: State) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = state.profile?.name ?: "",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = state.profile?.jobTitle ?: "",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = state.profile?.location ?: "",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = state.profile?.selfDescription ?: "",
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
 }

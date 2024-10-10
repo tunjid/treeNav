@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,12 +69,17 @@ fun ChatScreen(
     ) {
         SampleTopAppBar(
             title = state.room?.name ?: "",
-            onBackPressed = { onAction(Action.Navigation.Pop) },
+            onBackPressed = remember(state.isInPrimaryPane) {
+                if (state.isInPrimaryPane) return@remember {
+                    onAction(Action.Navigation.Pop)
+                } else null
+            },
         )
         Messages(
             me = state.me,
             roomName = state.room?.name,
             messages = state.chats,
+            isInPrimaryPane = state.isInPrimaryPane,
             navigateToProfile = onAction,
             modifier = Modifier.weight(1f),
             scrollState = scrollState,
@@ -87,6 +93,7 @@ fun ChatScreen(
 fun Messages(
     me: Profile?,
     roomName: String?,
+    isInPrimaryPane: Boolean,
     messages: List<MessageItem>,
     navigateToProfile: (Action.Navigation.GoToProfile) -> Unit,
     scrollState: LazyListState,
@@ -113,6 +120,7 @@ fun Messages(
                     roomName = roomName,
                     item = content,
                     isUserMe = content.sender.name == me?.name,
+                    isInPrimaryPane = isInPrimaryPane,
                     isFirstMessageByAuthor = isFirstMessageByAuthor,
                     isLastMessageByAuthor = isLastMessageByAuthor,
                     movableSharedElementScope = movableSharedElementScope,
@@ -129,6 +137,7 @@ fun Message(
     item: MessageItem,
     roomName: String?,
     isUserMe: Boolean,
+    isInPrimaryPane: Boolean,
     isFirstMessageByAuthor: Boolean,
     isLastMessageByAuthor: Boolean,
     movableSharedElementScope: MovableSharedElementScope
@@ -162,8 +171,9 @@ fun Message(
                         roomName?.let {
                             onAuthorClick(
                                 Action.Navigation.GoToProfile(
+                                    roomName = it,
                                     profileName = item.sender.name,
-                                    roomName = it
+                                    isInPrimaryPane = isInPrimaryPane,
                                 )
                             )
                         }

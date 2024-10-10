@@ -65,19 +65,14 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun App(
+fun SampleApp(
     appState: SampleAppState = remember { SampleAppState() },
 ) {
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             SampleDestination.NavTabs.entries.forEach {
                 item(
-                    icon = {
-                        Icon(
-                            it.icon,
-                            contentDescription = it.title
-                        )
-                    },
+                    icon = { Icon(it.icon, contentDescription = it.title) },
                     label = { Text(it.title) },
                     selected = it == appState.currentNavigation.current,
                     onClick = { }
@@ -109,7 +104,6 @@ fun App(
                     .onSizeChanged {
                         windowWidthDp.value = (it.width / density.density).roundToInt()
                     }
-                        then sharedTransitionModifier
             ) {
                 ListDetailPaneScaffold(
                     modifier = Modifier
@@ -123,20 +117,22 @@ fun App(
                         tertiary = if (nodeFor(ThreePane.Tertiary) == null) PaneAdaptedValue.Hidden else PaneAdaptedValue.Expanded,
                     ),
                     listPane = {
-                        Destination(ThreePane.Secondary)
+                        if (nodeFor(ThreePane.Tertiary) == null) Destination(ThreePane.Secondary)
+                        else Destination(ThreePane.Tertiary)
                     },
                     detailPane = {
-                        Destination(ThreePane.Primary)
+                        if (nodeFor(ThreePane.Tertiary) == null) Destination(ThreePane.Primary)
+                        else Destination(ThreePane.Secondary)
                     },
                     extraPane = {
-                        Destination(ThreePane.Tertiary)
+                        if (nodeFor(ThreePane.Tertiary) == null) Destination(ThreePane.Tertiary)
+                        else Destination(ThreePane.Primary)
                     }
                 )
             }
         }
     }
 }
-
 
 @Stable
 class SampleAppState(

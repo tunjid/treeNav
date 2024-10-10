@@ -37,7 +37,7 @@ kotlin {
             dependencies {
                 implementation(project(":library:treenav"))
                 implementation(project(":library:strings"))
-                implementation(project(":library:adaptive"))
+                implementation(project(":library:compose"))
 
                 implementation(compose.components.resources)
 
