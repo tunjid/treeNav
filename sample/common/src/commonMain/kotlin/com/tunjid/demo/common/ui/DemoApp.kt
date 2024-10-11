@@ -45,7 +45,7 @@ import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.profile.profilePaneStrategy
-import com.tunjid.demo.common.ui.settings.settingsPaneStrategy
+import com.tunjid.demo.common.ui.me.mePaneStrategy
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.PanedNavHost
@@ -75,7 +75,7 @@ fun SampleApp(
                     icon = { Icon(it.icon, contentDescription = it.title) },
                     label = { Text(it.title) },
                     selected = it == appState.currentNavigation.current,
-                    onClick = { }
+                    onClick = { appState.setTab(it) }
                 )
             }
         }
@@ -148,6 +148,12 @@ class SampleAppState(
         navigationState
     )
 
+    fun setTab(destination: SampleDestination.NavTabs) {
+        navigationRepository.navigate {
+            it.copy(currentIndex = destination.ordinal)
+        }
+    }
+
     companion object {
         @Composable
         fun SampleAppState.rememberAdaptiveNavHostState(
@@ -189,7 +195,7 @@ private fun sampleAppNavHostConfiguration(
         when (destination) {
             SampleDestination.NavTabs.ChatRooms -> chatRoomPaneStrategy()
 
-            SampleDestination.NavTabs.Settings -> settingsPaneStrategy()
+            SampleDestination.NavTabs.Me -> mePaneStrategy()
 
             is SampleDestination.Chat -> chatPaneStrategy()
 

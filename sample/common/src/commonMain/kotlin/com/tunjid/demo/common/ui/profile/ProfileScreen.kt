@@ -30,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -57,8 +58,10 @@ fun ProfileScreen(
             ProfileHeader(
                 state = state,
                 movableSharedElementScope = movableSharedElementScope,
-                onBackPressed = {
-                    onAction(Action.Navigation.Pop)
+                onBackPressed = remember(state.profileName) {
+                    if (state.profileName != null) return@remember {
+                        onAction(Action.Navigation.Pop)
+                    } else null
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -82,7 +85,7 @@ private fun ProfileHeader(
     state: State,
     movableSharedElementScope: MovableSharedElementScope,
     modifier: Modifier = Modifier,
-    onBackPressed: () -> Unit
+    onBackPressed: (() -> Unit)?,
 ) {
     Box {
         Box(
@@ -95,7 +98,7 @@ private fun ProfileHeader(
             )
         }
         SampleTopAppBar(
-            title = "Profile",
+            title = if (state.profileName == null) "Me" else "Profile",
             onBackPressed = onBackPressed,
         )
     }

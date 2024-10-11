@@ -14,34 +14,26 @@
  * limitations under the License.
  */
 
-package com.tunjid.demo.common.ui.profile
+package com.tunjid.demo.common.ui.me
 
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
-import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.demo.common.ui.profile.ProfileScreen
+import com.tunjid.demo.common.ui.profile.ProfileViewModel
 import com.tunjid.treenav.adaptive.threepane.configurations.movableSharedElementScope
 import com.tunjid.treenav.adaptive.threepane.threePaneListDetailStrategy
 
-fun profilePaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
-    paneMapping = { destination ->
-        check(destination is SampleDestination.Profile)
-        mapOf(
-            ThreePane.Primary to destination,
-            ThreePane.Secondary to destination.roomName?.let(SampleDestination::Chat),
-            ThreePane.Tertiary to destination.roomName?.let { NavTabs.ChatRooms },
-        )
-    },
-    render = { destination ->
-        check(destination is SampleDestination.Profile)
+fun mePaneStrategy(
+) = threePaneListDetailStrategy<SampleDestination>(
+    render = {
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ProfileViewModel> {
             ProfileViewModel(
                 coroutineScope = scope,
-                profileName = destination.profileName,
+                profileName = null,
             )
         }
         ProfileScreen(
@@ -49,5 +41,5 @@ fun profilePaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
             state = viewModel.state.collectAsStateWithLifecycle().value,
             onAction = viewModel.accept
         )
-    },
+    }
 )
