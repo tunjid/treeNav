@@ -14,51 +14,40 @@
  * limitations under the License.
  */
 
-package com.tunjid.demo.common.ui.chat
+package com.tunjid.demo.common.ui.profile
 
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tunjid.demo.common.ui.data.ChatsRepository
-import com.tunjid.demo.common.ui.data.ProfileRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.configurations.movableSharedElementScope
-import com.tunjid.treenav.adaptive.threepane.threePaneListDetailAnimationStrategy
+import com.tunjid.treenav.adaptive.threepane.threePaneListDetailStrategy
 
-fun chatAdaptiveConfiguration(
-    destination: SampleDestination.Chat
-) = threePaneListDetailAnimationStrategy<SampleDestination>(
-    render = {
+fun profilePaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
+    paneMapping = { destination ->
+        check(destination is SampleDestination.Profile)
+        mapOf(
+            ThreePane.Primary to destination,
+            ThreePane.Secondary to destination.roomName?.let(SampleDestination::Chat),
+            ThreePane.Tertiary to destination.roomName?.let { NavTabs.ChatRooms },
+        )
+    },
+    render = { destination ->
+        check(destination is SampleDestination.Profile)
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
-        val viewModel = viewModel<ChatViewModel> {
-            ChatViewModel(
+        val viewModel = viewModel<ProfileViewModel> {
+            ProfileViewModel(
                 coroutineScope = scope,
-                chatsRepository = ChatsRepository,
-                profileRepository = ProfileRepository,
-                chat = destination,
+                destination = destination,
             )
         }
-        ChatScreen(
+        ProfileScreen(
             movableSharedElementScope = movableSharedElementScope(),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             onAction = viewModel.accept
         )
-        LaunchedEffect(paneState.pane) {
-            viewModel.accept(
-                Action.UpdateInPrimaryPane(
-                    isInPrimaryPane = paneState.pane == ThreePane.Primary
-                )
-            )
-        }
     },
-    paneMapping = {
-        mapOf(
-            ThreePane.Primary to it,
-            ThreePane.Secondary to NavTabs.ChatRooms,
-        )
-    }
 )

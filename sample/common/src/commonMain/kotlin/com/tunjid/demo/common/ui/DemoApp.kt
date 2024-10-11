@@ -40,12 +40,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberAdaptiveNavHostState
-import com.tunjid.demo.common.ui.chat.chatAdaptiveConfiguration
-import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneConfiguration
+import com.tunjid.demo.common.ui.chat.chatPaneStrategy
+import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.demo.common.ui.profile.profileAdaptiveConfiguration
-import com.tunjid.demo.common.ui.settings.settingsPaneConfiguration
+import com.tunjid.demo.common.ui.profile.profilePaneStrategy
+import com.tunjid.demo.common.ui.settings.settingsPaneStrategy
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.adaptive.PanedNavHost
@@ -187,13 +187,13 @@ private fun sampleAppNavHostConfiguration(
     },
     strategyTransform = { destination ->
         when (destination) {
-            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneConfiguration()
+            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneStrategy()
 
-            is SampleDestination.Chat -> chatAdaptiveConfiguration(destination)
+            SampleDestination.NavTabs.Settings -> settingsPaneStrategy()
 
-            SampleDestination.NavTabs.Settings -> settingsPaneConfiguration()
+            is SampleDestination.Chat -> chatPaneStrategy()
 
-            is SampleDestination.Profile -> profileAdaptiveConfiguration(destination)
+            is SampleDestination.Profile -> profilePaneStrategy()
         }
     }
 )

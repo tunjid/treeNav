@@ -85,9 +85,9 @@ enum class ThreePane {
 
 /**
  * A strategy for selectively running animations in list detail flows. When:
- *     * A navigation destination moves between the [ThreePane.Primary] and [ThreePane.Secondary]
+ * - A navigation destination moves between the [ThreePane.Primary] and [ThreePane.Secondary]
  *     panes, the pane animations are not run to provide a seamless movement experience.
- *     * A navigation destination moves between the [ThreePane.Primary] and
+ * - A navigation destination moves between the [ThreePane.Primary] and
  *     [ThreePane.TransientPrimary] panes, the pane animations are not run.
  *
  * @param enterTransition the transition to run for the entering pane when permitted.
@@ -95,7 +95,7 @@ enum class ThreePane {
  * @param paneMapping the mapping of panes to navigation destinations.
  * @param render the Composable for rendering the current destination.
  */
-fun <R : Node> threePaneListDetailAnimationStrategy(
+fun <R : Node> threePaneListDetailStrategy(
     enterTransition: PaneScope<ThreePane, R>.() -> EnterTransition = { DefaultFadeIn },
     exitTransition: PaneScope<ThreePane, R>.() -> ExitTransition = { DefaultFadeOut },
     paneMapping: @Composable (R) -> Map<ThreePane, R?> = {

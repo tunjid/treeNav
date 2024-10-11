@@ -17,9 +17,9 @@
 package com.tunjid.demo.common.ui.settings
 
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.treenav.adaptive.threepane.threePaneListDetailAnimationStrategy
+import com.tunjid.treenav.adaptive.threepane.threePaneListDetailStrategy
 
-fun settingsPaneConfiguration(
-) = threePaneListDetailAnimationStrategy<SampleDestination>(
+fun settingsPaneStrategy(
+) = threePaneListDetailStrategy<SampleDestination>(
     render = { }
 )
