@@ -9,8 +9,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.SlotBasedAdaptiveNavigationState
+import com.tunjid.treenav.adaptive.PaneScope
+import com.tunjid.treenav.adaptive.SlotBasedPanedNavigationState
 
 @Composable
 internal fun rememberDestinationLifecycleOwner(
@@ -41,10 +41,10 @@ internal class DestinationLifecycleOwner(
 
     fun update(
         hostLifecycleState: State,
-        adaptivePaneScope: AdaptivePaneScope<*, *>,
-        adaptiveNavigationState: SlotBasedAdaptiveNavigationState<*, *>,
+        paneScope: PaneScope<*, *>,
+        adaptiveNavigationState: SlotBasedPanedNavigationState<*, *>,
     ) {
-        val active = adaptivePaneScope.isActive
+        val active = paneScope.isActive
         val exists = adaptiveNavigationState.backStackIds.contains(
             destination.id
         )

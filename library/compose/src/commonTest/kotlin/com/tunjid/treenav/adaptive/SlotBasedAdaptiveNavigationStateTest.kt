@@ -44,7 +44,7 @@ data class TestNode(val name: String) : Node {
 
 class SlotBasedAdaptiveNavigationStateTest {
 
-    private lateinit var subject: SlotBasedAdaptiveNavigationState<ThreePane, TestNode>
+    private lateinit var subject: SlotBasedPanedNavigationState<ThreePane, TestNode>
     private lateinit var panes: List<ThreePane>
     private lateinit var slots: Set<Slot>
 
@@ -53,7 +53,7 @@ class SlotBasedAdaptiveNavigationStateTest {
     fun setup() {
         panes = ThreePane.entries.toList()
         slots = List(size = panes.size, init = ::Slot).toSet()
-        subject = SlotBasedAdaptiveNavigationState.initial(
+        subject = SlotBasedPanedNavigationState.initial(
             slots = slots
         )
     }
@@ -531,7 +531,7 @@ class SlotBasedAdaptiveNavigationStateTest {
             }
     }
 
-    private fun SlotBasedAdaptiveNavigationState<ThreePane, TestNode>.testAdaptTo(
+    private fun SlotBasedPanedNavigationState<ThreePane, TestNode>.testAdaptTo(
         panesToNodes: Map<ThreePane, TestNode>
     ) = adaptTo(
         slots = slots,

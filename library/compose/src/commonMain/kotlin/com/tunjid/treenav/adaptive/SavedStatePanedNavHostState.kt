@@ -34,20 +34,20 @@ import com.tunjid.treenav.traverse
  * A host for adaptive navigation for panes [Pane] and destinations [Destination].
  */
 @Stable
-interface AdaptiveNavHostState<Pane, Destination : Node> {
+interface PanedNavHostState<Pane, Destination : Node> {
 
     /**
-     * Creates the scope that provides context about individual panes [Pane] in an [AdaptiveNavHost].
+     * Creates the scope that provides context about individual panes [Pane] in an [PanedNavHost].
      */
     @Composable
-    fun scope(): AdaptiveNavHostScope<Pane, Destination>
+    fun scope(): PanedNavHostScope<Pane, Destination>
 }
 
 /**
- * Scope that provides context about individual panes [Pane] in an [AdaptiveNavHost].
+ * Scope that provides context about individual panes [Pane] in an [PanedNavHost].
  */
 @Stable
-interface AdaptiveNavHostScope<Pane, Destination : Node> {
+interface PanedNavHostScope<Pane, Destination : Node> {
 
     @Composable
     fun Destination(
@@ -64,29 +64,29 @@ interface AdaptiveNavHostScope<Pane, Destination : Node> {
 }
 
 /**
- * An implementation of an [AdaptiveNavHostState] that provides a [SaveableStateHolder] for each
+ * An implementation of an [PanedNavHostState] that provides a [SaveableStateHolder] for each
  * navigation destination that shows up in its panes.
  *
- * @param panes a list of panes that is possible to show in the [AdaptiveNavHost] in all
+ * @param panes a list of panes that is possible to show in the [PanedNavHost] in all
  * possible configurations. The panes should consist of enum class instances, or a sealed class
  * hierarchy of kotlin objects.
- * @param configuration the [AdaptiveNavHostConfiguration] that applies adaptive semantics and
- * strategies for each navigation destination shown in the [AdaptiveNavHost].
+ * @param configuration the [PanedNavHostConfiguration] that applies adaptive semantics and
+ * strategies for each navigation destination shown in the [PanedNavHost].
  */
 @Stable
-class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
+class SavedStatePanedNavHostState<Pane, Destination : Node>(
     private val panes: List<Pane>,
-    private val configuration: AdaptiveNavHostConfiguration<Pane, *, Destination>,
-) : AdaptiveNavHostState<Pane, Destination> {
+    private val configuration: PanedNavHostConfiguration<Pane, *, Destination>,
+) : PanedNavHostState<Pane, Destination> {
 
     @Composable
-    override fun scope(): AdaptiveNavHostScope<Pane, Destination> {
+    override fun scope(): PanedNavHostScope<Pane, Destination> {
         val navigationState by configuration.navigationState
         val panesToNodes = configuration.paneMapping()
         val saveableStateHolder = rememberSaveableStateHolder()
 
         val adaptiveContentScope = remember {
-            SavedStateAdaptiveNavHostScope(
+            SavedStatePanedNavHostScope(
                 panes = panes,
                 navHostConfiguration = configuration,
                 initialPanesToNodes = panesToNodes,
@@ -106,12 +106,12 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
 
     companion object {
         @Stable
-        private class SavedStateAdaptiveNavHostScope<Pane, Destination : Node>(
+        private class SavedStatePanedNavHostScope<Pane, Destination : Node>(
             panes: List<Pane>,
             initialPanesToNodes: Map<Pane, Destination?>,
             saveableStateHolder: SaveableStateHolder,
-            val navHostConfiguration: AdaptiveNavHostConfiguration<Pane, *, Destination>,
-        ) : AdaptiveNavHostScope<Pane, Destination>, SaveableStateHolder by saveableStateHolder {
+            val navHostConfiguration: PanedNavHostConfiguration<Pane, *, Destination>,
+        ) : PanedNavHostScope<Pane, Destination>, SaveableStateHolder by saveableStateHolder {
 
             private val destinationViewModelStoreCreator = DestinationViewModelStoreCreator(
                 rootNodeProvider = navHostConfiguration.navigationState::value
@@ -123,7 +123,7 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
             ).toSet()
 
             var adaptiveNavigationState by mutableStateOf(
-                value = SlotBasedAdaptiveNavigationState.initial<Pane, Destination>(slots = slots)
+                value = SlotBasedPanedNavigationState.initial<Pane, Destination>(slots = slots)
                     .adaptTo(
                         slots = slots,
                         panesToNodes = initialPanesToNodes,
@@ -189,7 +189,7 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
                     }
                 ) { targetPaneState ->
                     val scope = remember {
-                        AnimatedAdaptivePaneScope(
+                        AnimatedPaneScope(
                             paneState = targetPaneState,
                             activeState = derivedStateOf {
                                 val activePaneState = adaptiveNavigationState.paneStateFor(slot)
@@ -235,13 +235,13 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
                                 ) {
                                     destinationLifecycleOwner.update(
                                         hostLifecycleState = hostLifecycleState,
-                                        adaptivePaneScope = scope,
+                                        paneScope = scope,
                                         adaptiveNavigationState = adaptiveNavigationState
                                     )
                                     onDispose {
                                         destinationLifecycleOwner.update(
                                             hostLifecycleState = hostLifecycleState,
-                                            adaptivePaneScope = scope,
+                                            paneScope = scope,
                                             adaptiveNavigationState = adaptiveNavigationState
                                         )
                                     }
@@ -274,7 +274,7 @@ class SavedStateAdaptiveNavHostState<Pane, Destination : Node>(
             }
 
             private inline fun updateAdaptiveNavigationState(
-                block: SlotBasedAdaptiveNavigationState<Pane, Destination>.() -> SlotBasedAdaptiveNavigationState<Pane, Destination>
+                block: SlotBasedPanedNavigationState<Pane, Destination>.() -> SlotBasedPanedNavigationState<Pane, Destination>
             ) {
                 adaptiveNavigationState = adaptiveNavigationState.block()
             }

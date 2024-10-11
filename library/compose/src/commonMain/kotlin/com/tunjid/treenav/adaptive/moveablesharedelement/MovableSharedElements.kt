@@ -17,16 +17,16 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.AdaptiveNavHost
-import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.AdaptivePaneState
+import com.tunjid.treenav.adaptive.PanedNavHost
+import com.tunjid.treenav.adaptive.PaneScope
+import com.tunjid.treenav.adaptive.PaneState
 
 internal interface SharedElementOverlay {
     fun ContentDrawScope.drawInOverlay()
 }
 
 /**
- * Creates movable shared elements that may be shared amongst different [AdaptivePaneScope]
+ * Creates movable shared elements that may be shared amongst different [PaneScope]
  * instances.
  */
 interface MovableSharedElementScope {
@@ -50,13 +50,13 @@ interface MovableSharedElementScope {
 }
 
 /**
- * State for managing movable shared elements within a single [AdaptiveNavHost].
+ * State for managing movable shared elements within a single [PanedNavHost].
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 class MovableSharedElementHostState<Pane, Destination : Node>(
     private val sharedTransitionScope: SharedTransitionScope,
-    private val canAnimateOnStartingFrames: (AdaptivePaneState<Pane, Destination>) -> Boolean,
+    private val canAnimateOnStartingFrames: (PaneState<Pane, Destination>) -> Boolean,
 ) {
 
     // TODO: This should be unnecessary. Figure out a way to participate arbitrarily in the
@@ -86,11 +86,11 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
         keysToMovableSharedElements.contains(key)
 
     /**
-     * Provides a movable shared element that can be rendered in a given [AdaptivePaneScope].
+     * Provides a movable shared element that can be rendered in a given [PaneScope].
      * It is the callers responsibility to perform other verifications on the ability
-     * of the calling [AdaptivePaneScope] to render the movable shared element.
+     * of the calling [PaneScope] to render the movable shared element.
      */
-    fun <S> AdaptivePaneScope<Pane, Destination>.createOrUpdateSharedElement(
+    fun <S> PaneScope<Pane, Destination>.createOrUpdateSharedElement(
         key: Any,
         boundsTransform: BoundsTransform,
         sharedElement: @Composable (S, Modifier) -> Unit,
@@ -113,14 +113,14 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
 
 /**
  * An implementation of [MovableSharedElementScope] that ensures shared elements are only rendered
- * in an [AdaptivePaneScope] when it is active.
+ * in an [PaneScope] when it is active.
  *
  * Other implementations of [MovableSharedElementScope] may delegate to this for their own
  * movable shared element implementations.
  */
 @Stable
 internal class AdaptiveMovableSharedElementScope<T, R : Node>(
-    paneScope: AdaptivePaneScope<T, R>,
+    paneScope: PaneScope<T, R>,
     private val movableSharedElementHostState: MovableSharedElementHostState<T, R>,
 ) : MovableSharedElementScope {
 

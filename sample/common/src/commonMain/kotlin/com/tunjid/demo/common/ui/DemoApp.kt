@@ -48,14 +48,14 @@ import com.tunjid.demo.common.ui.profile.profileAdaptiveConfiguration
 import com.tunjid.demo.common.ui.settings.settingsPaneConfiguration
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.adaptive.AdaptiveNavHost
-import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.AdaptivePaneState
-import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
-import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
+import com.tunjid.treenav.adaptive.PanedNavHost
+import com.tunjid.treenav.adaptive.PanedNavHostConfiguration
+import com.tunjid.treenav.adaptive.PaneState
+import com.tunjid.treenav.adaptive.SavedStatePanedNavHostState
+import com.tunjid.treenav.adaptive.panedNavHostConfiguration
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.configurations.canAnimateOnStartingFrames
-import com.tunjid.treenav.adaptive.threepane.configurations.movableSharedElementConfiguration
+import com.tunjid.treenav.adaptive.threepane.configurations.threePaneMovableSharedElementConfiguration
 import com.tunjid.treenav.adaptive.threepane.configurations.threePaneAdaptiveConfiguration
 import com.tunjid.treenav.current
 import kotlinx.coroutines.CoroutineScope
@@ -86,16 +86,16 @@ fun SampleApp(
             val movableSharedElementHostState = remember {
                 MovableSharedElementHostState(
                     sharedTransitionScope = this,
-                    canAnimateOnStartingFrames = AdaptivePaneState<ThreePane, SampleDestination>::canAnimateOnStartingFrames
+                    canAnimateOnStartingFrames = PaneState<ThreePane, SampleDestination>::canAnimateOnStartingFrames
                 )
             }
-            AdaptiveNavHost(
+            PanedNavHost(
                 state = appState.rememberAdaptiveNavHostState {
                     this
                         .threePaneAdaptiveConfiguration(
                             windowWidthDpState = windowWidthDp
                         )
-                        .movableSharedElementConfiguration(
+                        .threePaneMovableSharedElementConfiguration(
                             movableSharedElementHostState = movableSharedElementHostState
                         )
                 },
@@ -144,21 +144,21 @@ class SampleAppState(
     )
     val currentNavigation by navigationState
 
-    private val adaptiveNavHostConfiguration = sampleAppAdaptiveConfiguration(
+    private val adaptiveNavHostConfiguration = sampleAppNavHostConfiguration(
         navigationState
     )
 
     companion object {
         @Composable
         fun SampleAppState.rememberAdaptiveNavHostState(
-            configurationBlock: AdaptiveNavHostConfiguration<
+            configurationBlock: PanedNavHostConfiguration<
                     ThreePane,
                     MultiStackNav,
                     SampleDestination
-                    >.() -> AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>
-        ): SavedStateAdaptiveNavHostState<ThreePane, SampleDestination> {
+                    >.() -> PanedNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>
+        ): SavedStatePanedNavHostState<ThreePane, SampleDestination> {
             val adaptiveNavHostState = remember {
-                SavedStateAdaptiveNavHostState(
+                SavedStatePanedNavHostState(
                     panes = ThreePane.entries.toList(),
                     configuration = adaptiveNavHostConfiguration.configurationBlock(),
                 )
@@ -176,9 +176,9 @@ class SampleAppState(
     }
 }
 
-private fun sampleAppAdaptiveConfiguration(
+private fun sampleAppNavHostConfiguration(
     multiStackNavState: State<MultiStackNav>
-) = adaptiveNavHostConfiguration(
+) = panedNavHostConfiguration(
     navigationState = multiStackNavState,
     destinationTransform = { multiStackNav ->
         multiStackNav.current as? SampleDestination ?: throw IllegalArgumentException(

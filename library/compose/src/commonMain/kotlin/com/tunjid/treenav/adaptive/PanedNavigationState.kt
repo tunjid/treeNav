@@ -5,7 +5,7 @@ import com.tunjid.treenav.Node
 /**
  * State providing details about data in each pane [Pane] it hosts.
  */
-interface AdaptiveNavigationState<Pane, Destination : Node> {
+interface PanedNavigationState<Pane, Destination : Node> {
 
     /**
      * The current [Destination] in this [pane].
@@ -25,7 +25,8 @@ interface AdaptiveNavigationState<Pane, Destination : Node> {
 }
 
 /**
- * A description of the process that the layout undertook to adapt to its new configuration.
+ * A description of the process that the layout undertook to adapt to the present
+ * pane in its new configuration.
  */
 sealed class Adaptation {
 

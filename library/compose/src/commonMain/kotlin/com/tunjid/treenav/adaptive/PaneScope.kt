@@ -32,15 +32,15 @@ import kotlin.jvm.JvmInline
  * Scope for adaptive content that can show up in an arbitrary pane.
  */
 @Stable
-interface AdaptivePaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
+interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
 
     /**
-     * Provides information about the adaptive context that created this [AdaptivePaneScope].
+     * Provides information about the adaptive context that created this [PaneScope].
      */
-    val paneState: AdaptivePaneState<Pane, Destination>
+    val paneState: PaneState<Pane, Destination>
 
     /**
-     * Whether or not this [AdaptivePaneScope] is active in its current pane. It is inactive when
+     * Whether or not this [PaneScope] is active in its current pane. It is inactive when
      * it is animating out of its [AnimatedVisibilityScope].
      */
     val isActive: Boolean
@@ -55,14 +55,14 @@ interface AdaptivePaneScope<Pane, Destination : Node> : AnimatedVisibilityScope 
 }
 
 /**
- * An implementation of [AdaptivePaneScope] that supports animations and shared elements
+ * An implementation of [PaneScope] that supports animations and shared elements
  */
 @Stable
-internal class AnimatedAdaptivePaneScope<Pane, Destination : Node>(
-    paneState: AdaptivePaneState<Pane, Destination>,
+internal class AnimatedPaneScope<Pane, Destination : Node>(
+    paneState: PaneState<Pane, Destination>,
     activeState: State<Boolean>,
     val animatedContentScope: AnimatedContentScope
-) : AdaptivePaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
+) : PaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
 
     override var paneState by mutableStateOf(paneState)
 
@@ -73,14 +73,14 @@ internal class AnimatedAdaptivePaneScope<Pane, Destination : Node>(
  * Information about content in a pane
  */
 @Stable
-sealed interface AdaptivePaneState<Pane, Destination : Node> {
+sealed interface PaneState<Pane, Destination : Node> {
     val currentDestination: Destination?
     val pane: Pane?
     val adaptations: Set<Adaptation>
 }
 
 /**
- * [Slot] based implementation of [AdaptivePaneState]
+ * [Slot] based implementation of [PaneState]
  */
 internal data class SlotPaneState<Pane, Destination : Node>(
     val slot: Slot?,
@@ -88,10 +88,10 @@ internal data class SlotPaneState<Pane, Destination : Node>(
     override val currentDestination: Destination?,
     override val pane: Pane?,
     override val adaptations: Set<Adaptation>,
-) : AdaptivePaneState<Pane, Destination>
+) : PaneState<Pane, Destination>
 
 /**
- * A spot taken by an [AdaptivePaneStrategy] that may be moved in from pane to pane.
+ * A spot taken by an [PaneStrategy] that may be moved in from pane to pane.
  */
 @JvmInline
 internal value class Slot internal constructor(val index: Int)

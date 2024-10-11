@@ -34,20 +34,20 @@ import androidx.compose.ui.unit.toOffset
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastRoundToInt
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.AdaptivePaneState
+import com.tunjid.treenav.adaptive.PaneScope
+import com.tunjid.treenav.adaptive.PaneState
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 
 @Stable
 @OptIn(ExperimentalSharedTransitionApi::class)
 internal class MovableSharedElementState<State, Pane, Destination : Node>(
-    paneScope: AdaptivePaneScope<Pane, Destination>,
+    paneScope: PaneScope<Pane, Destination>,
     sharedTransitionScope: SharedTransitionScope,
     sharedElement: @Composable (State, Modifier) -> Unit,
     onRemoved: () -> Unit,
     private val boundsTransform: BoundsTransform,
-    private val canAnimateOnStartingFrames: AdaptivePaneState<Pane, Destination>.() -> Boolean
+    private val canAnimateOnStartingFrames: PaneState<Pane, Destination>.() -> Boolean
 ) : SharedElementOverlay, SharedTransitionScope by sharedTransitionScope {
 
     var paneScope by mutableStateOf(paneScope)
@@ -97,7 +97,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
     }
 
     private fun updatePaneStateSeen(
-        paneState: AdaptivePaneState<*, *>
+        paneState: PaneState<*, *>
     ) {
         panesKeysToSeenCount[paneState.key] = Unit
     }
@@ -231,4 +231,4 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
     }
 }
 
-private val AdaptivePaneState<*, *>.key get() = "${currentDestination?.id}-$pane"
+private val PaneState<*, *>.key get() = "${currentDestination?.id}-$pane"

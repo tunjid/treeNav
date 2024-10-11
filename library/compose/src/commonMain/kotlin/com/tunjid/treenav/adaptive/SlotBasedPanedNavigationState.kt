@@ -24,7 +24,7 @@ import com.tunjid.treenav.adaptive.Adaptation.Change.contains
  * Data structure for managing navigation as it adapts to various layout configurations
  */
 @Immutable
-internal data class SlotBasedAdaptiveNavigationState<Pane, Destination : Node>(
+internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
     /**
      * Moves between panes within a navigation sequence.
      */
@@ -49,11 +49,11 @@ internal data class SlotBasedAdaptiveNavigationState<Pane, Destination : Node>(
      * A set of node ids that are animating out.
      */
     val destinationIdsAnimatingOut: Set<String>,
-) : AdaptiveNavigationState<Pane, Destination> {
+) : PanedNavigationState<Pane, Destination> {
     companion object {
         internal fun <T, R : Node> initial(
             slots: Collection<Slot>,
-        ): SlotBasedAdaptiveNavigationState<T, R> = SlotBasedAdaptiveNavigationState(
+        ): SlotBasedPanedNavigationState<T, R> = SlotBasedPanedNavigationState(
             swapAdaptations = emptySet(),
             panesToDestinations = emptyMap(),
             destinationIdsToAdaptiveSlots = slots.associateBy(
@@ -67,7 +67,7 @@ internal data class SlotBasedAdaptiveNavigationState<Pane, Destination : Node>(
 
     internal fun paneStateFor(
         slot: Slot
-    ): AdaptivePaneState<Pane, Destination> {
+    ): PaneState<Pane, Destination> {
         val node = destinationFor(slot)
         val pane = node?.let(::paneFor)
         return SlotPaneState(
@@ -121,11 +121,11 @@ internal data class SlotBasedAdaptiveNavigationState<Pane, Destination : Node>(
  * A method that adapts changes in navigation to different panes while allowing for them
  * to be animated easily.
  */
-internal fun <T, R : Node> SlotBasedAdaptiveNavigationState<T, R>.adaptTo(
+internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
     slots: Set<Slot>,
     panesToNodes: Map<T, R?>,
     backStackIds: Set<String>,
-): SlotBasedAdaptiveNavigationState<T, R> {
+): SlotBasedPanedNavigationState<T, R> {
     val previous = this
 
     val previouslyUsedSlots = previous.destinationIdsToAdaptiveSlots
@@ -178,7 +178,7 @@ internal fun <T, R : Node> SlotBasedAdaptiveNavigationState<T, R>.adaptTo(
         nodeIdsToAdaptiveSlots[nodeId] = availableSlots.first().also(availableSlots::remove)
     }
 
-    return SlotBasedAdaptiveNavigationState(
+    return SlotBasedPanedNavigationState(
         // If the values of the nodes to panes are the same, no swaps occurred.
         swapAdaptations = when (previous.panesToDestinations.mapValues { it.value?.id }) {
             panesToNodes.mapValues { it.value?.id } -> previous.swapAdaptations
@@ -198,7 +198,7 @@ internal fun <T, R : Node> SlotBasedAdaptiveNavigationState<T, R>.adaptTo(
 /**
  * Checks if any of the new routes coming in has any conflicts with those animating out.
  */
-internal fun <Pane, Destination : Node> SlotBasedAdaptiveNavigationState<Pane, Destination>.hasConflictingRoutes(): Boolean =
+internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.hasConflictingRoutes(): Boolean =
     panesToDestinations.keys
         .map(::destinationFor)
         .any {
@@ -206,9 +206,9 @@ internal fun <Pane, Destination : Node> SlotBasedAdaptiveNavigationState<Pane, D
         }
 
 /**
- * Trims unneeded metadata from the [AdaptiveNavigationState]
+ * Trims unneeded metadata from the [PanedNavigationState]
  */
-internal fun <Pane, Destination : Node> SlotBasedAdaptiveNavigationState<Pane, Destination>.prune(): SlotBasedAdaptiveNavigationState<Pane, Destination> =
+internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.prune(): SlotBasedPanedNavigationState<Pane, Destination> =
     copy(
         destinationIdsToAdaptiveSlots = destinationIdsToAdaptiveSlots.filter { (routeId) ->
             if (routeId == null) return@filter false

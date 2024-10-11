@@ -27,11 +27,11 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
 import com.tunjid.treenav.adaptive.threepane.ThreePane
 import com.tunjid.treenav.adaptive.threepane.configurations.movableSharedElementScope
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
+import com.tunjid.treenav.adaptive.threepane.threePaneListDetailAnimationStrategy
 
 fun chatAdaptiveConfiguration(
     destination: SampleDestination.Chat
-) = threePaneAdaptiveNodeConfiguration<SampleDestination>(
+) = threePaneListDetailAnimationStrategy<SampleDestination>(
     render = {
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ChatViewModel> {
