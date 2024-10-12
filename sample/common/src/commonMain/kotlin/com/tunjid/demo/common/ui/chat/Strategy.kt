@@ -25,14 +25,19 @@ import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.ProfileRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
-import com.tunjid.treenav.adaptive.threepane.ThreePane
-import com.tunjid.treenav.adaptive.threepane.configurations.movableSharedElementScope
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
+import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
+import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 
-fun chatAdaptiveConfiguration(
-    destination: SampleDestination.Chat
-) = threePaneAdaptiveNodeConfiguration<SampleDestination>(
-    render = {
+fun chatPaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
+    paneMapping = { destination ->
+        mapOf(
+            ThreePane.Primary to destination,
+            ThreePane.Secondary to NavTabs.ChatRooms,
+        )
+    },
+    render = { destination ->
+        check(destination is SampleDestination.Chat)
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ChatViewModel> {
             ChatViewModel(
@@ -55,10 +60,4 @@ fun chatAdaptiveConfiguration(
             )
         }
     },
-    paneMapping = {
-        mapOf(
-            ThreePane.Primary to it,
-            ThreePane.Secondary to NavTabs.ChatRooms,
-        )
-    }
 )

@@ -39,24 +39,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberAdaptiveNavHostState
-import com.tunjid.demo.common.ui.chat.chatAdaptiveConfiguration
-import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneConfiguration
+import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberPanedNavHostState
+import com.tunjid.demo.common.ui.chat.chatPaneStrategy
+import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.demo.common.ui.profile.profileAdaptiveConfiguration
-import com.tunjid.demo.common.ui.settings.settingsPaneConfiguration
+import com.tunjid.demo.common.ui.profile.profilePaneStrategy
+import com.tunjid.demo.common.ui.me.mePaneStrategy
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.adaptive.AdaptiveNavHost
-import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.AdaptivePaneState
-import com.tunjid.treenav.adaptive.SavedStateAdaptiveNavHostState
-import com.tunjid.treenav.adaptive.adaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.threepane.ThreePane
-import com.tunjid.treenav.adaptive.threepane.configurations.canAnimateOnStartingFrames
-import com.tunjid.treenav.adaptive.threepane.configurations.movableSharedElementConfiguration
-import com.tunjid.treenav.adaptive.threepane.configurations.threePaneAdaptiveConfiguration
+import com.tunjid.treenav.compose.PanedNavHost
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.PaneState
+import com.tunjid.treenav.compose.SavedStatePanedNavHostState
+import com.tunjid.treenav.compose.panedNavHostConfiguration
+import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.configurations.canAnimateOnStartingFrames
+import com.tunjid.treenav.compose.threepane.configurations.threePanedMovableSharedElementConfiguration
+import com.tunjid.treenav.compose.threepane.configurations.threePanedNavHostConfiguration
 import com.tunjid.treenav.current
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -75,7 +75,7 @@ fun SampleApp(
                     icon = { Icon(it.icon, contentDescription = it.title) },
                     label = { Text(it.title) },
                     selected = it == appState.currentNavigation.current,
-                    onClick = { }
+                    onClick = { appState.setTab(it) }
                 )
             }
         }
@@ -86,16 +86,16 @@ fun SampleApp(
             val movableSharedElementHostState = remember {
                 MovableSharedElementHostState(
                     sharedTransitionScope = this,
-                    canAnimateOnStartingFrames = AdaptivePaneState<ThreePane, SampleDestination>::canAnimateOnStartingFrames
+                    canAnimateOnStartingFrames = PaneState<ThreePane, SampleDestination>::canAnimateOnStartingFrames
                 )
             }
-            AdaptiveNavHost(
-                state = appState.rememberAdaptiveNavHostState {
+            PanedNavHost(
+                state = appState.rememberPanedNavHostState {
                     this
-                        .threePaneAdaptiveConfiguration(
+                        .threePanedNavHostConfiguration(
                             windowWidthDpState = windowWidthDp
                         )
-                        .movableSharedElementConfiguration(
+                        .threePanedMovableSharedElementConfiguration(
                             movableSharedElementHostState = movableSharedElementHostState
                         )
                 },
@@ -144,21 +144,27 @@ class SampleAppState(
     )
     val currentNavigation by navigationState
 
-    private val adaptiveNavHostConfiguration = sampleAppAdaptiveConfiguration(
+    private val adaptiveNavHostConfiguration = sampleAppNavHostConfiguration(
         navigationState
     )
 
+    fun setTab(destination: SampleDestination.NavTabs) {
+        navigationRepository.navigate {
+            it.copy(currentIndex = destination.ordinal)
+        }
+    }
+
     companion object {
         @Composable
-        fun SampleAppState.rememberAdaptiveNavHostState(
-            configurationBlock: AdaptiveNavHostConfiguration<
+        fun SampleAppState.rememberPanedNavHostState(
+            configurationBlock: PanedNavHostConfiguration<
                     ThreePane,
                     MultiStackNav,
                     SampleDestination
-                    >.() -> AdaptiveNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>
-        ): SavedStateAdaptiveNavHostState<ThreePane, SampleDestination> {
+                    >.() -> PanedNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>
+        ): SavedStatePanedNavHostState<ThreePane, SampleDestination> {
             val adaptiveNavHostState = remember {
-                SavedStateAdaptiveNavHostState(
+                SavedStatePanedNavHostState(
                     panes = ThreePane.entries.toList(),
                     configuration = adaptiveNavHostConfiguration.configurationBlock(),
                 )
@@ -176,9 +182,9 @@ class SampleAppState(
     }
 }
 
-private fun sampleAppAdaptiveConfiguration(
+private fun sampleAppNavHostConfiguration(
     multiStackNavState: State<MultiStackNav>
-) = adaptiveNavHostConfiguration(
+) = panedNavHostConfiguration(
     navigationState = multiStackNavState,
     destinationTransform = { multiStackNav ->
         multiStackNav.current as? SampleDestination ?: throw IllegalArgumentException(
@@ -187,13 +193,13 @@ private fun sampleAppAdaptiveConfiguration(
     },
     strategyTransform = { destination ->
         when (destination) {
-            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneConfiguration()
+            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneStrategy()
 
-            is SampleDestination.Chat -> chatAdaptiveConfiguration(destination)
+            SampleDestination.NavTabs.Me -> mePaneStrategy()
 
-            SampleDestination.NavTabs.Settings -> settingsPaneConfiguration()
+            is SampleDestination.Chat -> chatPaneStrategy()
 
-            is SampleDestination.Profile -> profileAdaptiveConfiguration(destination)
+            is SampleDestination.Profile -> profilePaneStrategy()
         }
     }
 )

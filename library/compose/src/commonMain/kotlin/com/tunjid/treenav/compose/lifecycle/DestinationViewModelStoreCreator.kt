@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.adaptive.lifecycle
+package com.tunjid.treenav.compose.lifecycle
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModelStore

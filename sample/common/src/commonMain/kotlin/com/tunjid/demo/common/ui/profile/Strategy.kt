@@ -14,29 +14,40 @@
  * limitations under the License.
  */
 
-package com.tunjid.demo.common.ui.chatrooms
+package com.tunjid.demo.common.ui.profile
 
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
+import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
+import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
+import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 
-fun chatRoomPaneConfiguration(
-) = threePaneAdaptiveNodeConfiguration<SampleDestination>(
-    render = {
+fun profilePaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
+    paneMapping = { destination ->
+        check(destination is SampleDestination.Profile)
+        mapOf(
+            ThreePane.Primary to destination,
+            ThreePane.Secondary to destination.roomName?.let(SampleDestination::Chat),
+            ThreePane.Tertiary to destination.roomName?.let { NavTabs.ChatRooms },
+        )
+    },
+    render = { destination ->
+        check(destination is SampleDestination.Profile)
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
-        val viewModel = viewModel<ChatRoomsViewModel> {
-            ChatRoomsViewModel(
+        val viewModel = viewModel<ProfileViewModel> {
+            ProfileViewModel(
                 coroutineScope = scope,
-                chatsRepository = ChatsRepository
+                profileName = destination.profileName,
             )
         }
-        ChatRoomsScreen(
+        ProfileScreen(
+            movableSharedElementScope = movableSharedElementScope(),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             onAction = viewModel.accept
         )
-    }
+    },
 )

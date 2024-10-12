@@ -20,9 +20,9 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -57,8 +58,10 @@ fun ProfileScreen(
             ProfileHeader(
                 state = state,
                 movableSharedElementScope = movableSharedElementScope,
-                onBackPressed = {
-                    onAction(Action.Navigation.Pop)
+                onBackPressed = remember(state.profileName) {
+                    if (state.profileName != null) return@remember {
+                        onAction(Action.Navigation.Pop)
+                    } else null
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -82,20 +85,18 @@ private fun ProfileHeader(
     state: State,
     movableSharedElementScope: MovableSharedElementScope,
     modifier: Modifier = Modifier,
-    onBackPressed: () -> Unit
+    onBackPressed: (() -> Unit)?,
 ) {
-    Box {
-        Box(
+    Box(
+        modifier = Modifier.heightIn(min = 400.dp)
+    ) {
+        ProfilePhoto(
+            state = state,
+            movableSharedElementScope = movableSharedElementScope,
             modifier = modifier
-        ) {
-            ProfilePhoto(
-                state = state,
-                movableSharedElementScope = movableSharedElementScope,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+        )
         SampleTopAppBar(
-            title = "Profile",
+            title = if (state.profileName == null) "Me" else "Profile",
             onBackPressed = onBackPressed,
         )
     }

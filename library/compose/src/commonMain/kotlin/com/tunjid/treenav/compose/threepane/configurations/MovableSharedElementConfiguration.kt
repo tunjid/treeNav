@@ -1,4 +1,4 @@
-package com.tunjid.treenav.adaptive.threepane.configurations
+package com.tunjid.treenav.compose.threepane.configurations
 
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -11,28 +11,33 @@ import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.AdaptiveMovabl
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.AdaptiveNavHost
-import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.AdaptivePaneScope
-import com.tunjid.treenav.adaptive.AdaptivePaneState
-import com.tunjid.treenav.adaptive.AdaptivePaneStrategy
-import com.tunjid.treenav.adaptive.delegated
-import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.compose.PanedNavHost
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.PaneScope
+import com.tunjid.treenav.compose.PaneState
+import com.tunjid.treenav.compose.PaneStrategy
+import com.tunjid.treenav.compose.delegated
+import com.tunjid.treenav.compose.threepane.ThreePane
 
 
 /**
- * An [AdaptiveNavHostConfiguration] that applies semantics of movable shared elements to
+ * An [PanedNavHostConfiguration] that applies semantics of movable shared elements to
  * [ThreePane] layouts.
  *
  * @param movableSharedElementHostState the host state for coordinating movable shared elements.
- * There should be one instance of this per [AdaptiveNavHost].
+ * There should be one instance of this per [PanedNavHost].
  */
-fun <NavigationState : Node, Destination : Node> AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination>.movableSharedElementConfiguration(
+fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
+        ThreePane,
+        NavigationState,
+        Destination
+        >.threePanedMovableSharedElementConfiguration(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
-): AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination> =
+): PanedNavHostConfiguration<ThreePane, NavigationState, Destination> =
     delegated { destination ->
-        val originalStrategy = this@movableSharedElementConfiguration.strategyTransform(destination)
-        AdaptivePaneStrategy(
+        val originalStrategy =
+            this@threePanedMovableSharedElementConfiguration.strategyTransform(destination)
+        PaneStrategy(
             transitions = originalStrategy.transitions,
             paneMapper = originalStrategy.paneMapper,
             render = { paneDestination ->
@@ -56,7 +61,7 @@ fun <NavigationState : Node, Destination : Node> AdaptiveNavHostConfiguration<Th
         )
     }
 
-fun <Destination : Node> AdaptivePaneScope<ThreePane, Destination>.movableSharedElementScope(): MovableSharedElementScope {
+fun <Destination : Node> PaneScope<ThreePane, Destination>.movableSharedElementScope(): MovableSharedElementScope {
     check(this is ThreePaneMovableSharedElementScope) {
         """
             The current AdaptivePaneScope (${this::class.qualifiedName}) is not an instance of
@@ -73,7 +78,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
     private val hostState: MovableSharedElementHostState<ThreePane, Destination>,
     private val delegate: AdaptiveMovableSharedElementScope<ThreePane, Destination>,
 ) : MovableSharedElementScope,
-    AdaptivePaneScope<ThreePane, Destination> by delegate.paneScope {
+    PaneScope<ThreePane, Destination> by delegate.paneScope {
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
         key: Any,
@@ -115,9 +120,9 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
     }
 }
 
-fun AdaptivePaneState<ThreePane, *>?.canAnimateOnStartingFrames() =
+fun PaneState<ThreePane, *>?.canAnimateOnStartingFrames() =
     this?.pane != ThreePane.TransientPrimary
 
-private val AdaptivePaneScope<ThreePane, *>.isPreviewingBack: Boolean
+private val PaneScope<ThreePane, *>.isPreviewingBack: Boolean
     get() = paneState.pane == ThreePane.Primary
             && paneState.adaptations.contains(ThreePane.PrimaryToTransient)

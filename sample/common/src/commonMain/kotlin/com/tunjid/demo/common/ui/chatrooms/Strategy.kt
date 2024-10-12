@@ -14,40 +14,29 @@
  * limitations under the License.
  */
 
-package com.tunjid.demo.common.ui.profile
+package com.tunjid.demo.common.ui.chatrooms
 
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
-import com.tunjid.treenav.adaptive.threepane.ThreePane
-import com.tunjid.treenav.adaptive.threepane.configurations.movableSharedElementScope
-import com.tunjid.treenav.adaptive.threepane.threePaneAdaptiveNodeConfiguration
+import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 
-fun profileAdaptiveConfiguration(
-    destination: SampleDestination.Profile
-) = threePaneAdaptiveNodeConfiguration<SampleDestination>(
+fun chatRoomPaneStrategy(
+) = threePaneListDetailStrategy<SampleDestination>(
     render = {
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
-        val viewModel = viewModel<ProfileViewModel> {
-            ProfileViewModel(
+        val viewModel = viewModel<ChatRoomsViewModel> {
+            ChatRoomsViewModel(
                 coroutineScope = scope,
-                destination = destination,
+                chatsRepository = ChatsRepository
             )
         }
-        ProfileScreen(
-            movableSharedElementScope = movableSharedElementScope(),
+        ChatRoomsScreen(
             state = viewModel.state.collectAsStateWithLifecycle().value,
             onAction = viewModel.accept
-        )
-    },
-    paneMapping = {
-        mapOf(
-            ThreePane.Primary to destination,
-            ThreePane.Secondary to destination.roomName?.let(SampleDestination::Chat),
-            ThreePane.Tertiary to destination.roomName?.let { NavTabs.ChatRooms },
         )
     }
 )

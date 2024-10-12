@@ -1,27 +1,31 @@
-package com.tunjid.treenav.adaptive.threepane.configurations
+package com.tunjid.treenav.compose.threepane.configurations
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.AdaptiveNavHostConfiguration
-import com.tunjid.treenav.adaptive.adaptivePaneStrategy
-import com.tunjid.treenav.adaptive.delegated
-import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.paneStrategy
+import com.tunjid.treenav.compose.delegated
+import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
- * An [AdaptiveNavHostConfiguration] that selectively displays panes for a [ThreePane] layout
+ * An [PanedNavHostConfiguration] that selectively displays panes for a [ThreePane] layout
  * based on the space available determined by the [windowWidthDpState].
  *
  * @param windowWidthDpState provides the current width of the display in Dp.
  */
-fun <NavigationState : Node, Destination : Node> AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination>.threePaneAdaptiveConfiguration(
+fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
+        ThreePane,
+        NavigationState,
+        Destination
+        >.threePanedNavHostConfiguration(
     windowWidthDpState: State<Int>,
     secondaryPaneBreakPoint: State<Int> = mutableStateOf(SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
     tertiaryPaneBreakPoint: State<Int> = mutableStateOf(TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
-): AdaptiveNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated { node ->
-    val originalStrategy = this@threePaneAdaptiveConfiguration.strategyTransform(node)
-    adaptivePaneStrategy(
+): PanedNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated { node ->
+    val originalStrategy = this@threePanedNavHostConfiguration.strategyTransform(node)
+    paneStrategy(
         render = originalStrategy.render,
         transitions = originalStrategy.transitions,
         paneMapping = { inner ->

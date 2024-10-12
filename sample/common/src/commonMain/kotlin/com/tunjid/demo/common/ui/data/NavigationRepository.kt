@@ -18,6 +18,7 @@ package com.tunjid.demo.common.ui.data
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.mapToManyMutations
@@ -36,14 +37,14 @@ sealed interface SampleDestination : Node {
         val title: String,
     ) : SampleDestination {
         ChatRooms("Chat Rooms"),
-        Settings("Settings");
+        Me("Me");
 
         override val id: String get() = title
 
         val icon
             get() = when (this) {
                 ChatRooms -> Icons.AutoMirrored.Filled.List
-                Settings -> Icons.Default.Settings
+                Me -> Icons.Default.Person
             }
     }
 
@@ -107,6 +108,12 @@ private val InitialNavState = MultiStackNav(
             children = listOf(
                 SampleDestination.NavTabs.ChatRooms,
             )
-        )
+        ),
+        StackNav(
+            name = "me",
+            children = listOf(
+                SampleDestination.NavTabs.Me,
+            )
+        ),
     )
 )
