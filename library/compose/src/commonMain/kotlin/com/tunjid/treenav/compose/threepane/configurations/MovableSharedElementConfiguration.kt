@@ -93,9 +93,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
             // Allow shared elements in the primary or transient primary content only
             ThreePane.Primary -> when {
                 // Show a blank space for shared elements between the destinations
-                paneScope.isPreviewingBack && hostState.isCurrentlyShared(key) -> { _, modifier ->
-                    Box(modifier)
-                }
+                paneScope.isPreviewingBack && hostState.isCurrentlyShared(key) -> EmptyElement
                 // If previewing and it won't be shared, show the item as is
                 paneScope.isPreviewingBack -> sharedElement
                 // Share the element
@@ -126,3 +124,8 @@ fun PaneState<ThreePane, *>?.canAnimateOnStartingFrames() =
 private val PaneScope<ThreePane, *>.isPreviewingBack: Boolean
     get() = paneState.pane == ThreePane.Primary
             && paneState.adaptations.contains(ThreePane.PrimaryToTransient)
+
+// An empty element representing blank space
+private val EmptyElement: @Composable (Any?, Modifier) -> Unit = { _, modifier ->
+    Box(modifier)
+}
