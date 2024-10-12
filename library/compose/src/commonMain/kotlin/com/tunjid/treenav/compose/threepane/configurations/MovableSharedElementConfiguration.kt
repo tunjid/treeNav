@@ -7,16 +7,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.AdaptiveMovableSharedElementScope
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.PanedNavHost
-import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
 import com.tunjid.treenav.compose.PaneStrategy
+import com.tunjid.treenav.compose.PanedNavHost
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.delegated
+import com.tunjid.treenav.compose.moveablesharedelement.AdaptiveMovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 
 

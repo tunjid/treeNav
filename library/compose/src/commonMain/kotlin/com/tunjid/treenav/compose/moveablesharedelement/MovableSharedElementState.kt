@@ -1,4 +1,4 @@
-package com.tunjid.scaffold.treenav.adaptive.moveablesharedelement
+package com.tunjid.treenav.compose.moveablesharedelement
 
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -36,7 +36,6 @@ import androidx.compose.ui.util.fastRoundToInt
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
-import com.tunjid.treenav.compose.moveablesharedelement.BoundsTransformDeferredAnimation
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 

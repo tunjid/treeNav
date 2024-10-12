@@ -52,7 +52,7 @@ import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.data.Profile
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime

@@ -22,7 +22,8 @@ import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 
 /**
- * Creates a host for adaptive navigation for panes [Pane] and destinations [Destination].
+ * Creates a navigation host for destinations [Destination] that can show up
+ * in arbitrary panes [Pane].
  *
  * @param state the [PanedNavHostState] producing the [PanedNavHostScope] that provides
  * context about the panes in [PanedNavHost].

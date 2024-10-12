@@ -48,10 +48,11 @@ class PanedNavHostConfiguration<Pane, NavigationState : Node, Destination : Node
 
 /**
  * Provides an [PanedNavHostConfiguration] for configuring an [PanedNavHost] for
- * adapting different navigation destinations into different panes from an arbitrary
+ * showing different navigation destinations into different panes from an arbitrary
  * [navigationState].
  *
- * @param navigationState the navigation state to be adapted into various panes.
+ * @param navigationState the navigation state to with destinations [Destination] various
+ * panes [Pane].
  * @param destinationTransform a transform of the [navigationState] to its current destination.
  * It is read inside a [derivedStateOf] block, so reads of snapshot
  * state objects will be observed.

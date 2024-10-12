@@ -42,10 +42,10 @@ internal class DestinationLifecycleOwner(
     fun update(
         hostLifecycleState: State,
         paneScope: PaneScope<*, *>,
-        adaptiveNavigationState: SlotBasedPanedNavigationState<*, *>,
+        panedNavigationState: SlotBasedPanedNavigationState<*, *>,
     ) {
         val active = paneScope.isActive
-        val exists = adaptiveNavigationState.backStackIds.contains(
+        val exists = panedNavigationState.backStackIds.contains(
             destination.id
         )
         val derivedLifecycleState = when {

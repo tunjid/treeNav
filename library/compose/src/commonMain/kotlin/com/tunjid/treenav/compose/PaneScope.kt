@@ -29,7 +29,7 @@ import com.tunjid.treenav.Node
 import kotlin.jvm.JvmInline
 
 /**
- * Scope for adaptive content that can show up in an arbitrary pane.
+ * Scope for navigation destinations that can show up in an arbitrary pane.
  */
 @Stable
 interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {

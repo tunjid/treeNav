@@ -41,7 +41,7 @@ import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import kotlin.math.roundToInt
 
 @Composable
