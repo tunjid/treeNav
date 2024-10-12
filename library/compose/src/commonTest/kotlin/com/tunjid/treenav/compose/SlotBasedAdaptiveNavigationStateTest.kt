@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.adaptive
+package com.tunjid.treenav.compose
 
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.ThreePane
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

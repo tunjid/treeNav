@@ -1,4 +1,4 @@
-package com.tunjid.treenav.adaptive
+package com.tunjid.treenav.compose
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition

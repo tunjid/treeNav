@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.adaptive
+package com.tunjid.treenav.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -77,7 +77,11 @@ fun <Pane, NavigationState : Node, Destination : Node> panedNavHostConfiguration
  * @param strategyTransform provides the strategy used to adapt the current destination to the
  * panes available.
  */
-fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration<Pane, NavigationState, Destination>.delegated(
+fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
+        Pane,
+        NavigationState,
+        Destination
+        >.delegated(
     destinationTransform: (NavigationState) -> Destination = this@delegated.destinationTransform,
     strategyTransform: (destination: Destination) -> PaneStrategy<Pane, Destination>
 ) = panedNavHostConfiguration(
@@ -90,7 +94,11 @@ fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration
  * The current destination in a given [paneScope].
  */
 @Composable
-internal fun <Pane, Destination : Node> PanedNavHostConfiguration<Pane, *, Destination>.Destination(
+internal fun <Pane, Destination : Node> PanedNavHostConfiguration<
+        Pane,
+        *,
+        Destination
+        >.Destination(
     paneScope: PaneScope<Pane, Destination>
 ) {
     val current = remember(paneScope.paneState.currentDestination) {
@@ -105,7 +113,7 @@ internal fun <Pane, Destination : Node> PanedNavHostConfiguration<Pane, *, Desti
                     exit = enterAndExit.exit
                 )
             ) {
-                paneScope.render(current)
+                render(current)
             }
         }
     }
@@ -115,7 +123,11 @@ internal fun <Pane, Destination : Node> PanedNavHostConfiguration<Pane, *, Desti
  * THe current pane mapping to use in the [PanedNavHost].
  */
 @Composable
-internal fun <Pane, Destination : Node> PanedNavHostConfiguration<Pane, *, Destination>.paneMapping(): Map<Pane, Destination?> {
+internal fun <Pane, Destination : Node> PanedNavHostConfiguration<
+        Pane,
+        *,
+        Destination
+        >.paneMapping(): Map<Pane, Destination?> {
     val current by currentDestination
     return current.let {
         strategyTransform(it).paneMapper(it)

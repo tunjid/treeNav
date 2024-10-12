@@ -1,4 +1,4 @@
-package com.tunjid.treenav.adaptive
+package com.tunjid.treenav.compose
 
 import com.tunjid.treenav.Node
 

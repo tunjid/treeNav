@@ -23,8 +23,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.profile.ProfileScreen
 import com.tunjid.demo.common.ui.profile.ProfileViewModel
-import com.tunjid.treenav.adaptive.threepane.configurations.movableSharedElementScope
-import com.tunjid.treenav.adaptive.threepane.threePaneListDetailStrategy
+import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
+import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 
 fun mePaneStrategy(
 ) = threePaneListDetailStrategy<SampleDestination>(

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.adaptive
+package com.tunjid.treenav.compose
 
 import androidx.compose.runtime.Immutable
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.Adaptation.Change.contains
+import com.tunjid.treenav.compose.Adaptation.Change.contains
 
 /**
  * Data structure for managing navigation as it adapts to various layout configurations

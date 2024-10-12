@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.adaptive.threepane
+package com.tunjid.treenav.compose.threepane
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -24,10 +24,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.Adaptation.Swap
-import com.tunjid.treenav.adaptive.PaneScope
-import com.tunjid.treenav.adaptive.PaneStrategy
-import com.tunjid.treenav.adaptive.paneStrategy
+import com.tunjid.treenav.compose.Adaptation.Swap
+import com.tunjid.treenav.compose.PaneScope
+import com.tunjid.treenav.compose.PaneStrategy
+import com.tunjid.treenav.compose.paneStrategy
 
 /**
  * A [PaneStrategy] for apps that display up to 3 major panes as once.

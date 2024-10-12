@@ -17,9 +17,9 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.PanedNavHost
-import com.tunjid.treenav.adaptive.PaneScope
-import com.tunjid.treenav.adaptive.PaneState
+import com.tunjid.treenav.compose.PanedNavHost
+import com.tunjid.treenav.compose.PaneScope
+import com.tunjid.treenav.compose.PaneState
 
 internal interface SharedElementOverlay {
     fun ContentDrawScope.drawInOverlay()

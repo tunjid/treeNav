@@ -22,7 +22,7 @@ import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.treenav.adaptive.threepane.threePaneListDetailStrategy
+import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 
 fun chatRoomPaneStrategy(
 ) = threePaneListDetailStrategy<SampleDestination>(

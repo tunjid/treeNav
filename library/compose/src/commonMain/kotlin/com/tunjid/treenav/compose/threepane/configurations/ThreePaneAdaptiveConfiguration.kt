@@ -1,13 +1,13 @@
-package com.tunjid.treenav.adaptive.threepane.configurations
+package com.tunjid.treenav.compose.threepane.configurations
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.PanedNavHostConfiguration
-import com.tunjid.treenav.adaptive.paneStrategy
-import com.tunjid.treenav.adaptive.delegated
-import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.paneStrategy
+import com.tunjid.treenav.compose.delegated
+import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
  * An [PanedNavHostConfiguration] that selectively displays panes for a [ThreePane] layout
@@ -15,12 +15,16 @@ import com.tunjid.treenav.adaptive.threepane.ThreePane
  *
  * @param windowWidthDpState provides the current width of the display in Dp.
  */
-fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<ThreePane, NavigationState, Destination>.threePaneAdaptiveConfiguration(
+fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
+        ThreePane,
+        NavigationState,
+        Destination
+        >.threePanedNavHostConfiguration(
     windowWidthDpState: State<Int>,
     secondaryPaneBreakPoint: State<Int> = mutableStateOf(SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
     tertiaryPaneBreakPoint: State<Int> = mutableStateOf(TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
 ): PanedNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated { node ->
-    val originalStrategy = this@threePaneAdaptiveConfiguration.strategyTransform(node)
+    val originalStrategy = this@threePanedNavHostConfiguration.strategyTransform(node)
     paneStrategy(
         render = originalStrategy.render,
         transitions = originalStrategy.transitions,

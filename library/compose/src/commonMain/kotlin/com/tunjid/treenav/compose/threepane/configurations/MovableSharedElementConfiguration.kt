@@ -1,4 +1,4 @@
-package com.tunjid.treenav.adaptive.threepane.configurations
+package com.tunjid.treenav.compose.threepane.configurations
 
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -11,13 +11,13 @@ import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.AdaptiveMovabl
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.PanedNavHost
-import com.tunjid.treenav.adaptive.PanedNavHostConfiguration
-import com.tunjid.treenav.adaptive.PaneScope
-import com.tunjid.treenav.adaptive.PaneState
-import com.tunjid.treenav.adaptive.PaneStrategy
-import com.tunjid.treenav.adaptive.delegated
-import com.tunjid.treenav.adaptive.threepane.ThreePane
+import com.tunjid.treenav.compose.PanedNavHost
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.PaneScope
+import com.tunjid.treenav.compose.PaneState
+import com.tunjid.treenav.compose.PaneStrategy
+import com.tunjid.treenav.compose.delegated
+import com.tunjid.treenav.compose.threepane.ThreePane
 
 
 /**
@@ -31,12 +31,12 @@ fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
         ThreePane,
         NavigationState,
         Destination
-        >.threePaneMovableSharedElementConfiguration(
+        >.threePanedMovableSharedElementConfiguration(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
 ): PanedNavHostConfiguration<ThreePane, NavigationState, Destination> =
     delegated { destination ->
         val originalStrategy =
-            this@threePaneMovableSharedElementConfiguration.strategyTransform(destination)
+            this@threePanedMovableSharedElementConfiguration.strategyTransform(destination)
         PaneStrategy(
             transitions = originalStrategy.transitions,
             paneMapper = originalStrategy.paneMapper,

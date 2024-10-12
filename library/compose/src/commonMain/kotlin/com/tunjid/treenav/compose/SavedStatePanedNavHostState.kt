@@ -1,4 +1,4 @@
-package com.tunjid.treenav.adaptive
+package com.tunjid.treenav.compose
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
@@ -25,8 +25,8 @@ import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.Order
-import com.tunjid.treenav.adaptive.lifecycle.DestinationViewModelStoreCreator
-import com.tunjid.treenav.adaptive.lifecycle.rememberDestinationLifecycleOwner
+import com.tunjid.treenav.compose.lifecycle.DestinationViewModelStoreCreator
+import com.tunjid.treenav.compose.lifecycle.rememberDestinationLifecycleOwner
 import com.tunjid.treenav.traverse
 
 

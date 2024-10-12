@@ -34,8 +34,9 @@ import androidx.compose.ui.unit.toOffset
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastRoundToInt
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.adaptive.PaneScope
-import com.tunjid.treenav.adaptive.PaneState
+import com.tunjid.treenav.compose.PaneScope
+import com.tunjid.treenav.compose.PaneState
+import com.tunjid.treenav.compose.moveablesharedelement.BoundsTransformDeferredAnimation
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 

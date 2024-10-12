@@ -39,7 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberAdaptiveNavHostState
+import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberPanedNavHostState
 import com.tunjid.demo.common.ui.chat.chatPaneStrategy
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
 import com.tunjid.demo.common.ui.data.NavigationRepository
@@ -48,15 +48,15 @@ import com.tunjid.demo.common.ui.profile.profilePaneStrategy
 import com.tunjid.demo.common.ui.me.mePaneStrategy
 import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.adaptive.PanedNavHost
-import com.tunjid.treenav.adaptive.PanedNavHostConfiguration
-import com.tunjid.treenav.adaptive.PaneState
-import com.tunjid.treenav.adaptive.SavedStatePanedNavHostState
-import com.tunjid.treenav.adaptive.panedNavHostConfiguration
-import com.tunjid.treenav.adaptive.threepane.ThreePane
-import com.tunjid.treenav.adaptive.threepane.configurations.canAnimateOnStartingFrames
-import com.tunjid.treenav.adaptive.threepane.configurations.threePaneMovableSharedElementConfiguration
-import com.tunjid.treenav.adaptive.threepane.configurations.threePaneAdaptiveConfiguration
+import com.tunjid.treenav.compose.PanedNavHost
+import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.PaneState
+import com.tunjid.treenav.compose.SavedStatePanedNavHostState
+import com.tunjid.treenav.compose.panedNavHostConfiguration
+import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.configurations.canAnimateOnStartingFrames
+import com.tunjid.treenav.compose.threepane.configurations.threePanedMovableSharedElementConfiguration
+import com.tunjid.treenav.compose.threepane.configurations.threePanedNavHostConfiguration
 import com.tunjid.treenav.current
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -90,12 +90,12 @@ fun SampleApp(
                 )
             }
             PanedNavHost(
-                state = appState.rememberAdaptiveNavHostState {
+                state = appState.rememberPanedNavHostState {
                     this
-                        .threePaneAdaptiveConfiguration(
+                        .threePanedNavHostConfiguration(
                             windowWidthDpState = windowWidthDp
                         )
-                        .threePaneMovableSharedElementConfiguration(
+                        .threePanedMovableSharedElementConfiguration(
                             movableSharedElementHostState = movableSharedElementHostState
                         )
                 },
@@ -156,7 +156,7 @@ class SampleAppState(
 
     companion object {
         @Composable
-        fun SampleAppState.rememberAdaptiveNavHostState(
+        fun SampleAppState.rememberPanedNavHostState(
             configurationBlock: PanedNavHostConfiguration<
                     ThreePane,
                     MultiStackNav,
