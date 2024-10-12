@@ -20,9 +20,9 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -87,16 +87,14 @@ private fun ProfileHeader(
     modifier: Modifier = Modifier,
     onBackPressed: (() -> Unit)?,
 ) {
-    Box {
-        Box(
+    Box(
+        modifier = Modifier.heightIn(min = 400.dp)
+    ) {
+        ProfilePhoto(
+            state = state,
+            movableSharedElementScope = movableSharedElementScope,
             modifier = modifier
-        ) {
-            ProfilePhoto(
-                state = state,
-                movableSharedElementScope = movableSharedElementScope,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+        )
         SampleTopAppBar(
             title = if (state.profileName == null) "Me" else "Profile",
             onBackPressed = onBackPressed,
