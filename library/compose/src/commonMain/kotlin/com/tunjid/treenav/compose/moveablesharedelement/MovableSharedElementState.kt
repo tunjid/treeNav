@@ -56,15 +56,16 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
 
     private var layer: GraphicsLayer? = null
     private var targetOffset by mutableStateOf(IntOffset.Zero)
-    private var boundsAnimInProgress by mutableStateOf(false)
+    var animInProgress by mutableStateOf(false)
+        private set
 
-    private val canDrawInOverlay get() = boundsAnimInProgress
+    private val canDrawInOverlay get() = animInProgress
     private val panesKeysToSeenCount = mutableStateMapOf<String, Unit>()
 
     private val animatedBounds: Rect?
-        get() = if (boundsAnimInProgress) boundsAnimation.animatedValue else null
+        get() = if (animInProgress) boundsAnimation.animatedValue else null
 
-    val boundsAnimation = BoundsTransformDeferredAnimation()
+    private val boundsAnimation = BoundsTransformDeferredAnimation()
 
     val moveableSharedElement: @Composable (Any?, Modifier) -> Unit =
         movableContentOf { state, modifier ->
@@ -117,7 +118,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
             state: MovableSharedElementState<*, Pane, Destination>,
         ): Modifier {
             val coroutineScope = rememberCoroutineScope()
-            state.isInProgress().also { state.boundsAnimInProgress = it }
+            state.isInProgress().also { state.animInProgress = it }
             val layer = rememberGraphicsLayer().also {
                 state.layer = it
             }
@@ -125,7 +126,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
                 isMeasurementApproachInProgress = { lookaheadSize ->
                     // Update target size, it will serve to know if we expect an approach in progress
                     state.boundsAnimation.updateTargetSize(lookaheadSize.toSize())
-                    state.boundsAnimInProgress
+                    state.animInProgress
                 },
                 isPlacementApproachInProgress = {
                     state.boundsAnimation.updateTargetOffsetAndAnimate(
@@ -135,7 +136,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
                         includeMotionFrameOfReference = true,
                         boundsTransform = state.boundsTransform,
                     )
-                    state.boundsAnimInProgress
+                    state.animInProgress
                 },
                 approachMeasure = { measurable, _ ->
                     // The animated value is null on the first frame as we don't get the full bounds

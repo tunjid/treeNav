@@ -84,37 +84,34 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         key: Any,
         boundsTransform: BoundsTransform,
         sharedElement: @Composable (T, Modifier) -> Unit
-    ): @Composable (T, Modifier) -> Unit {
-        val paneScope = delegate.paneScope
-        return when (paneScope.paneState.pane) {
-            null -> throw IllegalArgumentException(
-                "Shared elements may only be used in non null panes"
-            )
-            // Allow shared elements in the primary or transient primary content only
-            ThreePane.Primary -> when {
-                // Show a blank space for shared elements between the destinations
-                paneScope.isPreviewingBack && hostState.isCurrentlyShared(key) -> EmptyElement
-                // If previewing and it won't be shared, show the item as is
-                paneScope.isPreviewingBack -> sharedElement
-                // Share the element
-                else -> delegate.movableSharedElementOf(
-                    key = key,
-                    boundsTransform = boundsTransform,
-                    sharedElement = sharedElement
-                )
-            }
-            // Share the element when in the transient pane
-            ThreePane.TransientPrimary -> delegate.movableSharedElementOf(
+    ): @Composable (T, Modifier) -> Unit = when (paneState.pane) {
+        null -> throw IllegalArgumentException(
+            "Shared elements may only be used in non null panes"
+        )
+        // Allow shared elements in the primary or transient primary content only
+        ThreePane.Primary -> when {
+            // Show a blank space for shared elements between the destinations
+            isPreviewingBack && hostState.isCurrentlyShared(key) -> EmptyElement
+            // If previewing and it won't be shared, show the item as is
+            isPreviewingBack -> sharedElement
+            // Share the element
+            else -> delegate.movableSharedElementOf(
                 key = key,
                 boundsTransform = boundsTransform,
                 sharedElement = sharedElement
             )
-
-            // In the other panes use the element as is
-            ThreePane.Secondary,
-            ThreePane.Tertiary,
-            ThreePane.Overlay -> sharedElement
         }
+        // Share the element when in the transient pane
+        ThreePane.TransientPrimary -> delegate.movableSharedElementOf(
+            key = key,
+            boundsTransform = boundsTransform,
+            sharedElement = sharedElement
+        )
+
+        // In the other panes use the element as is
+        ThreePane.Secondary,
+        ThreePane.Tertiary,
+        ThreePane.Overlay -> sharedElement
     }
 }
 
