@@ -85,7 +85,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
         val panesToNodes = configuration.paneMapping()
         val saveableStateHolder = rememberSaveableStateHolder()
 
-        val adaptiveContentScope = remember {
+        val panedContentScope = remember {
             SavedStatePanedNavHostScope(
                 panes = panes,
                 navHostConfiguration = configuration,
@@ -95,13 +95,13 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
         }
 
         LaunchedEffect(navigationState, panesToNodes) {
-            adaptiveContentScope.onNewNavigationState(
+            panedContentScope.onNewNavigationState(
                 navigationState = navigationState,
                 panesToNodes = panesToNodes
             )
         }
 
-        return adaptiveContentScope
+        return panedContentScope
     }
 
     companion object {
@@ -122,7 +122,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                 init = ::Slot
             ).toSet()
 
-            var adaptiveNavigationState by mutableStateOf(
+            var panedNavigationState by mutableStateOf(
                 value = SlotBasedPanedNavigationState.initial<Pane, Destination>(slots = slots)
                     .adaptTo(
                         slots = slots,
@@ -141,17 +141,17 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
 
             @Composable
             override fun Destination(pane: Pane) {
-                val slot = adaptiveNavigationState.slotFor(pane)
+                val slot = panedNavigationState.slotFor(pane)
                 slotsToRoutes[slot]?.invoke()
             }
 
             override fun adaptationsIn(
                 pane: Pane
-            ): Set<Adaptation> = adaptiveNavigationState.adaptationsIn(pane)
+            ): Set<Adaptation> = panedNavigationState.adaptationsIn(pane)
 
             override fun nodeFor(
                 pane: Pane
-            ): Destination? = adaptiveNavigationState.destinationFor(pane)
+            ): Destination? = panedNavigationState.destinationFor(pane)
 
             fun onNewNavigationState(
                 navigationState: Node,
@@ -175,7 +175,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                 slot: Slot,
             ) {
                 val paneTransition = updateTransition(
-                    targetState = adaptiveNavigationState.paneStateFor(slot),
+                    targetState = panedNavigationState.paneStateFor(slot),
                     label = "$slot-PaneTransition",
                 )
                 paneTransition.AnimatedContent(
@@ -192,7 +192,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                         AnimatedPaneScope(
                             paneState = targetPaneState,
                             activeState = derivedStateOf {
-                                val activePaneState = adaptiveNavigationState.paneStateFor(slot)
+                                val activePaneState = panedNavigationState.paneStateFor(slot)
                                 activePaneState.currentDestination?.id == targetPaneState.currentDestination?.id
                             },
                             animatedContentScope = this@AnimatedContent,
@@ -220,7 +220,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
 
                                 DisposableEffect(Unit) {
                                     onDispose {
-                                        val backstackIds = adaptiveNavigationState.backStackIds
+                                        val backstackIds = panedNavigationState.backStackIds
                                         if (!backstackIds.contains(destination.id)) removeState(
                                             destination.id
                                         )
@@ -231,18 +231,18 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                                 DisposableEffect(
                                     hostLifecycleState,
                                     scope.isActive,
-                                    adaptiveNavigationState,
+                                    panedNavigationState,
                                 ) {
                                     destinationLifecycleOwner.update(
                                         hostLifecycleState = hostLifecycleState,
                                         paneScope = scope,
-                                        adaptiveNavigationState = adaptiveNavigationState
+                                        panedNavigationState = panedNavigationState
                                     )
                                     onDispose {
                                         destinationLifecycleOwner.update(
                                             hostLifecycleState = hostLifecycleState,
                                             paneScope = scope,
-                                            adaptiveNavigationState = adaptiveNavigationState
+                                            panedNavigationState = panedNavigationState
                                         )
                                     }
                                 }
@@ -276,7 +276,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
             private inline fun updateAdaptiveNavigationState(
                 block: SlotBasedPanedNavigationState<Pane, Destination>.() -> SlotBasedPanedNavigationState<Pane, Destination>
             ) {
-                adaptiveNavigationState = adaptiveNavigationState.block()
+                panedNavigationState = panedNavigationState.block()
             }
         }
 

@@ -46,7 +46,7 @@ import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.profile.profilePaneStrategy
 import com.tunjid.demo.common.ui.me.mePaneStrategy
-import com.tunjid.scaffold.treenav.adaptive.moveablesharedelement.MovableSharedElementHostState
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.PanedNavHost
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
@@ -144,7 +144,7 @@ class SampleAppState(
     )
     val currentNavigation by navigationState
 
-    private val adaptiveNavHostConfiguration = sampleAppNavHostConfiguration(
+    private val panedNavHostConfiguration = sampleAppNavHostConfiguration(
         navigationState
     )
 
@@ -163,10 +163,10 @@ class SampleAppState(
                     SampleDestination
                     >.() -> PanedNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>
         ): SavedStatePanedNavHostState<ThreePane, SampleDestination> {
-            val adaptiveNavHostState = remember {
+            val panedNavHostState = remember {
                 SavedStatePanedNavHostState(
                     panes = ThreePane.entries.toList(),
-                    configuration = adaptiveNavHostConfiguration.configurationBlock(),
+                    configuration = panedNavHostConfiguration.configurationBlock(),
                 )
             }
             DisposableEffect(Unit) {
@@ -177,7 +177,7 @@ class SampleAppState(
                 }
                 onDispose { job.cancel() }
             }
-            return adaptiveNavHostState
+            return panedNavHostState
         }
     }
 }
