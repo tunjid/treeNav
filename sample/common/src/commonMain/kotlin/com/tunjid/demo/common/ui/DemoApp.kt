@@ -101,7 +101,17 @@ fun SampleApp(
                             movableSharedElementHostState = movableSharedElementHostState
                         )
                         .animatePaneBoundsConfiguration(
-                            lookaheadScope = this@SharedTransitionScope
+                            lookaheadScope = this@SharedTransitionScope,
+                            canAnimatePane = { pane ->
+                                when (pane) {
+                                    ThreePane.Primary,
+                                    ThreePane.Secondary,
+                                    ThreePane.Tertiary -> true
+
+                                    ThreePane.Overlay,
+                                    ThreePane.TransientPrimary -> false
+                                }
+                            }
                         )
                 },
                 modifier = Modifier

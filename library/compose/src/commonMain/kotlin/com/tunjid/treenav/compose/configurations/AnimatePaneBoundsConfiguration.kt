@@ -16,6 +16,7 @@
 
 package com.tunjid.treenav.compose.configurations
 
+import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.remember
@@ -25,18 +26,20 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.delegated
 import com.tunjid.treenav.compose.paneStrategy
-import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.utilities.AnimatedBoundsState
 import com.tunjid.treenav.compose.utilities.AnimatedBoundsState.Companion.animateBounds
+import com.tunjid.treenav.compose.utilities.DefaultBoundsTransform
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
-        ThreePane,
+fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
+        Pane,
         NavigationState,
         Destination
         >.animatePaneBoundsConfiguration(
     lookaheadScope: LookaheadScope,
-): PanedNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated {
+    paneBoundsTransform: (Pane) -> BoundsTransform = { DefaultBoundsTransform },
+    canAnimatePane: (Pane) -> Boolean = { true },
+): PanedNavHostConfiguration<Pane, NavigationState, Destination> = delegated {
     val originalTransform = strategyTransform(it)
     paneStrategy(
         transitions = originalTransform.transitions,
@@ -47,6 +50,10 @@ fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
                     state = remember {
                         AnimatedBoundsState(
                             lookaheadScope = lookaheadScope,
+                            boundsTransform = paneState.pane
+                                ?.let(paneBoundsTransform)
+                                ?: DefaultBoundsTransform,
+                            inProgress = { paneState.pane?.let(canAnimatePane) ?: false }
                         )
                     }
                 )
