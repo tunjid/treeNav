@@ -20,7 +20,6 @@ import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector4D
-import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.VisibilityThreshold
@@ -45,6 +44,7 @@ import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.roundToIntSize
@@ -54,152 +54,138 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 
-
 @ExperimentalSharedTransitionApi // Depends on BoundsTransform
-internal fun Modifier.animateBounds(
-    lookaheadScope: LookaheadScope,
-    modifier: Modifier = Modifier,
+internal class AnimatedBoundsState(
+    val lookaheadScope: LookaheadScope,
     boundsTransform: BoundsTransform = DefaultBoundsTransform,
     animateMotionFrameOfReference: Boolean = false,
-): Modifier =
-    this.then(
-        BoundsAnimationElement(
-            lookaheadScope = lookaheadScope,
-            boundsTransform = boundsTransform,
-            // Measure with original constraints.
-            // The layout of this element will still be the animated lookahead size.
-            resolveMeasureConstraints = { _, constraints -> constraints },
-            animateMotionFrameOfReference = animateMotionFrameOfReference,
-        )
-    )
-        .then(modifier)
-        .then(
-            BoundsAnimationElement(
-                lookaheadScope = lookaheadScope,
-                boundsTransform = boundsTransform,
+    private val inProgress: (() -> Boolean)? = null,
+) {
+    var targetOffset by mutableStateOf(IntOffset.Zero)
+    var boundsTransform by mutableStateOf(boundsTransform)
+    var animateMotionFrameOfReference by mutableStateOf(animateMotionFrameOfReference)
+
+    val isInProgress get() = inProgress?.invoke() ?: !boundsAnimation.isIdle
+    val isIdle get() = boundsAnimation.isIdle
+
+    private val boundsAnimation = BoundsTransformDeferredAnimation()
+
+    companion object {
+        /**
+         * A copy of the bounds transform in the compose library that allows for reading the state
+         * and overriding when the approach is in progress.
+         */
+        @ExperimentalSharedTransitionApi // Depends on BoundsTransform
+        internal fun Modifier.animateBounds(
+            state: AnimatedBoundsState,
+        ): Modifier =
+            this then BoundsAnimationElement(
+                state = state,
                 resolveMeasureConstraints = { animatedSize, _ ->
                     // For the target Layout, pass the animated size as Constraints.
                     Constraints.fixed(animatedSize.width, animatedSize.height)
                 },
-                animateMotionFrameOfReference = animateMotionFrameOfReference,
             )
-        )
 
-@ExperimentalSharedTransitionApi
-internal data class BoundsAnimationElement(
-    val lookaheadScope: LookaheadScope,
-    val boundsTransform: BoundsTransform,
-    val resolveMeasureConstraints: (animatedSize: IntSize, constraints: Constraints) -> Constraints,
-    val animateMotionFrameOfReference: Boolean,
-) : ModifierNodeElement<BoundsAnimationModifierNode>() {
-    override fun create(): BoundsAnimationModifierNode {
-        return BoundsAnimationModifierNode(
-            lookaheadScope = lookaheadScope,
-            boundsTransform = boundsTransform,
-            onChooseMeasureConstraints = resolveMeasureConstraints,
-            animateMotionFrameOfReference = animateMotionFrameOfReference,
-        )
-    }
-
-    override fun update(node: BoundsAnimationModifierNode) {
-        node.lookaheadScope = lookaheadScope
-        node.boundsTransform = boundsTransform
-        node.onChooseMeasureConstraints = resolveMeasureConstraints
-        node.animateMotionFrameOfReference = animateMotionFrameOfReference
-    }
-
-    override fun InspectorInfo.inspectableProperties() {
-        name = "boundsAnimation"
-        properties["lookaheadScope"] = lookaheadScope
-        properties["boundsTransform"] = boundsTransform
-        properties["onChooseMeasureConstraints"] = resolveMeasureConstraints
-        properties["animateMotionFrameOfReference"] = animateMotionFrameOfReference
-    }
-}
-
-/**
- * [Modifier.Node] implementation that handles the bounds animation with
- * [ApproachLayoutModifierNode].
- *
- * @param lookaheadScope The [LookaheadScope] to animate from.
- * @param boundsTransform Callback to produce [FiniteAnimationSpec] at every triggered animation
- * @param onChooseMeasureConstraints Callback to decide whether to measure the Modifier Layout with
- *   the current animated size value or the incoming constraints. This reflects on the
- *   [MeasureResult] of this Modifier Layout as well.
- * @param animateMotionFrameOfReference Whether to include changes under
- *   [LayoutCoordinates.introducesMotionFrameOfReference] to trigger animations.
- */
-@ExperimentalSharedTransitionApi
-internal class BoundsAnimationModifierNode(
-    var lookaheadScope: LookaheadScope,
-    var boundsTransform: BoundsTransform,
-    var onChooseMeasureConstraints:
-        (animatedSize: IntSize, constraints: Constraints) -> Constraints,
-    var animateMotionFrameOfReference: Boolean,
-) : ApproachLayoutModifierNode, Modifier.Node() {
-    private val boundsAnimation = BoundsTransformDeferredAnimation()
-
-    override fun isMeasurementApproachInProgress(lookaheadSize: IntSize): Boolean {
-        // Update target size, it will serve to know if we expect an approach in progress
-        boundsAnimation.updateTargetSize(lookaheadSize.toSize())
-
-        return !boundsAnimation.isIdle
-    }
-
-    override fun Placeable.PlacementScope.isPlacementApproachInProgress(
-        lookaheadCoordinates: LayoutCoordinates
-    ): Boolean {
-        // Once we can capture size and offset we may also start the animation
-        boundsAnimation.updateTargetOffsetAndAnimate(
-            lookaheadScope = lookaheadScope,
-            placementScope = this,
-            coroutineScope = coroutineScope,
-            includeMotionFrameOfReference = animateMotionFrameOfReference,
-            boundsTransform = boundsTransform,
-        )
-        return !boundsAnimation.isIdle
-    }
-
-    override fun ApproachMeasureScope.approachMeasure(
-        measurable: Measurable,
-        constraints: Constraints
-    ): MeasureResult {
-        // The animated value is null on the first frame as we don't get the full bounds
-        // information until placement, so we can safely use the current Size.
-        val fallbackSize =
-            if (boundsAnimation.currentSize.isUnspecified) {
-                // When using Intrinsics, we may get measured before getting the approach check
-                lookaheadSize.toSize()
-            } else {
-                boundsAnimation.currentSize
+        @ExperimentalSharedTransitionApi
+        internal data class BoundsAnimationElement(
+            val resolveMeasureConstraints: (animatedSize: IntSize, constraints: Constraints) -> Constraints,
+            val state: AnimatedBoundsState,
+        ) : ModifierNodeElement<BoundsAnimationModifierNode>() {
+            override fun create(): BoundsAnimationModifierNode {
+                return BoundsAnimationModifierNode(
+                    state = state,
+                    onChooseMeasureConstraints = resolveMeasureConstraints,
+                )
             }
-        val animatedSize = (boundsAnimation.value?.size ?: fallbackSize).roundToIntSize()
 
-        val chosenConstraints = onChooseMeasureConstraints(animatedSize, constraints)
+            override fun update(node: BoundsAnimationModifierNode) {
+                node.onChooseMeasureConstraints = resolveMeasureConstraints
+            }
 
-        val placeable = measurable.measure(chosenConstraints)
-        return layout(animatedSize.width, animatedSize.height) {
-            val animatedBounds = boundsAnimation.value
-            val positionInScope =
-                with(lookaheadScope) {
-                    coordinates?.let { coordinates ->
-                        lookaheadScopeCoordinates.localPositionOf(
-                            sourceCoordinates = coordinates,
-                            relativeToSource = Offset.Zero,
-                            includeMotionFrameOfReference = animateMotionFrameOfReference
-                        )
+            override fun InspectorInfo.inspectableProperties() {
+                name = "boundsAnimation"
+                properties["onChooseMeasureConstraints"] = resolveMeasureConstraints
+                properties["state"] = state
+            }
+        }
+
+        @ExperimentalSharedTransitionApi
+        internal class BoundsAnimationModifierNode(
+            var onChooseMeasureConstraints:
+                (animatedSize: IntSize, constraints: Constraints) -> Constraints,
+            val state: AnimatedBoundsState,
+        ) : ApproachLayoutModifierNode, Modifier.Node() {
+
+            override fun isMeasurementApproachInProgress(lookaheadSize: IntSize): Boolean {
+                // Update target size, it will serve to know if we expect an approach in progress
+                state.boundsAnimation.updateTargetSize(lookaheadSize.toSize())
+
+                return state.isInProgress
+            }
+
+            override fun Placeable.PlacementScope.isPlacementApproachInProgress(
+                lookaheadCoordinates: LayoutCoordinates
+            ): Boolean {
+                // Once we can capture size and offset we may also start the animation
+                state.boundsAnimation.updateTargetOffsetAndAnimate(
+                    lookaheadScope = state.lookaheadScope,
+                    placementScope = this,
+                    coroutineScope = coroutineScope,
+                    includeMotionFrameOfReference = state.animateMotionFrameOfReference,
+                    boundsTransform = state.boundsTransform,
+                )
+                return state.isInProgress
+            }
+
+            override fun ApproachMeasureScope.approachMeasure(
+                measurable: Measurable,
+                constraints: Constraints
+            ): MeasureResult {
+                // The animated value is null on the first frame as we don't get the full bounds
+                // information until placement, so we can safely use the current Size.
+                val fallbackSize =
+                    if (state.boundsAnimation.currentSize.isUnspecified) {
+                        // When using Intrinsics, we may get measured before getting the approach check
+                        lookaheadSize.toSize()
+                    } else {
+                        state.boundsAnimation.currentSize
                     }
-                }
+                val animatedSize =
+                    (state.boundsAnimation.value?.size ?: fallbackSize).roundToIntSize()
 
-            val topLeft =
-                if (animatedBounds != null) {
-                    boundsAnimation.updateCurrentBounds(animatedBounds.topLeft, animatedBounds.size)
-                    animatedBounds.topLeft
-                } else {
-                    boundsAnimation.currentBounds?.topLeft ?: Offset.Zero
+                val chosenConstraints = onChooseMeasureConstraints(animatedSize, constraints)
+
+                val placeable = measurable.measure(chosenConstraints)
+
+                return layout(animatedSize.width, animatedSize.height) {
+                    val animatedBounds = state.boundsAnimation.value
+                    val positionInScope =
+                        with(state.lookaheadScope) {
+                            coordinates?.let { coordinates ->
+                                lookaheadScopeCoordinates.localPositionOf(
+                                    sourceCoordinates = coordinates,
+                                    relativeToSource = Offset.Zero,
+                                    includeMotionFrameOfReference = state.animateMotionFrameOfReference
+                                )
+                            }
+                        }
+
+                    val topLeft =
+                        if (animatedBounds != null) {
+                            state.boundsAnimation.updateCurrentBounds(
+                                animatedBounds.topLeft,
+                                animatedBounds.size
+                            )
+                            animatedBounds.topLeft
+                        } else {
+                            state.boundsAnimation.currentBounds?.topLeft ?: Offset.Zero
+                        }
+                    state.targetOffset = topLeft.round()
+                    val (x, y) = positionInScope?.let { topLeft - it } ?: Offset.Zero
+                    placeable.place(x.fastRoundToInt(), y.fastRoundToInt())
                 }
-            val (x, y) = positionInScope?.let { topLeft - it } ?: Offset.Zero
-            placeable.place(x.fastRoundToInt(), y.fastRoundToInt())
+            }
         }
     }
 }
@@ -360,7 +346,7 @@ internal class BoundsTransformDeferredAnimation {
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-private val DefaultBoundsTransform = BoundsTransform { _, _ ->
+internal val DefaultBoundsTransform = BoundsTransform { _, _ ->
     spring(
         dampingRatio = Spring.DampingRatioNoBouncy,
         stiffness = Spring.StiffnessMediumLow,

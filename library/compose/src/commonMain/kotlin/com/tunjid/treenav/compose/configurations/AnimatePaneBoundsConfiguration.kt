@@ -18,6 +18,7 @@ package com.tunjid.treenav.compose.configurations
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
 import com.tunjid.treenav.Node
@@ -25,8 +26,8 @@ import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.delegated
 import com.tunjid.treenav.compose.paneStrategy
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.utilities.animateBounds
-
+import com.tunjid.treenav.compose.utilities.AnimatedBoundsState
+import com.tunjid.treenav.compose.utilities.AnimatedBoundsState.Companion.animateBounds
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
@@ -42,7 +43,13 @@ fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
         paneMapping = originalTransform.paneMapper,
         render = render@{
             Box(
-                modifier = Modifier.animateBounds(lookaheadScope)
+                modifier = Modifier.animateBounds(
+                    state = remember {
+                        AnimatedBoundsState(
+                            lookaheadScope = lookaheadScope,
+                        )
+                    }
+                )
             ) {
                 originalTransform.render(this@render, it)
             }
