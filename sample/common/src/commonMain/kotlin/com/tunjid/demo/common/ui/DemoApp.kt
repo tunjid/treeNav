@@ -20,9 +20,9 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
@@ -38,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberPanedNavHostState
 import com.tunjid.demo.common.ui.chat.chatPaneStrategy
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
@@ -134,12 +133,10 @@ fun SampleApp(
                         )
                     }
                     order.forEach { pane ->
-                        Box(
-                            Modifier
-                                .run {
-                                    if (nodeFor(pane) == null) width(0.dp)
-                                    else weight(1f)
-                                }
+                        if (nodeFor(pane) == null) Spacer(Modifier)
+                        else Box(
+                            modifier = Modifier
+                                .weight(1f)
                                 .fillMaxHeight()
                         ) {
                             Destination(pane)

@@ -30,6 +30,16 @@ import com.tunjid.treenav.compose.utilities.AnimatedBoundsState
 import com.tunjid.treenav.compose.utilities.AnimatedBoundsState.Companion.animateBounds
 import com.tunjid.treenav.compose.utilities.DefaultBoundsTransform
 
+/**
+ * A [PanedNavHostConfiguration] that animates the bounds of each [Pane] displayed within it.
+ * This is useful for scenarios where the panes move within a layout hierarchy to accommodate
+ * other panes.
+ *
+ * @param lookaheadScope the root [LookaheadScope] where the panes are rendered in.
+ * @param paneBoundsTransform a lambda providing the [BoundsTransform] for each [Pane].
+ * @param canAnimatePane a lambda for toggling when the pane can be animated. It allows for
+ * skipping an animation in progress.
+ */
 @OptIn(ExperimentalSharedTransitionApi::class)
 fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
         Pane,
