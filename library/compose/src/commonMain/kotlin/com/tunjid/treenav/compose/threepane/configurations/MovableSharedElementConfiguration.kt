@@ -19,7 +19,6 @@ import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHost
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 
-
 /**
  * An [PanedNavHostConfiguration] that applies semantics of movable shared elements to
  * [ThreePane] layouts.

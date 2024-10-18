@@ -128,7 +128,10 @@ fun <R : Node> threePaneListDetailStrategy(
                 )
             }
 
-            else -> NoTransition
+            else -> PaneScope.Transitions(
+                enter = enterTransition(),
+                exit = exitTransition()
+            )
         }
     },
     render = render

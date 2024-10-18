@@ -48,6 +48,10 @@ fun StackNav.pop(popLast: Boolean = false) = when {
     else -> copy(children = children.dropLast(1))
 }
 
+fun StackNav.popToRoot() = copy(
+    children = children.take(1)
+)
+
 /**
  * Indicates if there's a [Node] available to pop up to
  */

@@ -20,6 +20,7 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PanedNavHost
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
+import com.tunjid.treenav.compose.utilities.DefaultBoundsTransform
 
 internal interface SharedElementOverlay {
     fun ContentDrawScope.drawInOverlay()
@@ -162,12 +163,3 @@ internal class AdaptiveMovableSharedElementScope<T, R : Node>(
 }
 
 private val EmptyElement: @Composable (Any?, Modifier) -> Unit = { _, _ -> }
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-private val DefaultBoundsTransform = BoundsTransform { _, _ ->
-    spring(
-        dampingRatio = Spring.DampingRatioNoBouncy,
-        stiffness = Spring.StiffnessMediumLow,
-        visibilityThreshold = Rect.VisibilityThreshold
-    )
-}

@@ -18,15 +18,14 @@ package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
-import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
-import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldValue
-import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -44,20 +43,22 @@ import com.tunjid.demo.common.ui.chat.chatPaneStrategy
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.demo.common.ui.profile.profilePaneStrategy
 import com.tunjid.demo.common.ui.me.mePaneStrategy
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
+import com.tunjid.demo.common.ui.profile.profilePaneStrategy
 import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.compose.PaneState
 import com.tunjid.treenav.compose.PanedNavHost
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
-import com.tunjid.treenav.compose.PaneState
 import com.tunjid.treenav.compose.SavedStatePanedNavHostState
+import com.tunjid.treenav.compose.configurations.animatePaneBoundsConfiguration
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.panedNavHostConfiguration
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.configurations.canAnimateOnStartingFrames
 import com.tunjid.treenav.compose.threepane.configurations.threePanedMovableSharedElementConfiguration
 import com.tunjid.treenav.compose.threepane.configurations.threePanedNavHostConfiguration
 import com.tunjid.treenav.current
+import com.tunjid.treenav.popToRoot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -98,6 +99,20 @@ fun SampleApp(
                         .threePanedMovableSharedElementConfiguration(
                             movableSharedElementHostState = movableSharedElementHostState
                         )
+                        .animatePaneBoundsConfiguration(
+                            lookaheadScope = this@SharedTransitionScope,
+                            shouldAnimatePane = {
+                                when (paneState.pane) {
+                                    ThreePane.Primary,
+                                    ThreePane.Secondary,
+                                    ThreePane.Tertiary -> true
+
+                                    null,
+                                    ThreePane.Overlay,
+                                    ThreePane.TransientPrimary -> false
+                                }
+                            }
+                        )
                 },
                 modifier = Modifier
                     .fillMaxSize()
@@ -105,30 +120,30 @@ fun SampleApp(
                         windowWidthDp.value = (it.width / density.density).roundToInt()
                     }
             ) {
-                ListDetailPaneScaffold(
+                Row(
                     modifier = Modifier
                         .fillMaxSize()
                             then movableSharedElementHostState.modifier
                             then sharedTransitionModifier,
-                    directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfo()),
-                    value = ThreePaneScaffoldValue(
-                        primary = if (nodeFor(ThreePane.Primary) == null) PaneAdaptedValue.Hidden else PaneAdaptedValue.Expanded,
-                        secondary = if (nodeFor(ThreePane.Secondary) == null) PaneAdaptedValue.Hidden else PaneAdaptedValue.Expanded,
-                        tertiary = if (nodeFor(ThreePane.Tertiary) == null) PaneAdaptedValue.Hidden else PaneAdaptedValue.Expanded,
-                    ),
-                    listPane = {
-                        if (nodeFor(ThreePane.Tertiary) == null) Destination(ThreePane.Secondary)
-                        else Destination(ThreePane.Tertiary)
-                    },
-                    detailPane = {
-                        if (nodeFor(ThreePane.Tertiary) == null) Destination(ThreePane.Primary)
-                        else Destination(ThreePane.Secondary)
-                    },
-                    extraPane = {
-                        if (nodeFor(ThreePane.Tertiary) == null) Destination(ThreePane.Tertiary)
-                        else Destination(ThreePane.Primary)
+                ) {
+                    val order = remember {
+                        listOf(
+                            ThreePane.Tertiary,
+                            ThreePane.Secondary,
+                            ThreePane.Primary,
+                        )
                     }
-                )
+                    order.forEach { pane ->
+                        if (nodeFor(pane) == null) Spacer(Modifier)
+                        else Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        ) {
+                            Destination(pane)
+                        }
+                    }
+                }
             }
         }
     }
@@ -150,7 +165,8 @@ class SampleAppState(
 
     fun setTab(destination: SampleDestination.NavTabs) {
         navigationRepository.navigate {
-            it.copy(currentIndex = destination.ordinal)
+            if (it.currentIndex == destination.ordinal) it.popToRoot()
+            else it.copy(currentIndex = destination.ordinal)
         }
     }
 

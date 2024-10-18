@@ -129,9 +129,12 @@ private fun ProfilePhoto(
 }
 
 @Composable
-private fun ProfileDetails(state: State) {
+private fun ProfileDetails(
+    state: State,
+    modifier: Modifier = Modifier,
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {

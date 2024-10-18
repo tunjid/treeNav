@@ -12,30 +12,21 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.isUnspecified
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
-import androidx.compose.ui.layout.approachLayout
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.round
-import androidx.compose.ui.unit.roundToIntSize
 import androidx.compose.ui.unit.toOffset
-import androidx.compose.ui.unit.toSize
-import androidx.compose.ui.util.fastRoundToInt
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
+import com.tunjid.treenav.compose.utilities.AnimatedBoundsState
+import com.tunjid.treenav.compose.utilities.AnimatedBoundsState.Companion.animateBounds
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 
@@ -46,7 +37,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
     sharedTransitionScope: SharedTransitionScope,
     sharedElement: @Composable (State, Modifier) -> Unit,
     onRemoved: () -> Unit,
-    private val boundsTransform: BoundsTransform,
+    boundsTransform: BoundsTransform,
     private val canAnimateOnStartingFrames: PaneState<Pane, Destination>.() -> Boolean
 ) : SharedElementOverlay, SharedTransitionScope by sharedTransitionScope {
 
@@ -55,20 +46,21 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
     private var inCount by mutableIntStateOf(0)
 
     private var layer: GraphicsLayer? = null
-    private var targetOffset by mutableStateOf(IntOffset.Zero)
     var animInProgress by mutableStateOf(false)
         private set
 
     private val canDrawInOverlay get() = animInProgress
     private val panesKeysToSeenCount = mutableStateMapOf<String, Unit>()
 
-    private val animatedBounds: Rect?
-        get() = if (animInProgress) boundsAnimation.animatedValue else null
-
-    private val boundsAnimation = BoundsTransformDeferredAnimation()
+    private val animatedBoundsState = AnimatedBoundsState(
+        lookaheadScope = this,
+        boundsTransform = boundsTransform,
+        inProgress = { animInProgress }
+    )
 
     val moveableSharedElement: @Composable (Any?, Modifier) -> Unit =
         movableContentOf { state, modifier ->
+            animInProgress = isInProgress()
             @Suppress("UNCHECKED_CAST")
             sharedElement(
                 // The shared element composable will be created by the first screen and reused by
@@ -91,7 +83,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
     override fun ContentDrawScope.drawInOverlay() {
         if (!canDrawInOverlay) return
         val overlayLayer = layer ?: return
-        val (x, y) = targetOffset.toOffset()
+        val (x, y) = animatedBoundsState.targetOffset.toOffset()
         translate(x, y) {
             drawLayer(overlayLayer)
         }
@@ -117,75 +109,11 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
         internal fun <Pane, Destination : Node> Modifier.movableSharedElement(
             state: MovableSharedElementState<*, Pane, Destination>,
         ): Modifier {
-            val coroutineScope = rememberCoroutineScope()
-            state.isInProgress().also { state.animInProgress = it }
             val layer = rememberGraphicsLayer().also {
                 state.layer = it
             }
-            return approachLayout(
-                isMeasurementApproachInProgress = { lookaheadSize ->
-                    // Update target size, it will serve to know if we expect an approach in progress
-                    state.boundsAnimation.updateTargetSize(lookaheadSize.toSize())
-                    state.animInProgress
-                },
-                isPlacementApproachInProgress = {
-                    state.boundsAnimation.updateTargetOffsetAndAnimate(
-                        lookaheadScope = state,
-                        placementScope = this,
-                        coroutineScope = coroutineScope,
-                        includeMotionFrameOfReference = true,
-                        boundsTransform = state.boundsTransform,
-                    )
-                    state.animInProgress
-                },
-                approachMeasure = { measurable, _ ->
-                    // The animated value is null on the first frame as we don't get the full bounds
-                    // information until placement, so we can safely use the current Size.
-                    val fallbackSize =
-                        // When using Intrinsics, we may get measured before getting the approach check
-                        if (state.boundsAnimation.currentSize.isUnspecified) lookaheadSize.toSize()
-                        else state.boundsAnimation.currentSize
-
-                    val (animatedWidth, animatedHeight) =
-                        (state.animatedBounds?.size ?: fallbackSize).roundToIntSize()
-
-                    // For the target Layout, pass the animated size as Constraints.
-                    val placeable = measurable.measure(
-                        Constraints.fixed(
-                            width = animatedWidth,
-                            height = animatedHeight,
-                        )
-                    )
-                    layout(animatedWidth, animatedHeight) {
-                        val animatedBounds = state.animatedBounds
-                        val currentCoordinates = coordinates ?: return@layout placeable.place(
-                            x = 0,
-                            y = 0
-                        )
-                        val positionInScope = with(state) {
-                            lookaheadScopeCoordinates.localPositionOf(
-                                sourceCoordinates = currentCoordinates,
-                                relativeToSource = Offset.Zero,
-                                includeMotionFrameOfReference = true,
-                            )
-                        }
-
-                        val topLeft =
-                            if (animatedBounds != null) {
-                                state.boundsAnimation.updateCurrentBounds(
-                                    animatedBounds.topLeft,
-                                    animatedBounds.size
-                                )
-                                animatedBounds.topLeft
-                            } else {
-                                state.boundsAnimation.currentBounds?.topLeft ?: Offset.Zero
-                            }
-                        state.targetOffset = topLeft.round()
-
-                        val (x, y) = topLeft - positionInScope
-                        placeable.place(x.fastRoundToInt(), y.fastRoundToInt())
-                    }
-                }
+            return animateBounds(
+                state = state.animatedBoundsState
             )
                 .drawWithContent {
                     layer.record {
@@ -196,7 +124,6 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
                     }
                 }
         }
-
 
         @Composable
         private fun <Pane, Destination : Node> MovableSharedElementState<*, Pane, Destination>.isInProgress(): Boolean {
@@ -213,7 +140,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
                     paneState.key,
                     paneState.canAnimateOnStartingFrames()
                 )
-                value = snapshotFlow { boundsAnimation.isIdle }
+                value = snapshotFlow { animatedBoundsState.isIdle }
                     .debounce { if (it) 10 else 0 }
                     .first(true::equals)
                     .let { value.first to false }

@@ -66,6 +66,13 @@ fun MultiStackNav.switch(toIndex: Int): MultiStackNav = copy(
     indexHistory = (indexHistory - toIndex) + toIndex
 )
 
+fun MultiStackNav.popToRoot(indexToPop: Int = currentIndex) = copy(
+    stacks = stacks.mapIndexed { index: Int, stackNav: StackNav ->
+        if (index == indexToPop) stackNav.popToRoot()
+        else stackNav
+    }
+)
+
 /**
  * Performs the given [operation] with the [StackNav] at [MultiStackNav.currentIndex]
  */
