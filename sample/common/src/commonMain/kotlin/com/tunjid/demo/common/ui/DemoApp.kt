@@ -101,12 +101,13 @@ fun SampleApp(
                         )
                         .animatePaneBoundsConfiguration(
                             lookaheadScope = this@SharedTransitionScope,
-                            shouldAnimatePane = { pane ->
-                                when (pane) {
+                            shouldAnimatePane = {
+                                when (paneState.pane) {
                                     ThreePane.Primary,
                                     ThreePane.Secondary,
                                     ThreePane.Tertiary -> true
 
+                                    null,
                                     ThreePane.Overlay,
                                     ThreePane.TransientPrimary -> false
                                 }
