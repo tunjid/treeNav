@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.delegated
 import com.tunjid.treenav.compose.paneStrategy
@@ -37,7 +38,7 @@ import com.tunjid.treenav.compose.utilities.DefaultBoundsTransform
  *
  * @param lookaheadScope the root [LookaheadScope] where the panes are rendered in.
  * @param paneBoundsTransform a lambda providing the [BoundsTransform] for each [Pane].
- * @param canAnimatePane a lambda for toggling when the pane can be animated. It allows for
+ * @param shouldAnimatePane a lambda for toggling when the pane can be animated. It allows for
  * skipping an animation in progress.
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -47,28 +48,26 @@ fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration
         Destination
         >.animatePaneBoundsConfiguration(
     lookaheadScope: LookaheadScope,
-    paneBoundsTransform: (Pane) -> BoundsTransform = { DefaultBoundsTransform },
-    canAnimatePane: (Pane) -> Boolean = { true },
+    paneBoundsTransform: PaneScope<Pane, Destination>.() -> BoundsTransform = { DefaultBoundsTransform },
+    shouldAnimatePane: PaneScope<Pane, Destination>.() -> Boolean = { true },
 ): PanedNavHostConfiguration<Pane, NavigationState, Destination> = delegated {
     val originalTransform = strategyTransform(it)
     paneStrategy(
         transitions = originalTransform.transitions,
         paneMapping = originalTransform.paneMapper,
-        render = render@{
+        render = render@{ destination ->
             Box(
                 modifier = Modifier.animateBounds(
                     state = remember {
                         AnimatedBoundsState(
                             lookaheadScope = lookaheadScope,
-                            boundsTransform = paneState.pane
-                                ?.let(paneBoundsTransform)
-                                ?: DefaultBoundsTransform,
-                            inProgress = { paneState.pane?.let(canAnimatePane) ?: false }
+                            boundsTransform = paneBoundsTransform(),
+                            inProgress = { shouldAnimatePane() }
                         )
                     }
                 )
             ) {
-                originalTransform.render(this@render, it)
+                originalTransform.render(this@render, destination)
             }
         }
     )

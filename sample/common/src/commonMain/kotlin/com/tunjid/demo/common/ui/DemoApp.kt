@@ -101,7 +101,7 @@ fun SampleApp(
                         )
                         .animatePaneBoundsConfiguration(
                             lookaheadScope = this@SharedTransitionScope,
-                            canAnimatePane = { pane ->
+                            shouldAnimatePane = { pane ->
                                 when (pane) {
                                     ThreePane.Primary,
                                     ThreePane.Secondary,
