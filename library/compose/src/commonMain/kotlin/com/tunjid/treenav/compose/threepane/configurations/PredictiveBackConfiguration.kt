@@ -23,7 +23,6 @@ import androidx.compose.runtime.setValue
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.delegated
-import com.tunjid.treenav.compose.paneStrategy
 import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
@@ -51,12 +50,11 @@ inline fun <NavigationState : Node, reified Destination : Node> PanedNavHostConf
             if (isPreviewingBack.value) destinationTransform(navigationState.backPreviewTransform())
             else current
         },
-        strategyTransform = { destination ->
-            val originalStrategy = strategyTransform(destination)
-            paneStrategy(
-                transitions = originalStrategy.transitions,
-                paneMapping = paneMapper@{ inner ->
-                    val originalMapping = originalStrategy.paneMapper(inner)
+        strategyTransform = { navigationDestination ->
+            val originalStrategy = strategyTransform(navigationDestination)
+            originalStrategy.delegated(
+                paneMapping = paneMapper@{ navigationDestinationToMap ->
+                    val originalMapping = originalStrategy.paneMapper(navigationDestinationToMap)
                     val isPreviewing by isPreviewingBack
                     if (!isPreviewing) return@paneMapper originalMapping
                     // Back is being previewed, therefore the original mapping is already for back.
@@ -68,8 +66,7 @@ inline fun <NavigationState : Node, reified Destination : Node> PanedNavHostConf
                         .paneMapper(transientDestination)
                     val transient = paneMapping[ThreePane.Primary]
                     originalMapping + (ThreePane.TransientPrimary to transient)
-                },
-                render = originalStrategy.render
+                }
             )
         }
     )

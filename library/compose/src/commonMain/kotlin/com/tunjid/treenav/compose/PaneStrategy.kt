@@ -43,3 +43,24 @@ private val NoTransition = PaneScope.Transitions(
     enter = EnterTransition.None,
     exit = ExitTransition.None,
 )
+
+/**
+ * Creates a new [PaneStrategy] from this by conditionally overriding parts of it.
+ *
+ * @see paneStrategy
+ *
+ * @param transitions the transitions to run within each [PaneScope].
+ * @param paneMapping provides the mapping of panes to destinations for a given
+ * navigation [Destination].
+ * @param render defines the Composable rendered for each destination
+ * in a given [PaneScope].
+ */
+fun <Pane, Destination : Node> PaneStrategy<Pane, Destination>.delegated(
+    transitions: PaneScope<Pane, Destination>.() -> PaneScope.Transitions = this.transitions,
+    paneMapping: @Composable (Destination) -> Map<Pane, Destination?> = this.paneMapper,
+    render: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit = this.render
+) = paneStrategy(
+    transitions = transitions,
+    paneMapping = paneMapping,
+    render = render
+)

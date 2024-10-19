@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
-import com.tunjid.treenav.compose.PaneStrategy
 import com.tunjid.treenav.compose.PanedNavHost
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.delegated
@@ -33,12 +32,9 @@ fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
         >.threePanedMovableSharedElementConfiguration(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
 ): PanedNavHostConfiguration<ThreePane, NavigationState, Destination> =
-    delegated { destination ->
-        val originalStrategy =
-            this@threePanedMovableSharedElementConfiguration.strategyTransform(destination)
-        PaneStrategy(
-            transitions = originalStrategy.transitions,
-            paneMapper = originalStrategy.paneMapper,
+    delegated { navigationDestination ->
+        val originalStrategy = strategyTransform(navigationDestination)
+        originalStrategy.delegated(
             render = { paneDestination ->
                 val delegate = remember {
                     AdaptiveMovableSharedElementScope(
