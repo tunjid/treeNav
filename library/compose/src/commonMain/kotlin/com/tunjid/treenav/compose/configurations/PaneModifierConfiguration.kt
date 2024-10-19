@@ -22,7 +22,6 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.delegated
-import com.tunjid.treenav.compose.paneStrategy
 
 /**
  * A [PanedNavHostConfiguration] that allows for centrally defining the [Modifier] for
@@ -36,16 +35,14 @@ fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration
         Destination
         >.paneModifierConfiguration(
     paneModifier: PaneScope<Pane, Destination>.() -> Modifier = { Modifier },
-): PanedNavHostConfiguration<Pane, NavigationState, Destination> = delegated {
-    val originalTransform = strategyTransform(it)
-    paneStrategy(
-        transitions = originalTransform.transitions,
-        paneMapping = originalTransform.paneMapper,
-        render = render@{ destination ->
+): PanedNavHostConfiguration<Pane, NavigationState, Destination> = delegated { navigationDestination ->
+    val originalStrategy = strategyTransform(navigationDestination)
+    originalStrategy.delegated(
+        render = render@{ paneDestination ->
             Box(
                 modifier = paneModifier()
             ) {
-                originalTransform.render(this@render, destination)
+                originalStrategy.render(this@render, paneDestination)
             }
         }
     )

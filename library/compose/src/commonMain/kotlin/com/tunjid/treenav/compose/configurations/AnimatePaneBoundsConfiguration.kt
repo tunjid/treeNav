@@ -26,7 +26,6 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.delegated
-import com.tunjid.treenav.compose.paneStrategy
 import com.tunjid.treenav.compose.utilities.AnimatedBoundsState
 import com.tunjid.treenav.compose.utilities.AnimatedBoundsState.Companion.animateBounds
 import com.tunjid.treenav.compose.utilities.DefaultBoundsTransform
@@ -50,12 +49,10 @@ fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration
     lookaheadScope: LookaheadScope,
     paneBoundsTransform: PaneScope<Pane, Destination>.() -> BoundsTransform = { DefaultBoundsTransform },
     shouldAnimatePane: PaneScope<Pane, Destination>.() -> Boolean = { true },
-): PanedNavHostConfiguration<Pane, NavigationState, Destination> = delegated {
-    val originalTransform = strategyTransform(it)
-    paneStrategy(
-        transitions = originalTransform.transitions,
-        paneMapping = originalTransform.paneMapper,
-        render = render@{ destination ->
+): PanedNavHostConfiguration<Pane, NavigationState, Destination> = delegated { navigationDestination ->
+    val originalStrategy = strategyTransform(navigationDestination)
+    originalStrategy.delegated(
+        render = render@{ paneDestination ->
             Box(
                 modifier = Modifier.animateBounds(
                     state = remember {
@@ -67,7 +64,7 @@ fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration
                     }
                 )
             ) {
-                originalTransform.render(this@render, destination)
+                originalStrategy.render(this@render, paneDestination)
             }
         }
     )

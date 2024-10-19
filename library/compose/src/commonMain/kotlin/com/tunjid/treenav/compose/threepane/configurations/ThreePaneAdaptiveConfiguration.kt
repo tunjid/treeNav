@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
-import com.tunjid.treenav.compose.paneStrategy
 import com.tunjid.treenav.compose.delegated
 import com.tunjid.treenav.compose.threepane.ThreePane
 
@@ -23,15 +22,13 @@ fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
     windowWidthDpState: State<Int>,
     secondaryPaneBreakPoint: State<Int> = mutableStateOf(SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
     tertiaryPaneBreakPoint: State<Int> = mutableStateOf(TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
-): PanedNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated { node ->
-    val originalStrategy = this@threePanedNavHostConfiguration.strategyTransform(node)
-    paneStrategy(
-        render = originalStrategy.render,
-        transitions = originalStrategy.transitions,
-        paneMapping = { inner ->
+): PanedNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated { destination ->
+    val originalStrategy = strategyTransform(destination)
+    originalStrategy.delegated(
+        paneMapping = { navigationDestinationToMap ->
             // Consider navigation state different if window size class changes
             val windowWidthDp by windowWidthDpState
-            val originalMapping = originalStrategy.paneMapper(inner)
+            val originalMapping = originalStrategy.paneMapper(navigationDestinationToMap)
             val primaryNode = originalMapping[ThreePane.Primary]
             mapOf(
                 ThreePane.Primary to primaryNode,
