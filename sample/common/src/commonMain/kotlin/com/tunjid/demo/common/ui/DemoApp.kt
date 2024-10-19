@@ -18,26 +18,32 @@ package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.round
 import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberPanedNavHostState
 import com.tunjid.demo.common.ui.chat.chatPaneStrategy
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
@@ -51,20 +57,23 @@ import com.tunjid.treenav.compose.PanedNavHost
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.SavedStatePanedNavHostState
 import com.tunjid.treenav.compose.configurations.animatePaneBoundsConfiguration
+import com.tunjid.treenav.compose.configurations.paneModifierConfiguration
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.panedNavHostConfiguration
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.configurations.canAnimateOnStartingFrames
+import com.tunjid.treenav.compose.threepane.configurations.predictiveBackConfiguration
 import com.tunjid.treenav.compose.threepane.configurations.threePanedMovableSharedElementConfiguration
 import com.tunjid.treenav.compose.threepane.configurations.threePanedNavHostConfiguration
 import com.tunjid.treenav.current
+import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3AdaptiveApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SampleApp(
     appState: SampleAppState = remember { SampleAppState() },
@@ -83,6 +92,7 @@ fun SampleApp(
     ) {
         SharedTransitionScope { sharedTransitionModifier ->
             val windowWidthDp = remember { mutableIntStateOf(0) }
+            val surfaceColor = MaterialTheme.colorScheme.surface
             val density = LocalDensity.current
             val movableSharedElementHostState = remember {
                 MovableSharedElementHostState(
@@ -90,11 +100,27 @@ fun SampleApp(
                     canAnimateOnStartingFrames = PaneState<ThreePane, SampleDestination>::canAnimateOnStartingFrames
                 )
             }
+
             PanedNavHost(
                 state = appState.rememberPanedNavHostState {
                     this
+                        .paneModifierConfiguration {
+                            if (paneState.pane == ThreePane.TransientPrimary) Modifier
+                                .background(surfaceColor)
+                                .fillMaxSize()
+                                .predictiveBackModifier(
+                                    touchOffsetState = appState.backTouchOffsetState,
+                                    progressState = appState.backProgressFractionState
+                                )
+                            else Modifier.fillMaxSize()
+
+                        }
                         .threePanedNavHostConfiguration(
                             windowWidthDpState = windowWidthDp
+                        )
+                        .predictiveBackConfiguration(
+                            isPreviewingBack = appState.predictiveBackStatus,
+                            backPreviewTransform = MultiStackNav::pop,
                         )
                         .threePanedMovableSharedElementConfiguration(
                             movableSharedElementHostState = movableSharedElementHostState
@@ -141,6 +167,7 @@ fun SampleApp(
                                 .fillMaxHeight()
                         ) {
                             Destination(pane)
+                            if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
                         }
                     }
                 }
@@ -157,17 +184,39 @@ class SampleAppState(
     private val navigationState = mutableStateOf(
         navigationRepository.navigationStateFlow.value
     )
-    val currentNavigation by navigationState
-
     private val panedNavHostConfiguration = sampleAppNavHostConfiguration(
         navigationState
     )
+
+    val backTouchOffsetState = mutableStateOf(IntOffset.Zero)
+    val backProgressFractionState = mutableFloatStateOf(Float.NaN)
+
+    val currentNavigation by navigationState
+    val predictiveBackStatus = derivedStateOf { !backProgressFractionState.value.isNaN() }
 
     fun setTab(destination: SampleDestination.NavTabs) {
         navigationRepository.navigate {
             if (it.currentIndex == destination.ordinal) it.popToRoot()
             else it.copy(currentIndex = destination.ordinal)
         }
+    }
+
+    fun updatePredictiveBack(
+        touchOffset: Offset,
+        fraction: Float,
+    ) {
+        backTouchOffsetState.value = touchOffset.round()
+        backProgressFractionState.value = fraction
+    }
+
+    fun cancelPredictiveBack() {
+        backTouchOffsetState.value = IntOffset.Zero
+        backProgressFractionState.value = Float.NaN
+    }
+
+    fun goBack() {
+        cancelPredictiveBack()
+        navigationRepository.navigate(MultiStackNav::pop)
     }
 
     companion object {
