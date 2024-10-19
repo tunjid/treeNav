@@ -18,16 +18,19 @@ package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
@@ -43,6 +46,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberPanedNavHostState
 import com.tunjid.demo.common.ui.chat.chatPaneStrategy
@@ -92,7 +96,9 @@ fun SampleApp(
     ) {
         SharedTransitionScope { sharedTransitionModifier ->
             val windowWidthDp = remember { mutableIntStateOf(0) }
-            val surfaceColor = MaterialTheme.colorScheme.surface
+            val surfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                animateDpAsState(if (appState.predictiveBackStatus.value) 16.dp else 16.dp).value
+            )
             val density = LocalDensity.current
             val movableSharedElementHostState = remember {
                 MovableSharedElementHostState(
@@ -106,14 +112,14 @@ fun SampleApp(
                     this
                         .paneModifierConfiguration {
                             if (paneState.pane == ThreePane.TransientPrimary) Modifier
-                                .background(surfaceColor)
                                 .fillMaxSize()
                                 .predictiveBackModifier(
                                     touchOffsetState = appState.backTouchOffsetState,
                                     progressState = appState.backProgressFractionState
                                 )
-                            else Modifier.fillMaxSize()
-
+                                .background(surfaceColor, RoundedCornerShape(16.dp))
+                            else Modifier
+                                .fillMaxSize()
                         }
                         .threePanedNavHostConfiguration(
                             windowWidthDpState = windowWidthDp
