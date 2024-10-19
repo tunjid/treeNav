@@ -16,6 +16,8 @@
 
 package com.tunjid.demo.common.ui.profile
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
@@ -47,7 +49,8 @@ fun profilePaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
         ProfileScreen(
             movableSharedElementScope = movableSharedElementScope(),
             state = viewModel.state.collectAsStateWithLifecycle().value,
-            onAction = viewModel.accept
+            onAction = viewModel.accept,
+            modifier = Modifier.fillMaxSize(),
         )
     },
 )

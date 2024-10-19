@@ -49,6 +49,7 @@ fun ProfileScreen(
     movableSharedElementScope: MovableSharedElementScope,
     state: State,
     onAction: (Action) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val headerState = rememberAppBarCollapsingHeaderState(400.dp)
 

@@ -62,10 +62,11 @@ fun ChatScreen(
     movableSharedElementScope: MovableSharedElementScope,
     state: State,
     onAction: (Action) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberLazyListState()
     Column(
-        Modifier.fillMaxSize()
+        modifier,
     ) {
         SampleTopAppBar(
             title = state.room?.name ?: "",
@@ -81,7 +82,7 @@ fun ChatScreen(
             messages = state.chats,
             isInPrimaryPane = state.isInPrimaryPane,
             navigateToProfile = onAction,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxSize(),
             scrollState = scrollState,
             movableSharedElementScope = movableSharedElementScope,
         )
