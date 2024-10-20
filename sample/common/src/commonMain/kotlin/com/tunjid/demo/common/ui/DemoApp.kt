@@ -18,13 +18,19 @@ package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,8 +47,10 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
@@ -152,29 +160,53 @@ fun SampleApp(
                         windowWidthDp.value = (it.width / density.density).roundToInt()
                     }
             ) {
-                Row(
+                val order = remember {
+                    listOf(
+                        ThreePane.Tertiary,
+                        ThreePane.Secondary,
+                        ThreePane.Primary,
+                    )
+                }
+                val segmentedLayoutState = remember {
+                    SegmentedLayoutState(
+                        count = 3,
+                        isIndexVisible = { nodeFor(order[it]) != null }
+                    )
+                }
+                SegmentedLayout(
+                    state = segmentedLayoutState,
                     modifier = Modifier
                         .fillMaxSize()
                             then movableSharedElementHostState.modifier
                             then sharedTransitionModifier,
-                ) {
-                    val order = remember {
-                        listOf(
-                            ThreePane.Tertiary,
-                            ThreePane.Secondary,
-                            ThreePane.Primary,
-                        )
-                    }
-                    order.forEach { pane ->
-                        if (nodeFor(pane) == null) Spacer(Modifier)
-                        else Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                        ) {
-                            Destination(pane)
-                            if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
+                ) { index ->
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        val pane = order[index]
+                        Destination(pane)
+                        if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
+
+                        val draggableState = rememberDraggableState {
+                            segmentedLayoutState.dragBy(
+                                index = index,
+                                delta = with(density) { it.toDp() }
+                            )
                         }
+                        val interactionSource = remember { MutableInteractionSource() }
+                        val hovered by interactionSource.collectIsHoveredAsState()
+                        val width by animateDpAsState(if (hovered) 2.dp else 2.dp)
+                        val color by animateColorAsState(if (hovered) Color.LightGray else Color.Gray)
+
+                        Box(
+                            modifier = Modifier
+                                .hoverable(interactionSource)
+                                .align(Alignment.TopEnd)
+                                .background(color)
+                                .width(width)
+                                .fillMaxHeight()
+                                .draggable(draggableState, Orientation.Horizontal)
+                        )
                     }
                 }
             }
