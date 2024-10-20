@@ -97,7 +97,7 @@ fun SampleApp(
         SharedTransitionScope { sharedTransitionModifier ->
             val windowWidthDp = remember { mutableIntStateOf(0) }
             val surfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                animateDpAsState(if (appState.predictiveBackStatus.value) 16.dp else 16.dp).value
+                animateDpAsState(if (appState.predictiveBackStatus.value) 16.dp else 0.dp).value
             )
             val density = LocalDensity.current
             val movableSharedElementHostState = remember {
@@ -136,12 +136,12 @@ fun SampleApp(
                             shouldAnimatePane = {
                                 when (paneState.pane) {
                                     ThreePane.Primary,
+                                    ThreePane.TransientPrimary,
                                     ThreePane.Secondary,
                                     ThreePane.Tertiary -> true
 
                                     null,
-                                    ThreePane.Overlay,
-                                    ThreePane.TransientPrimary -> false
+                                    ThreePane.Overlay -> false
                                 }
                             }
                         )
