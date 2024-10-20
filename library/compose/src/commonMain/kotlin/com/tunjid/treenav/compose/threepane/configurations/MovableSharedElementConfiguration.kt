@@ -7,6 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
@@ -78,6 +81,8 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
     override fun <T> movableSharedElementOf(
         key: Any,
         boundsTransform: BoundsTransform,
+        zIndexInOverlay: Float,
+        clipInOverlayDuringTransition: (LayoutDirection, Density) -> Path?,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit = when (paneState.pane) {
         null -> throw IllegalArgumentException(
@@ -93,6 +98,8 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
             else -> delegate.movableSharedElementOf(
                 key = key,
                 boundsTransform = boundsTransform,
+                zIndexInOverlay = zIndexInOverlay,
+                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
                 sharedElement = sharedElement
             )
         }

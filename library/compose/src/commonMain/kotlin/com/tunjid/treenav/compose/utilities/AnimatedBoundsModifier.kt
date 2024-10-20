@@ -44,7 +44,6 @@ import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.roundToIntSize
@@ -61,7 +60,6 @@ internal class AnimatedBoundsState(
     animateMotionFrameOfReference: Boolean = false,
     private val inProgress: (() -> Boolean)? = null,
 ) {
-    var targetOffset by mutableStateOf(IntOffset.Zero)
     var boundsTransform by mutableStateOf(boundsTransform)
     var animateMotionFrameOfReference by mutableStateOf(animateMotionFrameOfReference)
 
@@ -181,7 +179,6 @@ internal class AnimatedBoundsState(
                         } else {
                             state.boundsAnimation.currentBounds?.topLeft ?: Offset.Zero
                         }
-                    state.targetOffset = topLeft.round()
                     val (x, y) = positionInScope?.let { topLeft - it } ?: Offset.Zero
                     placeable.place(x.fastRoundToInt(), y.fastRoundToInt())
                 }
