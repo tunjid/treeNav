@@ -16,7 +16,9 @@
 
 package com.tunjid.demo.common.ui.chat
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
@@ -50,7 +52,8 @@ fun chatPaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
         ChatScreen(
             movableSharedElementScope = movableSharedElementScope(),
             state = viewModel.state.collectAsStateWithLifecycle().value,
-            onAction = viewModel.accept
+            onAction = viewModel.accept,
+            modifier = Modifier.fillMaxSize(),
         )
         LaunchedEffect(paneState.pane) {
             viewModel.accept(

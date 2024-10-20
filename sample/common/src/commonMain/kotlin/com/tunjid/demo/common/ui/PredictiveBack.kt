@@ -44,20 +44,17 @@ fun Modifier.predictiveBackModifier(
             minHeight = (constraints.minHeight * scale).roundToInt(),
         )
     )
-    val paneWidth = (placeable.width * scale).fastRoundToInt()
-    val paneHeight = (placeable.height * scale).fastRoundToInt()
-
-    if (progress.isNaN() || paneWidth == 0 || paneHeight == 0) return@layout layout(
-        paneWidth,
-        paneHeight
-    ) {
+    if (progress.isNaN()) return@layout layout(placeable.width, placeable.height) {
         placeable.place(0, 0)
     }
+
+    val paneWidth = (placeable.width * scale).fastRoundToInt()
+    val paneHeight = (placeable.height * scale).fastRoundToInt()
 
     val scaledWidth = paneWidth * scale
     val spaceOnEachSide = (paneWidth - scaledWidth) / 2
     val margin = (BACK_PREVIEW_PADDING * progress).dp.roundToPx()
-    val isFromLeft = true
+    val isFromLeft = touchOffset.x < paneWidth / 2
 
     val xOffset = ((spaceOnEachSide - margin) * when {
         isFromLeft -> 1

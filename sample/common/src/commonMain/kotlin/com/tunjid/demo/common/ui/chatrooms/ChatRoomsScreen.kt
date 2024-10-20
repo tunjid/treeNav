@@ -44,6 +44,7 @@ import kotlin.math.roundToInt
 fun ChatRoomsScreen(
     state: State,
     onAction: (Action) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val headerState = rememberAppBarCollapsingHeaderState(200.dp)
 
