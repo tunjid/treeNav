@@ -8,6 +8,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -15,13 +16,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.layer.GraphicsLayer
-import androidx.compose.ui.graphics.layer.drawLayer
-import androidx.compose.ui.graphics.rememberGraphicsLayer
-import androidx.compose.ui.unit.toOffset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
@@ -39,15 +36,17 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
     onRemoved: () -> Unit,
     boundsTransform: BoundsTransform,
     private val canAnimateOnStartingFrames: PaneState<Pane, Destination>.() -> Boolean
-) : SharedElementOverlay, SharedTransitionScope by sharedTransitionScope {
+) : SharedTransitionScope by sharedTransitionScope {
 
     var paneScope by mutableStateOf(paneScope)
-
-    private var composedRefCount by mutableIntStateOf(0)
-
-    private var layer: GraphicsLayer? = null
+    var zIndexInOverlay by mutableFloatStateOf(0f)
+    var clipInOverlayDuringTransition: (LayoutDirection, Density) -> Path? by mutableStateOf(
+        { _, _ -> null }
+    )
     var animInProgress by mutableStateOf(false)
         private set
+
+    private var composedRefCount by mutableIntStateOf(0)
 
     private val canDrawInOverlay get() = animInProgress
     private val panesKeysToSeenCount = mutableStateMapOf<String, Unit>()
@@ -61,26 +60,21 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
     val moveableSharedElement: @Composable (Any?, Modifier) -> Unit =
         movableContentOf { state, modifier ->
             animInProgress = isInProgress()
-            val layer = rememberGraphicsLayer().also {
-                this.layer = it
-            }
             @Suppress("UNCHECKED_CAST")
             sharedElement(
                 // The shared element composable will be created by the first screen and reused by
                 // subsequent screens. This updates the state from other screens so changes are seen.
                 state as State,
-                modifier
+                Modifier
+                    .renderInSharedTransitionScopeOverlay(
+                        renderInOverlay = ::canDrawInOverlay,
+                        zIndexInOverlay = zIndexInOverlay,
+                        clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                    )
+                    .then(modifier)
                     .animateBounds(
                         state = animatedBoundsState
                     )
-                    .drawWithContent {
-                        layer.record {
-                            this@drawWithContent.drawContent()
-                        }
-                        if (!canDrawInOverlay) {
-                            drawLayer(layer)
-                        }
-                    },
             )
 
             DisposableEffect(Unit) {
@@ -90,15 +84,6 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
                 }
             }
         }
-
-    override fun ContentDrawScope.drawInOverlay() {
-        if (!canDrawInOverlay) return
-        val overlayLayer = layer ?: return
-        val (x, y) = animatedBoundsState.targetOffset.toOffset()
-        translate(x, y) {
-            drawLayer(overlayLayer)
-        }
-    }
 
     private fun updatePaneStateSeen(
         paneState: PaneState<*, *>

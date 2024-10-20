@@ -186,8 +186,7 @@ fun SampleApp(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                            then movableSharedElementHostState.modifier
-                            then sharedTransitionModifier,
+                        .then(sharedTransitionModifier)
                 ) {
                     SegmentedLayout(
                         state = segmentedLayoutState,
