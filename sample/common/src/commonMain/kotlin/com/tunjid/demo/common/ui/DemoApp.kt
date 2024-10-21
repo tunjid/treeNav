@@ -62,7 +62,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
-import com.tunjid.composables.scrollbars.scrollable.sumOf
 import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberPanedNavHostState
 import com.tunjid.demo.common.ui.chat.chatPaneStrategy
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
@@ -176,8 +175,12 @@ fun SampleApp(
                 }
                 val segmentedLayoutState = remember {
                     SegmentedLayoutState(
-                        count = 3,
-                        isIndexVisible = { nodeFor(order[it]) != null }
+                        indexVisibilityList = order.map { nodeFor(it) != null },
+                    )
+                }.also {
+                    for (index in order.indices) it.setVisibilityAt(
+                        index = index,
+                        visible = nodeFor(order[index]) != null,
                     )
                 }
                 Box(
@@ -189,27 +192,21 @@ fun SampleApp(
                     SegmentedLayout(
                         state = segmentedLayoutState,
                         modifier = Modifier
-                            .fillMaxSize()
-                    ) { index ->
-                        val pane = order[index]
-                        Destination(pane)
-                        if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
-                    }
-
-                    val visibleIndices = order.indices.mapNotNull { index ->
-                        index.takeIf { nodeFor(order[it]) != null }
-                    }
-
-                    if (visibleIndices.size > 1) for (index in visibleIndices) {
-                        val totalWeight = visibleIndices.sumOf(segmentedLayoutState::weightAt)
-                        if (index != visibleIndices.last()) PaneSeparator(
-                            segmentedLayoutState = segmentedLayoutState,
-                            index = index,
-                            density = density,
-                            xOffset = segmentedLayoutState.size.width
-                                .times(segmentedLayoutState.weightAt(index) / totalWeight)
-                        )
-                    }
+                            .fillMaxSize(),
+                        itemSeparators = { paneIndex, offset ->
+                            PaneSeparator(
+                                segmentedLayoutState = segmentedLayoutState,
+                                index = paneIndex,
+                                density = density,
+                                xOffset = offset,
+                            )
+                        },
+                        itemContent = { index ->
+                            val pane = order[index]
+                            Destination(pane)
+                            if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
+                        }
+                    )
                 }
             }
         }
@@ -244,7 +241,7 @@ private fun BoxScope.PaneSeparator(
     Box(
         modifier = Modifier
             .align(Alignment.CenterStart)
-            .offset(x = xOffset - (width/2))
+            .offset(x = xOffset - (width / 2))
             .draggable(
                 state = draggableState,
                 orientation = Orientation.Horizontal,
