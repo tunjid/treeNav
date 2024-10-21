@@ -48,6 +48,9 @@ fun StackNav.pop(popLast: Boolean = false) = when {
     else -> copy(children = children.dropLast(1))
 }
 
+/**
+ * Pops every node in this [StackNav] up until the last one.
+ */
 fun StackNav.popToRoot() = copy(
     children = children.take(1)
 )

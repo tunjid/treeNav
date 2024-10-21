@@ -128,4 +128,20 @@ class StackNavTest {
                 .children
         )
     }
+
+    @Test
+    fun testPoppingToRoot() {
+        val multiPush = subject
+            .push(TestNode(name = "A"))
+            .push(TestNode(name = "B"))
+            .push(TestNode(name = "C"))
+
+
+        assertEquals(
+            expected = listOf(TestNode(name = "A")),
+            actual = multiPush
+                .popToRoot()
+                .children
+        )
+    }
 }

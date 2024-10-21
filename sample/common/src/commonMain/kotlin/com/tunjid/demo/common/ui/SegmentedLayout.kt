@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.unit.toSize
+import com.tunjid.composables.scrollbars.scrollable.sumOf
 
 @Stable
 class SegmentedLayoutState(
@@ -42,7 +44,8 @@ class SegmentedLayoutState(
     val isIndexVisible: (Int) -> Boolean = { true },
 ) {
     var minWidth by mutableStateOf(minWidth)
-    internal var size by mutableStateOf(DpSize.Zero)
+    var size by mutableStateOf(DpSize.Zero)
+        internal set
 
     private val weightMap = mutableStateMapOf<Int, Float>().apply {
         (0..<count).forEach { index -> put(index, 1f / count) }
@@ -75,6 +78,13 @@ class SegmentedLayoutState(
         val newWidth = width + delta
         val newWeight = newWidth / size.width
         setWeightAt(index = index, weight = newWeight)
+    }
+
+    companion object {
+
+        inline val SegmentedLayoutState.visibleIndices get() = (0..<count).filter(isIndexVisible)
+
+        val SegmentedLayoutState.weightSum get() = visibleIndices.sumOf(weightMap::getValue)
     }
 }
 

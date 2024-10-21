@@ -26,11 +26,16 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,12 +55,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
+import com.tunjid.composables.scrollbars.scrollable.sumOf
 import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberPanedNavHostState
 import com.tunjid.demo.common.ui.chat.chatPaneStrategy
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
@@ -173,44 +180,87 @@ fun SampleApp(
                         isIndexVisible = { nodeFor(order[it]) != null }
                     )
                 }
-                SegmentedLayout(
-                    state = segmentedLayoutState,
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
                             then movableSharedElementHostState.modifier
                             then sharedTransitionModifier,
-                ) { index ->
-                    Box(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
+                ) {
+                    SegmentedLayout(
+                        state = segmentedLayoutState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) { index ->
                         val pane = order[index]
                         Destination(pane)
                         if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
+                    }
 
-                        val draggableState = rememberDraggableState {
-                            segmentedLayoutState.dragBy(
-                                index = index,
-                                delta = with(density) { it.toDp() }
-                            )
-                        }
-                        val interactionSource = remember { MutableInteractionSource() }
-                        val hovered by interactionSource.collectIsHoveredAsState()
-                        val width by animateDpAsState(if (hovered) 2.dp else 2.dp)
-                        val color by animateColorAsState(if (hovered) Color.LightGray else Color.Gray)
+                    val visibleIndices = order.indices.mapNotNull { index ->
+                        index.takeIf { nodeFor(order[it]) != null }
+                    }
 
-                        Box(
-                            modifier = Modifier
-                                .hoverable(interactionSource)
-                                .align(Alignment.TopEnd)
-                                .background(color)
-                                .width(width)
-                                .fillMaxHeight()
-                                .draggable(draggableState, Orientation.Horizontal)
+                    if (visibleIndices.size > 1) for (index in visibleIndices) {
+                        val totalWeight = visibleIndices.sumOf(segmentedLayoutState::weightAt)
+                        if (index != visibleIndices.last()) PaneSeparator(
+                            segmentedLayoutState = segmentedLayoutState,
+                            index = index,
+                            density = density,
+                            xOffset = segmentedLayoutState.size.width
+                                .times(segmentedLayoutState.weightAt(index) / totalWeight)
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BoxScope.PaneSeparator(
+    segmentedLayoutState: SegmentedLayoutState,
+    index: Int,
+    density: Density,
+    xOffset: Dp,
+) {
+    val draggableState = rememberDraggableState {
+        segmentedLayoutState.dragBy(
+            index = index,
+            delta = with(density) { it.toDp() }
+        )
+    }
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val hovered by interactionSource.collectIsHoveredAsState()
+    val pressed by interactionSource.collectIsPressedAsState()
+    val dragged by interactionSource.collectIsDraggedAsState()
+    val active = hovered || pressed || dragged
+
+    val width by animateDpAsState(if (active) PaneSeparatorActiveWidthDp else 1.dp)
+    val color by animateColorAsState(
+        if (hovered) MaterialTheme.colorScheme.onSurfaceVariant
+        else MaterialTheme.colorScheme.onSurface
+    )
+    Box(
+        modifier = Modifier
+            .align(Alignment.CenterStart)
+            .offset(x = xOffset - (width/2))
+            .draggable(
+                state = draggableState,
+                orientation = Orientation.Horizontal,
+                interactionSource = interactionSource,
+            )
+            .hoverable(interactionSource)
+            .widthIn(min = 12.dp)
+            .height(PaneSeparatorActiveWidthDp)
+    ) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .background(color, RoundedCornerShape(PaneSeparatorActiveWidthDp))
+                .width(width)
+                .height(PaneSeparatorActiveWidthDp)
+        )
     }
 }
 
@@ -306,3 +356,5 @@ private fun sampleAppNavHostConfiguration(
         }
     }
 )
+
+private val PaneSeparatorActiveWidthDp = 56.dp
