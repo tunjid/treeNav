@@ -233,29 +233,34 @@ private fun BoxScope.PaneSeparator(
     val dragged by interactionSource.collectIsDraggedAsState()
     val active = hovered || pressed || dragged
 
-    val width by animateDpAsState(if (active) PaneSeparatorActiveWidthDp else 1.dp)
-    val color by animateColorAsState(
-        if (hovered) MaterialTheme.colorScheme.onSurfaceVariant
-        else MaterialTheme.colorScheme.onSurface
-    )
+    val separatorWidth = if (active) PaneSeparatorActiveWidthDp else 1.dp
+    val separatorContainerWidth = if (active) separatorWidth else PaneSeparatorTouchTargetWidthDp
+    val separatorContainerOffset = xOffset - (separatorContainerWidth / 2)
+
     Box(
         modifier = Modifier
             .align(Alignment.CenterStart)
-            .offset(x = xOffset - (width / 2))
+            .offset(x = animateDpAsState(separatorContainerOffset).value)
             .draggable(
                 state = draggableState,
                 orientation = Orientation.Horizontal,
                 interactionSource = interactionSource,
             )
             .hoverable(interactionSource)
-            .widthIn(min = 12.dp)
+            .widthIn(min = PaneSeparatorTouchTargetWidthDp)
             .height(PaneSeparatorActiveWidthDp)
     ) {
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
-                .background(color, RoundedCornerShape(PaneSeparatorActiveWidthDp))
-                .width(width)
+                .background(
+                    color = animateColorAsState(
+                        if (hovered) MaterialTheme.colorScheme.onSurfaceVariant
+                        else MaterialTheme.colorScheme.onSurface
+                    ).value,
+                    shape = RoundedCornerShape(PaneSeparatorActiveWidthDp),
+                )
+                .width(animateDpAsState(separatorWidth).value)
                 .height(PaneSeparatorActiveWidthDp)
         )
     }
@@ -355,3 +360,4 @@ private fun sampleAppNavHostConfiguration(
 )
 
 private val PaneSeparatorActiveWidthDp = 56.dp
+private val PaneSeparatorTouchTargetWidthDp = 16.dp
