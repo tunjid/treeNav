@@ -43,7 +43,7 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
 
     var paneScope by mutableStateOf(paneScope)
 
-    private var inCount by mutableIntStateOf(0)
+    private var composedRefCount by mutableIntStateOf(0)
 
     private var layer: GraphicsLayer? = null
     var animInProgress by mutableStateOf(false)
@@ -61,21 +61,32 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
     val moveableSharedElement: @Composable (Any?, Modifier) -> Unit =
         movableContentOf { state, modifier ->
             animInProgress = isInProgress()
+            val layer = rememberGraphicsLayer().also {
+                this.layer = it
+            }
             @Suppress("UNCHECKED_CAST")
             sharedElement(
                 // The shared element composable will be created by the first screen and reused by
                 // subsequent screens. This updates the state from other screens so changes are seen.
                 state as State,
-                Modifier
-                    .movableSharedElement(
-                        state = this,
-                    ) then modifier,
+                modifier
+                    .animateBounds(
+                        state = animatedBoundsState
+                    )
+                    .drawWithContent {
+                        layer.record {
+                            this@drawWithContent.drawContent()
+                        }
+                        if (!canDrawInOverlay) {
+                            drawLayer(layer)
+                        }
+                    },
             )
 
             DisposableEffect(Unit) {
-                ++inCount
+                ++composedRefCount
                 onDispose {
-                    if (--inCount <= 0) onRemoved()
+                    if (--composedRefCount <= 0) onRemoved()
                 }
             }
         }
@@ -98,32 +109,6 @@ internal class MovableSharedElementState<State, Pane, Destination : Node>(
     private val hasBeenShared get() = panesKeysToSeenCount.size > 1
 
     companion object {
-        /**
-         * Allows a custom modifier to animate the local position and size of the layout within the
-         * LookaheadLayout, whenever there's a change in the layout.
-         */
-        @OptIn(
-            ExperimentalSharedTransitionApi::class
-        )
-        @Composable
-        internal fun <Pane, Destination : Node> Modifier.movableSharedElement(
-            state: MovableSharedElementState<*, Pane, Destination>,
-        ): Modifier {
-            val layer = rememberGraphicsLayer().also {
-                state.layer = it
-            }
-            return animateBounds(
-                state = state.animatedBoundsState
-            )
-                .drawWithContent {
-                    layer.record {
-                        this@drawWithContent.drawContent()
-                    }
-                    if (!state.canDrawInOverlay) {
-                        drawLayer(layer)
-                    }
-                }
-        }
 
         @Composable
         private fun <Pane, Destination : Node> MovableSharedElementState<*, Pane, Destination>.isInProgress(): Boolean {
