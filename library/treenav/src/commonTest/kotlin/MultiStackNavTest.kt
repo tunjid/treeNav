@@ -67,17 +67,17 @@ class MultiStackNavTest {
                     children = listOf("A", "B", "C").map(::TestNode)
                 )
             )
-                + listOf("A", "B", "C").map(::TestNode)
-                + StackNav(
+                    + listOf("A", "B", "C").map(::TestNode)
+                    + StackNav(
                 name = "1",
                 children = listOf("F").map(::TestNode)
             )
-                + listOf("F").map(::TestNode)
-                + StackNav(
+                    + listOf("F").map(::TestNode)
+                    + StackNav(
                 name = "2",
                 children = listOf("D", "E").map(::TestNode)
             )
-                + listOf("D", "E").map(::TestNode),
+                    + listOf("D", "E").map(::TestNode),
             actual = pushed.flatten(order = Order.DepthFirst)
         )
     }
@@ -110,9 +110,9 @@ class MultiStackNavTest {
                     children = listOf("D", "E").map(::TestNode)
                 )
             )
-                + listOf("A", "B", "C").map(::TestNode)
-                + listOf("F").map(::TestNode)
-                + listOf("D", "E").map(::TestNode),
+                    + listOf("A", "B", "C").map(::TestNode)
+                    + listOf("F").map(::TestNode)
+                    + listOf("D", "E").map(::TestNode),
             actual = pushed.flatten(order = Order.BreadthFirst)
         )
     }
@@ -263,6 +263,47 @@ class MultiStackNavTest {
                 .map(::TestNode)
                 .toSet(),
             actual = (multiPush - subject)
+                .filterIsInstance<TestNode>()
+                .toSet()
+        )
+    }
+
+    @Test
+    fun testPoppingToRoot() {
+        val multiPush = subject
+            .push(TestNode(name = "A"))
+            .push(TestNode(name = "B"))
+            .push(TestNode(name = "C"))
+            .copy(currentIndex = 1)
+            .push(TestNode(name = "D"))
+            .push(TestNode(name = "E"))
+            .push(TestNode(name = "F"))
+
+        assertEquals(
+            expected = setOf(
+                TestNode(name = "A"),
+                TestNode(name = "B"),
+                TestNode(name = "C"),
+                TestNode(name = "D"),
+            ),
+            actual = multiPush
+                .popToRoot()
+                .minus(subject)
+                .filterIsInstance<TestNode>()
+                .toSet()
+        )
+
+        assertEquals(
+            expected = setOf(
+                TestNode(name = "A"),
+                TestNode(name = "D"),
+                TestNode(name = "E"),
+                TestNode(name = "F"),
+            ),
+            actual = multiPush
+                .copy(currentIndex = 0)
+                .popToRoot()
+                .minus(subject)
                 .filterIsInstance<TestNode>()
                 .toSet()
         )

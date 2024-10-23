@@ -66,6 +66,11 @@ fun MultiStackNav.switch(toIndex: Int): MultiStackNav = copy(
     indexHistory = (indexHistory - toIndex) + toIndex
 )
 
+/**
+ * Pops every node in the [StackNav] at [indexToPop] up until the last one.
+ *
+ * @see StackNav.popToRoot
+ */
 fun MultiStackNav.popToRoot(indexToPop: Int = currentIndex) = copy(
     stacks = stacks.mapIndexed { index: Int, stackNav: StackNav ->
         if (index == indexToPop) stackNav.popToRoot()
