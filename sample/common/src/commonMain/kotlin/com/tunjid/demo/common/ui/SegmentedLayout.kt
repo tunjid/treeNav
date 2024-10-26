@@ -24,7 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,34 +39,34 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.unit.toSize
-import com.tunjid.composables.scrollbars.scrollable.sumOf
 
 @Stable
 class SegmentedLayoutState(
+    val totalCount: Int,
+    visibleCount: Int = totalCount,
     minWidth: Dp = 80.dp,
-    indexVisibilityList: List<Boolean>,
 ) {
+    var visibleCount by mutableIntStateOf(visibleCount)
     var minWidth by mutableStateOf(minWidth)
-    val count get() = indexVisibilityList.size
+    var width by mutableStateOf(DpSize.Zero.width)
+        internal set
 
-    private var size by mutableStateOf(DpSize.Zero)
-    private val indexVisibilityList = mutableStateListOf(*indexVisibilityList.toTypedArray())
     private val weightMap = mutableStateMapOf<Int, Float>().apply {
-        (0..<count).forEach { index -> put(index, 1f / count) }
+        (0..<totalCount).forEach { index -> put(index, 1f / totalCount) }
     }
 
     fun weightAt(index: Int): Float = weightMap.getValue(index)
 
     fun setWeightAt(index: Int, weight: Float) {
-        if (weight * size.width < minWidth) return
+        if (weight * width < minWidth) return
 
         val oldWeight = weightMap.getValue(index)
         val weightDifference = oldWeight - weight
-        val adjustedIndex = (0..<count).firstNotNullOfOrNull search@{ i ->
-            val searchIndex = (index + i) % count
+        val adjustedIndex = (0..<totalCount).firstNotNullOfOrNull search@{ i ->
+            val searchIndex = (index + i) % totalCount
             if (searchIndex == index) return@search null
 
-            val adjustedWidth = (weightMap.getValue(searchIndex) + weightDifference) * size.width
+            val adjustedWidth = (weightMap.getValue(searchIndex) + weightDifference) * width
             if (adjustedWidth < minWidth) return@search null
 
             searchIndex
@@ -76,17 +76,13 @@ class SegmentedLayoutState(
         weightMap[adjustedIndex] = weightMap.getValue(adjustedIndex) + weightDifference
     }
 
-    fun isVisibleAt(index: Int) = indexVisibilityList[index]
-
-    fun setVisibilityAt(index: Int, visible: Boolean) {
-        indexVisibilityList[index] = visible
-    }
+    fun isVisibleAt(index: Int) = index < visibleCount
 
     fun dragBy(index: Int, delta: Dp) {
         val oldWeight = weightAt(index)
-        val width = oldWeight * size.width
+        val width = oldWeight * width
         val newWidth = width + delta
-        val newWeight = newWidth / size.width
+        val newWeight = newWidth / this.width
         setWeightAt(index = index, weight = newWeight)
     }
 
@@ -94,33 +90,32 @@ class SegmentedLayoutState(
 
         @Composable
         fun SegmentedLayoutState.Separators(
-            separator: @Composable (
-                paneIndex: Int, offset: Dp
-            ) -> Unit
+            separator: @Composable (paneIndex: Int, offset: Dp) -> Unit
         ) {
-            val visibleIndices by remember {
+            val totalWeight by remember {
                 derivedStateOf {
-                    indexVisibilityList.mapIndexedNotNull { index, visible ->
-                        index.takeIf { visible }
+                    (0..<visibleCount).sumOf { weightAt(it).toDouble() }.toFloat()
+                }
+            }
+            val widthLookup by remember {
+                derivedStateOf {
+                    (0..<visibleCount).map { index ->
+                        val previousIndexOffset =
+                            if (index == 0) 0.dp
+                            else (weightAt(index - 1) / totalWeight) * width
+                        val indexOffset = (weightAt(index) / totalWeight) * width
+                        previousIndexOffset + indexOffset
                     }
                 }
             }
-            val totalWeight by remember {
-                derivedStateOf {
-                    visibleIndices.sumOf(::weightAt)
-                }
-            }
-
-            if (visibleIndices.size > 1) for (index in visibleIndices) {
-                if (index != indexVisibilityList.lastIndex) separator(
-                    index,
-                    (weightAt(index) / totalWeight) * size.width
-                )
-            }
+            if (visibleCount > 1)
+                for (index in 0..<visibleCount)
+                    if (index != visibleCount - 1)
+                        separator(index, widthLookup[index])
         }
 
         fun SegmentedLayoutState.updateSize(size: IntSize, density: Density) {
-            this.size = with(density) { size.toSize().toDpSize() }
+            this.width = with(density) { size.toSize().toDpSize().width }
         }
     }
 }
@@ -143,7 +138,7 @@ fun SegmentedLayout(
             modifier = Modifier
                 .matchParentSize(),
         ) {
-            for (index in 0..<state.count) {
+            for (index in 0..<state.totalCount) {
                 if (state.isVisibleAt(index)) Box(
                     modifier = Modifier
                         .weight(state.weightAt(index))
