@@ -25,12 +25,13 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -50,6 +51,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -120,6 +122,7 @@ fun SampleApp(
                     canAnimateOnStartingFrames = PaneState<ThreePane, SampleDestination>::canAnimateOnStartingFrames
                 )
             }
+            val notInteractingWithPanes = !appState.isInteractingWithPanes()
 
             PanedNavHost(
                 state = appState.rememberPanedNavHostState {
@@ -152,7 +155,7 @@ fun SampleApp(
                                     ThreePane.Primary,
                                     ThreePane.TransientPrimary,
                                     ThreePane.Secondary,
-                                    ThreePane.Tertiary -> true
+                                    ThreePane.Tertiary -> notInteractingWithPanes
 
                                     null,
                                     ThreePane.Overlay -> false
@@ -173,49 +176,46 @@ fun SampleApp(
                         ThreePane.Primary,
                     )
                 }
+                val filteredOrder by remember {
+                    derivedStateOf { order.filter { nodeFor(it) != null } }
+                }
                 val segmentedLayoutState = remember {
                     SegmentedLayoutState(
-                        indexVisibilityList = order.map { nodeFor(it) != null },
+                        totalCount = order.size,
                     )
                 }.also {
-                    for (index in order.indices) it.setVisibilityAt(
-                        index = index,
-                        visible = nodeFor(order[index]) != null,
-                    )
+                    it.visibleCount = filteredOrder.size
                 }
-                Box(
+                SegmentedLayout(
+                    state = segmentedLayoutState,
                     modifier = Modifier
                         .fillMaxSize()
                             then movableSharedElementHostState.modifier
                             then sharedTransitionModifier,
-                ) {
-                    SegmentedLayout(
-                        state = segmentedLayoutState,
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        itemSeparators = { paneIndex, offset ->
-                            PaneSeparator(
-                                segmentedLayoutState = segmentedLayoutState,
-                                index = paneIndex,
-                                density = density,
-                                xOffset = offset,
-                            )
-                        },
-                        itemContent = { index ->
-                            val pane = order[index]
-                            Destination(pane)
-                            if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
-                        }
-                    )
-                }
+                    itemSeparators = { paneIndex, offset ->
+                        PaneSeparator(
+                            segmentedLayoutState = segmentedLayoutState,
+                            interactionSource = appState.paneInteractionSourceAt(paneIndex),
+                            index = paneIndex,
+                            density = density,
+                            xOffset = offset,
+                        )
+                    },
+                    itemContent = { index ->
+                        val pane = filteredOrder[index]
+                        Destination(pane)
+                        if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun BoxScope.PaneSeparator(
+private fun PaneSeparator(
     segmentedLayoutState: SegmentedLayoutState,
+    interactionSource: MutableInteractionSource,
     index: Int,
     density: Density,
     xOffset: Dp,
@@ -227,20 +227,14 @@ private fun BoxScope.PaneSeparator(
         )
     }
 
-    val interactionSource = remember { MutableInteractionSource() }
-    val hovered by interactionSource.collectIsHoveredAsState()
-    val pressed by interactionSource.collectIsPressedAsState()
-    val dragged by interactionSource.collectIsDraggedAsState()
-    val active = hovered || pressed || dragged
-
+    val active = interactionSource.isActive()
     val separatorWidth = if (active) PaneSeparatorActiveWidthDp else 1.dp
     val separatorContainerWidth = if (active) separatorWidth else PaneSeparatorTouchTargetWidthDp
     val separatorContainerOffset = xOffset - (separatorContainerWidth / 2)
 
     Box(
         modifier = Modifier
-            .align(Alignment.CenterStart)
-            .offset(x = animateDpAsState(separatorContainerOffset).value)
+            .offset(x = separatorContainerOffset)
             .draggable(
                 state = draggableState,
                 orientation = Orientation.Horizontal,
@@ -248,14 +242,14 @@ private fun BoxScope.PaneSeparator(
             )
             .hoverable(interactionSource)
             .widthIn(min = PaneSeparatorTouchTargetWidthDp)
-            .height(PaneSeparatorActiveWidthDp)
+            .fillMaxHeight()
     ) {
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
                 .background(
                     color = animateColorAsState(
-                        if (hovered) MaterialTheme.colorScheme.onSurfaceVariant
+                        if (active) MaterialTheme.colorScheme.onSurfaceVariant
                         else MaterialTheme.colorScheme.onSurface
                     ).value,
                     shape = RoundedCornerShape(PaneSeparatorActiveWidthDp),
@@ -263,7 +257,16 @@ private fun BoxScope.PaneSeparator(
                 .width(animateDpAsState(separatorWidth).value)
                 .height(PaneSeparatorActiveWidthDp)
         )
+        Text(index.toString())
     }
+}
+
+@Composable
+fun InteractionSource.isActive(): Boolean {
+    val hovered by collectIsHoveredAsState()
+    val pressed by collectIsPressedAsState()
+    val dragged by collectIsDraggedAsState()
+    return hovered || pressed || dragged
 }
 
 @Stable
@@ -277,6 +280,7 @@ class SampleAppState(
     private val panedNavHostConfiguration = sampleAppNavHostConfiguration(
         navigationState
     )
+    private val paneInteractionSourceList = mutableStateListOf<MutableInteractionSource>()
 
     val backTouchOffsetState = mutableStateOf(IntOffset.Zero)
     val backProgressFractionState = mutableFloatStateOf(Float.NaN)
@@ -290,6 +294,17 @@ class SampleAppState(
             else it.copy(currentIndex = destination.ordinal)
         }
     }
+
+    fun paneInteractionSourceAt(index: Int): MutableInteractionSource {
+        while (paneInteractionSourceList.lastIndex < index) {
+            paneInteractionSourceList.add(MutableInteractionSource())
+        }
+        return paneInteractionSourceList[index]
+    }
+
+    @Composable
+    fun isInteractingWithPanes(): Boolean =
+        paneInteractionSourceList.isNotEmpty() && paneInteractionSourceList.any { it.isActive() }
 
     fun updatePredictiveBack(
         touchOffset: Offset,
