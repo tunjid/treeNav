@@ -35,15 +35,16 @@ fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration
         Destination
         >.paneModifierConfiguration(
     paneModifier: PaneScope<Pane, Destination>.() -> Modifier = { Modifier },
-): PanedNavHostConfiguration<Pane, NavigationState, Destination> = delegated { navigationDestination ->
-    val originalStrategy = strategyTransform(navigationDestination)
-    originalStrategy.delegated(
-        render = render@{ paneDestination ->
-            Box(
-                modifier = paneModifier()
-            ) {
-                originalStrategy.render(this@render, paneDestination)
+): PanedNavHostConfiguration<Pane, NavigationState, Destination> =
+    delegated { navigationDestination ->
+        val originalStrategy = strategyTransform(navigationDestination)
+        originalStrategy.delegated(
+            render = render@{ paneDestination ->
+                Box(
+                    modifier = paneModifier()
+                ) {
+                    originalStrategy.render(this@render, paneDestination)
+                }
             }
-        }
-    )
-}
+        )
+    }

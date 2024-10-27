@@ -55,7 +55,7 @@ private fun <T> TrieNode<T>.find(segments: List<String>, index: Int): T? {
     val segment = segments[index]
 
     val child = children[segment]
-        // Try matching against a parameter
+    // Try matching against a parameter
         ?: children[PARAMETER_MATCHER]
         ?: return null
 

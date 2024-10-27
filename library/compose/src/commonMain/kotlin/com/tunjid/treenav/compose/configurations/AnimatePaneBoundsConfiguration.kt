@@ -49,23 +49,24 @@ fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration
     lookaheadScope: LookaheadScope,
     paneBoundsTransform: PaneScope<Pane, Destination>.() -> BoundsTransform = { DefaultBoundsTransform },
     shouldAnimatePane: PaneScope<Pane, Destination>.() -> Boolean = { true },
-): PanedNavHostConfiguration<Pane, NavigationState, Destination> = delegated { navigationDestination ->
-    val originalStrategy = strategyTransform(navigationDestination)
-    originalStrategy.delegated(
-        render = render@{ paneDestination ->
-            Box(
-                modifier = Modifier.animateBounds(
-                    state = remember {
-                        AnimatedBoundsState(
-                            lookaheadScope = lookaheadScope,
-                            boundsTransform = paneBoundsTransform(),
-                            inProgress = { shouldAnimatePane() }
-                        )
-                    }
-                )
-            ) {
-                originalStrategy.render(this@render, paneDestination)
+): PanedNavHostConfiguration<Pane, NavigationState, Destination> =
+    delegated { navigationDestination ->
+        val originalStrategy = strategyTransform(navigationDestination)
+        originalStrategy.delegated(
+            render = render@{ paneDestination ->
+                Box(
+                    modifier = Modifier.animateBounds(
+                        state = remember {
+                            AnimatedBoundsState(
+                                lookaheadScope = lookaheadScope,
+                                boundsTransform = paneBoundsTransform(),
+                                inProgress = { shouldAnimatePane() }
+                            )
+                        }
+                    )
+                ) {
+                    originalStrategy.render(this@render, paneDestination)
+                }
             }
-        }
-    )
-}
+        )
+    }
