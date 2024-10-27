@@ -46,6 +46,7 @@ inline fun Node.traverse(order: Order, crossinline onNodeVisited: (Node) -> Unit
             for (element in node.children) queue.add(element)
         }
     }
+
     Order.DepthFirst -> {
         val stack = mutableListOf(this)
         while (stack.isNotEmpty()) {

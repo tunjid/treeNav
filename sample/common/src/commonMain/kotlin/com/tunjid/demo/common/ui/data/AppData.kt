@@ -62,6 +62,7 @@ object ProfileRepository {
     val me: Flow<Profile> = flowOf(
         chatData.profiles.values.random()
     )
+
     fun profileFor(name: String): Flow<Profile> = flow {
         chatData.profiles[name]?.let { emit(it) }
     }

@@ -55,6 +55,7 @@ fun MultiStackNav.pop(): MultiStackNav = when (val changed = atCurrentIndex(Stac
             )
         }
     }
+
     else -> changed
 }
 

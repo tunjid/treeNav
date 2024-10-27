@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import com.tunjid.treenav.*
+import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.Order
+import com.tunjid.treenav.StackNav
+import com.tunjid.treenav.flatten
+import com.tunjid.treenav.minus
+import com.tunjid.treenav.pop
+import com.tunjid.treenav.popToRoot
+import com.tunjid.treenav.push
+import com.tunjid.treenav.swap
+import com.tunjid.treenav.switch
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

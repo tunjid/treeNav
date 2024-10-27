@@ -40,6 +40,6 @@ fun chatRoomPaneStrategy(
             state = viewModel.state.collectAsStateWithLifecycle().value,
             onAction = viewModel.accept,
             modifier = Modifier.fillMaxSize(),
-            )
+        )
     }
 )
