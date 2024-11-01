@@ -36,7 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.tunjid.composables.collapsingheader.CollapsingHeader
+import com.tunjid.composables.collapsingheader.CollapsingHeaderLayout
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
@@ -53,8 +53,9 @@ fun ProfileScreen(
 ) {
     val headerState = rememberAppBarCollapsingHeaderState(400.dp)
 
-    CollapsingHeader(
+    CollapsingHeaderLayout(
         state = headerState,
+        modifier = modifier,
         headerContent = {
             ProfileHeader(
                 state = state,

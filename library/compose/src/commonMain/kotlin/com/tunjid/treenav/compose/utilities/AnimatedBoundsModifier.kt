@@ -283,7 +283,7 @@ internal class BoundsTransformDeferredAnimation {
 
                     // Find the given lookahead coordinates by traversing up the tree
                     while (currentCoords.toLookaheadCoordinates() != lookaheadScopeCoordinates) {
-                        if (currentCoords.introducesMotionFrameOfReference) {
+                        if (currentCoords.isAttached && currentCoords.introducesMotionFrameOfReference) {
                             if (parents.size == index) {
                                 parents.add(currentCoords)
                                 delta += currentCoords.positionInParent()
@@ -294,11 +294,13 @@ internal class BoundsTransformDeferredAnimation {
                             }
                             index++
                         }
-                        currentCoords = currentCoords.parentCoordinates ?: break
+                        currentCoords = currentCoords.parentCoordinates
+                            ?.takeIf(LayoutCoordinates::isAttached)
+                            ?: break
                     }
 
                     for (i in parents.size - 1 downTo index) {
-                        delta -= parents[i].positionInParent()
+                        if (parents[i].isAttached) delta -= parents[i].positionInParent()
                         parents.removeAt(parents.size - 1)
                     }
                     directManipulationParents = parents

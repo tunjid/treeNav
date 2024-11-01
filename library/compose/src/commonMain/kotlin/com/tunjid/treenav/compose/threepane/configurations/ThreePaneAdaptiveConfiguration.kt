@@ -3,6 +3,8 @@ package com.tunjid.treenav.compose.threepane.configurations
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.delegated
@@ -10,24 +12,24 @@ import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
  * An [PanedNavHostConfiguration] that selectively displays panes for a [ThreePane] layout
- * based on the space available determined by the [windowWidthDpState].
+ * based on the space available determined by the [windowWidthState].
  *
- * @param windowWidthDpState provides the current width of the display in Dp.
+ * @param windowWidthState provides the current width of the display in Dp.
  */
 fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
         ThreePane,
         NavigationState,
         Destination
         >.threePanedNavHostConfiguration(
-    windowWidthDpState: State<Int>,
-    secondaryPaneBreakPoint: State<Int> = mutableStateOf(SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
-    tertiaryPaneBreakPoint: State<Int> = mutableStateOf(TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
+    windowWidthState: State<Dp>,
+    secondaryPaneBreakPoint: State<Dp> = mutableStateOf(SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
+    tertiaryPaneBreakPoint: State<Dp> = mutableStateOf(TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
 ): PanedNavHostConfiguration<ThreePane, NavigationState, Destination> = delegated { destination ->
     val originalStrategy = strategyTransform(destination)
     originalStrategy.delegated(
         paneMapping = { navigationDestinationToMap ->
             // Consider navigation state different if window size class changes
-            val windowWidthDp by windowWidthDpState
+            val windowWidthDp by windowWidthState
             val originalMapping = originalStrategy.paneMapper(navigationDestinationToMap)
             val primaryNode = originalMapping[ThreePane.Primary]
             mapOf(
@@ -45,5 +47,5 @@ fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
     )
 }
 
-private const val SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP = 600
-private const val TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP = 1200
+private val SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP = 600.dp
+private val TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP = 1200.dp

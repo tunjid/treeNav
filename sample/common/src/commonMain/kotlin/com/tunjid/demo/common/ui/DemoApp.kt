@@ -52,7 +52,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,13 +60,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
+import com.tunjid.composables.splitlayout.SplitLayout
+import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberPanedNavHostState
 import com.tunjid.demo.common.ui.chat.chatPaneStrategy
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
@@ -95,7 +95,6 @@ import com.tunjid.treenav.popToRoot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -115,7 +114,19 @@ fun SampleApp(
         }
     ) {
         SharedTransitionScope { sharedTransitionModifier ->
-            val windowWidthDp = remember { mutableIntStateOf(0) }
+            val order = remember {
+                listOf(
+                    ThreePane.Tertiary,
+                    ThreePane.Secondary,
+                    ThreePane.Primary,
+                )
+            }
+            val splitLayoutState = remember {
+                SplitLayoutState(
+                    orientation = Orientation.Horizontal,
+                    maxCount = order.size,
+                )
+            }
             val surfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
                 animateDpAsState(if (appState.predictiveBackStatus.value) 16.dp else 0.dp).value
             )
@@ -134,6 +145,8 @@ fun SampleApp(
             }
 
             PanedNavHost(
+                modifier = Modifier
+                    .fillMaxSize(),
                 state = appState.rememberPanedNavHostState {
                     this
                         .paneModifierConfiguration {
@@ -148,7 +161,9 @@ fun SampleApp(
                                 .fillMaxSize()
                         }
                         .threePanedNavHostConfiguration(
-                            windowWidthDpState = windowWidthDp
+                            windowWidthState = derivedStateOf {
+                                splitLayoutState.size
+                            }
                         )
                         .predictiveBackConfiguration(
                             isPreviewingBack = appState.predictiveBackStatus,
@@ -172,38 +187,20 @@ fun SampleApp(
                             }
                         )
                 },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .onSizeChanged {
-                        windowWidthDp.value = (it.width / density.density).roundToInt()
-                    }
             ) {
-                val order = remember {
-                    listOf(
-                        ThreePane.Tertiary,
-                        ThreePane.Secondary,
-                        ThreePane.Primary,
-                    )
-                }
                 val filteredOrder by remember {
                     derivedStateOf { order.filter { nodeFor(it) != null } }
                 }
-                val segmentedLayoutState = remember {
-                    SegmentedLayoutState(
-                        totalCount = order.size,
-                    )
-                }.also {
-                    it.visibleCount = filteredOrder.size
-                }
-                SegmentedLayout(
-                    state = segmentedLayoutState,
+                splitLayoutState.visibleCount = filteredOrder.size
+                SplitLayout(
+                    state = splitLayoutState,
                     modifier = Modifier
                         .fillMaxSize()
                             then movableSharedElementHostState.modifier
                             then sharedTransitionModifier,
                     itemSeparators = { paneIndex, offset ->
                         PaneSeparator(
-                            segmentedLayoutState = segmentedLayoutState,
+                            splitLayoutState = splitLayoutState,
                             interactionSource = appState.paneInteractionSourceAt(paneIndex),
                             index = paneIndex,
                             density = density,
@@ -223,7 +220,7 @@ fun SampleApp(
 
 @Composable
 private fun PaneSeparator(
-    segmentedLayoutState: SegmentedLayoutState,
+    splitLayoutState: SplitLayoutState,
     interactionSource: MutableInteractionSource,
     modifier: Modifier = Modifier,
     index: Int,
@@ -232,7 +229,7 @@ private fun PaneSeparator(
 ) {
     var alpha by remember { mutableFloatStateOf(0f) }
     val draggableState = rememberDraggableState {
-        segmentedLayoutState.dragBy(
+        splitLayoutState.dragBy(
             index = index,
             delta = with(density) { it.toDp() }
         )

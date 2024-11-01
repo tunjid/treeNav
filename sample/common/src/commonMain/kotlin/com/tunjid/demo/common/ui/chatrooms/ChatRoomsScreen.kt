@@ -33,7 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.tunjid.composables.collapsingheader.CollapsingHeader
+import com.tunjid.composables.collapsingheader.CollapsingHeaderLayout
 import com.tunjid.composables.collapsingheader.CollapsingHeaderState
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.ChatRoom
@@ -48,8 +48,9 @@ fun ChatRoomsScreen(
 ) {
     val headerState = rememberAppBarCollapsingHeaderState(200.dp)
 
-    CollapsingHeader(
+    CollapsingHeaderLayout(
         state = headerState,
+        modifier = modifier,
         headerContent = {
             Header(headerState)
         },
