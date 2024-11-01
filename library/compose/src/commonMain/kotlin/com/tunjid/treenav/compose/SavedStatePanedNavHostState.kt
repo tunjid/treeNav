@@ -37,7 +37,7 @@ import com.tunjid.treenav.traverse
 interface PanedNavHostState<Pane, Destination : Node> {
 
     /**
-     * Creates the scope that provides context about individual panes [Pane] in an [PanedNavHost].
+     * Creates the scope that provides context about individual panes [Pane] in a [PanedNavHost].
      */
     @Composable
     fun scope(): PanedNavHostScope<Pane, Destination>

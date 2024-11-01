@@ -95,7 +95,6 @@ import com.tunjid.treenav.popToRoot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -162,8 +161,8 @@ fun SampleApp(
                                 .fillMaxSize()
                         }
                         .threePanedNavHostConfiguration(
-                            windowWidthDpState = derivedStateOf {
-                                splitLayoutState.size.value.roundToInt()
+                            windowWidthState = derivedStateOf {
+                                splitLayoutState.size
                             }
                         )
                         .predictiveBackConfiguration(
