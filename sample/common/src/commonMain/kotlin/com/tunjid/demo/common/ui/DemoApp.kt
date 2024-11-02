@@ -23,6 +23,7 @@ import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -60,6 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -125,6 +127,10 @@ fun SampleApp(
                 SplitLayoutState(
                     orientation = Orientation.Horizontal,
                     maxCount = order.size,
+                    keyAtIndex = { index ->
+                        val indexDiff = order.size - visibleCount
+                        order[index + indexDiff]
+                    }
                 )
             }
             val surfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
@@ -158,6 +164,14 @@ fun SampleApp(
                                 )
                                 .background(surfaceColor, RoundedCornerShape(16.dp))
                             else Modifier
+                                .border(16.dp, when(paneState.pane) {
+                                    ThreePane.Primary -> Color.Cyan
+                                    ThreePane.TransientPrimary -> Color.Transparent
+                                    ThreePane.Secondary -> Color.Magenta
+                                    ThreePane.Tertiary -> Color.Yellow
+                                    ThreePane.Overlay -> Color.Transparent
+                                    null -> Color.Transparent
+                                })
                                 .fillMaxSize()
                         }
                         .threePanedNavHostConfiguration(
