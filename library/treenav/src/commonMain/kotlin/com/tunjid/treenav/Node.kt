@@ -17,7 +17,10 @@
 package com.tunjid.treenav
 
 /**
- * A representation of a navigation node with child children [children]
+ * A representation of a navigation node in a navigation tree.
+ *
+ * [Node] instances are identified by their [Node.id]. The same [Node] can appear multiple times
+ * within the tree. To traverse the navigation tree use [Node.traverse], specifying the [Order].
  */
 interface Node {
     val id: String
