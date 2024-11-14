@@ -26,6 +26,7 @@ internal interface SharedElementOverlay {
  * Creates movable shared elements that may be shared amongst different [PaneScope]
  * instances.
  */
+@Stable
 interface MovableSharedElementScope {
 
     /**
@@ -45,6 +46,29 @@ interface MovableSharedElementScope {
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit
 }
+
+/**
+ * Convenience method for [MovableSharedElementScope.movableSharedElementOf] that invokes the
+ * movable shared element with the latest values of [state] and [modifier].
+ *
+ * @see [MovableSharedElementScope.movableSharedElementOf].
+ */
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
+    key: Any,
+    state: T,
+    modifier: Modifier = Modifier,
+    boundsTransform: BoundsTransform = DefaultBoundsTransform,
+    sharedElement: @Composable (T, Modifier) -> Unit
+) = movableSharedElementOf(
+    key = key,
+    boundsTransform = boundsTransform,
+    sharedElement = sharedElement
+).invoke(
+    state,
+    modifier,
+)
 
 /**
  * State for managing movable shared elements within a single [PanedNavHost].
