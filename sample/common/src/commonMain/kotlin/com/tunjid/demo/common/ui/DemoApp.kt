@@ -76,7 +76,6 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.me.mePaneStrategy
 import com.tunjid.demo.common.ui.profile.profilePaneStrategy
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.compose.PaneState
 import com.tunjid.treenav.compose.PanedNavHost
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.SavedStatePanedNavHostState
@@ -85,7 +84,6 @@ import com.tunjid.treenav.compose.configurations.paneModifierConfiguration
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.panedNavHostConfiguration
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.configurations.canAnimateOnStartingFrames
 import com.tunjid.treenav.compose.threepane.configurations.predictiveBackConfiguration
 import com.tunjid.treenav.compose.threepane.configurations.threePanedMovableSharedElementConfiguration
 import com.tunjid.treenav.compose.threepane.configurations.threePanedNavHostConfiguration
@@ -136,9 +134,8 @@ fun SampleApp(
             )
             val density = LocalDensity.current
             val movableSharedElementHostState = remember {
-                MovableSharedElementHostState(
-                    sharedTransitionScope = this,
-                    canAnimateOnStartingFrames = PaneState<ThreePane, SampleDestination>::canAnimateOnStartingFrames
+                MovableSharedElementHostState<ThreePane, SampleDestination>(
+                    sharedTransitionScope = this
                 )
             }
 
@@ -200,7 +197,6 @@ fun SampleApp(
                     state = splitLayoutState,
                     modifier = Modifier
                         .fillMaxSize()
-                            then movableSharedElementHostState.modifier
                             then sharedTransitionModifier,
                     itemSeparators = { paneIndex, offset ->
                         PaneSeparator(
