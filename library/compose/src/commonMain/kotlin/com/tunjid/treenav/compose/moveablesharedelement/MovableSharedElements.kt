@@ -237,7 +237,7 @@ class PanedMovableSharedElementScope<T, R : Node>(
                         )
                         // The element is not being shared in its new destination, allow it run its exit
                         // transition
-                        isTransitionActive -> (alternateOutgoingSharedElement ?: sharedElement)(
+                        else -> (alternateOutgoingSharedElement ?: sharedElement)(
                             state,
                             Modifier.matchParentSize()
                         )
