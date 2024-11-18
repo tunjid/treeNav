@@ -78,6 +78,27 @@ interface MovableSharedElementScope {
  * movable shared element with the latest values of [state] and [modifier].
  *
  * @see [MovableSharedElementScope.movableSharedElementOf].
+ *
+ * @param key The shared element key to identify the movable shared element.
+ * @param boundsTransform Allows for customizing the animation for the bounds of
+ * the [sharedElement].
+ * @param placeHolderSize Allows for adjusting the reported size to the parent layout during
+ * the transition.
+ * @param renderInOverlayDuringTransition Is true by default. In some rare use cases, there may
+ * be no clipping or layer transform (fade, scale, etc) in the application that prevents
+ * shared elements from transitioning from one bounds to another without any clipping or
+ * sudden alpha change. In such cases, [renderInOverlayDuringTransition] could be specified
+ * to false.
+ * @param zIndexInOverlay Can be specified to allow shared elements to render in a
+ * different order than their placement/zOrder when not in the overlay.
+ * @param clipInOverlayDuringTransition Can be used to specify the clipping for when the
+ * shared element is going through an active transition towards a new target bounds.
+ * @param alternateOutgoingSharedElement By default, a separate instance of the
+ * [sharedElement] is rendered when content is being animated out. When specified, this
+ * is rendered instead. This is useful for shared elements that can only be reasonable
+ * rendered in one place at any one time like video.
+ * @param sharedElement A factory function to create the movable shared element if it does not
+ * currently exist.
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
