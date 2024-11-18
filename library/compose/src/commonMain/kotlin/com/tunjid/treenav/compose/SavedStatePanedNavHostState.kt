@@ -103,7 +103,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
         val saveableStateHolder = rememberSaveableStateHolder()
 
         val panedContentScope = remember {
-            SavedStatePanedNavHostScope(
+            NavHostScope(
                 panes = panes,
                 navHostConfiguration = configuration,
                 initialPanesToNodes = panesToNodes,
@@ -123,19 +123,19 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
 
     companion object {
         @Stable
-        private class SavedStatePanedNavHostScope<Pane, Destination : Node>(
+        class NavHostScope<Pane, Destination : Node> internal constructor(
             panes: List<Pane>,
             initialPanesToNodes: Map<Pane, Destination?>,
             saveableStateHolder: SaveableStateHolder,
             val navHostConfiguration: PanedNavHostConfiguration<Pane, *, Destination>,
         ) : PanedNavHostScope<Pane, Destination>, SaveableStateHolder by saveableStateHolder {
 
-            val slots = List(
+            private val slots = List(
                 size = panes.size,
                 init = ::Slot
             ).toSet()
 
-            var panedNavigationState by mutableStateOf(
+            private var panedNavigationState by mutableStateOf(
                 value = SlotBasedPanedNavigationState.initial<Pane, Destination>(slots = slots)
                     .adaptTo(
                         slots = slots,
@@ -156,6 +156,19 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                     }
                 }
 
+            /**
+             * Retrieves the a [ViewModelStoreOwner] for a given [destination]. All destinations
+             * with the same [Node.id] share the same [ViewModelStoreOwner].
+             *
+             * The [destination] must be present in the navigation tree, otherwise an
+             * [IllegalStateException] will be thrown.
+             *
+             * @param destination The destination for which the [ViewModelStoreOwner] should
+             * be retrieved.
+             */
+            fun viewModelStoreOwnerFor(destination: Destination): ViewModelStoreOwner =
+                destinationViewModelStoreCreator.viewModelStoreOwnerFor(destination)
+
             @Composable
             override fun Destination(pane: Pane) {
                 val slot = panedNavigationState.slotFor(pane)
@@ -170,7 +183,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                 pane: Pane
             ): Destination? = panedNavigationState.destinationFor(pane)
 
-            fun onNewNavigationState(
+            internal fun onNewNavigationState(
                 navigationState: Node,
                 panesToNodes: Map<Pane, Destination?>,
             ) {
@@ -304,4 +317,14 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                 traverse(Order.DepthFirst) { add(it.id) }
             }
     }
+}
+
+fun <Pane, Destination : Node> PanedNavHostScope<
+        Pane,
+        Destination
+        >.requireSavedStatePanedNavHostScope(): SavedStatePanedNavHostState.Companion.NavHostScope<Pane, Destination> {
+    check(this is SavedStatePanedNavHostState.Companion.NavHostScope) {
+        "This PanedNavHostScope instance is not a SavedStatePanedNavHostScope"
+    }
+    return this
 }
