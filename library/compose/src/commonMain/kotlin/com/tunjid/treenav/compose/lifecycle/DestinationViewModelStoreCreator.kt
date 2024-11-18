@@ -17,42 +17,54 @@
 package com.tunjid.treenav.compose.lifecycle
 
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.Order
-import com.tunjid.treenav.flatten
+import com.tunjid.treenav.traverse
 
+/**
+ * A class that lazily loads a [ViewModelStoreOwner] for each destination in the navigation graph.
+ * Each unique destination can only have a single [ViewModelStore], regardless of how many times
+ * it appears in the navigation graph, or its depth at any point.
+ */
 @Stable
 internal class DestinationViewModelStoreCreator(
-    private val rootNodeProvider: () -> Node
+    private val validNodeIdsReader: () -> Set<String>
 ) {
-    private val nodeIdsToViewModelStoreOwner = mutableMapOf<String, ViewModelStoreOwner>()
+    private val nodeIdsToViewModelStoreOwner = mutableStateMapOf<String, ViewModelStoreOwner>()
 
     /**
      * Creates a [ViewModelStoreOwner] for a given [Node]
      */
     fun viewModelStoreOwnerFor(
         node: Node
-    ): ViewModelStoreOwner = nodeIdsToViewModelStoreOwner.getOrPut(
-        node.id
-    ) {
-        object : ViewModelStoreOwner {
-            override val viewModelStore: ViewModelStore = ViewModelStore()
+    ): ViewModelStoreOwner {
+        val existingIds = validNodeIdsReader()
+        check(existingIds.contains(node.id)) {
+            """
+                Attempted to create a ViewModelStoreOwner for Node $node, but the Node is not
+                present in the navigation tree
+            """.trimIndent()
+        }
+        return nodeIdsToViewModelStoreOwner.getOrPut(
+            node.id
+        ) {
+            object : ViewModelStoreOwner {
+                override val viewModelStore: ViewModelStore = ViewModelStore()
+            }
         }
     }
 
     fun clearStoreFor(childNode: Node) {
-        val rootNode = rootNodeProvider()
-        val existingNodeIds = rootNode.flatten(Order.BreadthFirst).mapTo(
-            destination = mutableSetOf(),
-            transform = Node::id
-        )
-        if (existingNodeIds.contains(childNode.id)) {
-            return
+        val existingIds = validNodeIdsReader()
+        childNode.traverse(Order.BreadthFirst) {
+            if (!existingIds.contains(it.id)) {
+                nodeIdsToViewModelStoreOwner.remove(it.id)
+                    ?.viewModelStore
+                    ?.clear()
+            }
         }
-        nodeIdsToViewModelStoreOwner.remove(childNode.id)
-            ?.viewModelStore
-            ?.clear()
     }
 }

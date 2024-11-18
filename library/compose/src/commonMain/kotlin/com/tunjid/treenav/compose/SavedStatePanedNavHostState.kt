@@ -20,6 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -64,8 +67,22 @@ interface PanedNavHostScope<Pane, Destination : Node> {
 }
 
 /**
- * An implementation of an [PanedNavHostState] that provides a [SaveableStateHolder] for each
- * navigation destination that shows up in its panes.
+ * An implementation of an [PanedNavHostState] that provides the following for each
+ * navigation [Destination] that shows up in its panes:
+ *
+ * - A single [SaveableStateHolder] for each navigation [Destination] that shows up in its panes.
+ * [SaveableStateHolder.SaveableStateProvider] is keyed on the [Destination]s [Node.id].
+ *
+ * - A [ViewModelStoreOwner] for each [Destination] via [LocalViewModelStoreOwner].
+ * Once present in the navigation tree, a [Destination] will always use the same
+ * [ViewModelStoreOwner], regardless of where in the tree it is, until its is removed from the tree.
+ * [Destination]s are unique based on their [Node.id].
+ *
+ * - A [LifecycleOwner] for each [Destination] via [LocalLifecycleOwner]. This [LifecycleOwner]
+ * follows the [Lifecycle] of its immediate parent, unless it is animating out or placed in the
+ * backstack. This is defined by [PaneScope.isActive], which is a function of the backing
+ * [AnimatedContent] for each [Pane] displayed and if the current [Destination]
+ * matches [PanedNavHostScope.nodeFor] in the visible [Pane].
  *
  * @param panes a list of panes that is possible to show in the [PanedNavHost] in all
  * possible configurations. The panes should consist of enum class instances, or a sealed class
@@ -86,7 +103,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
         val saveableStateHolder = rememberSaveableStateHolder()
 
         val panedContentScope = remember {
-            SavedStatePanedNavHostScope(
+            NavHostScope(
                 panes = panes,
                 navHostConfiguration = configuration,
                 initialPanesToNodes = panesToNodes,
@@ -106,29 +123,29 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
 
     companion object {
         @Stable
-        private class SavedStatePanedNavHostScope<Pane, Destination : Node>(
+        class NavHostScope<Pane, Destination : Node> internal constructor(
             panes: List<Pane>,
             initialPanesToNodes: Map<Pane, Destination?>,
             saveableStateHolder: SaveableStateHolder,
             val navHostConfiguration: PanedNavHostConfiguration<Pane, *, Destination>,
         ) : PanedNavHostScope<Pane, Destination>, SaveableStateHolder by saveableStateHolder {
 
-            private val destinationViewModelStoreCreator = DestinationViewModelStoreCreator(
-                rootNodeProvider = navHostConfiguration.navigationState::value
-            )
-
-            val slots = List(
+            private val slots = List(
                 size = panes.size,
                 init = ::Slot
             ).toSet()
 
-            var panedNavigationState by mutableStateOf(
+            private var panedNavigationState by mutableStateOf(
                 value = SlotBasedPanedNavigationState.initial<Pane, Destination>(slots = slots)
                     .adaptTo(
                         slots = slots,
                         panesToNodes = initialPanesToNodes,
                         backStackIds = navHostConfiguration.navigationState.value.backStackIds(),
                     )
+            )
+
+            private val destinationViewModelStoreCreator = DestinationViewModelStoreCreator(
+                validNodeIdsReader = { panedNavigationState.backStackIds + panedNavigationState.destinationIdsAnimatingOut }
             )
 
             private val slotsToRoutes =
@@ -138,6 +155,19 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                         map[slot] = movableContentOf { Render(slot) }
                     }
                 }
+
+            /**
+             * Retrieves the a [ViewModelStoreOwner] for a given [destination]. All destinations
+             * with the same [Node.id] share the same [ViewModelStoreOwner].
+             *
+             * The [destination] must be present in the navigation tree, otherwise an
+             * [IllegalStateException] will be thrown.
+             *
+             * @param destination The destination for which the [ViewModelStoreOwner] should
+             * be retrieved.
+             */
+            fun viewModelStoreOwnerFor(destination: Destination): ViewModelStoreOwner =
+                destinationViewModelStoreCreator.viewModelStoreOwnerFor(destination)
 
             @Composable
             override fun Destination(pane: Pane) {
@@ -153,7 +183,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                 pane: Pane
             ): Destination? = panedNavigationState.destinationFor(pane)
 
-            fun onNewNavigationState(
+            internal fun onNewNavigationState(
                 navigationState: Node,
                 panesToNodes: Map<Pane, Destination?>,
             ) {
@@ -208,8 +238,10 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                         val destinationLifecycleOwner = rememberDestinationLifecycleOwner(
                             destination
                         )
-                        val destinationViewModelOwner = destinationViewModelStoreCreator
-                            .viewModelStoreOwnerFor(destination)
+                        val destinationViewModelOwner = remember(destination.id) {
+                            destinationViewModelStoreCreator
+                                .viewModelStoreOwnerFor(destination)
+                        }
 
                         CompositionLocalProvider(
                             LocalLifecycleOwner provides destinationLifecycleOwner,
@@ -285,4 +317,14 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
                 traverse(Order.DepthFirst) { add(it.id) }
             }
     }
+}
+
+fun <Pane, Destination : Node> PanedNavHostScope<
+        Pane,
+        Destination
+        >.requireSavedStatePanedNavHostScope(): SavedStatePanedNavHostState.Companion.NavHostScope<Pane, Destination> {
+    check(this is SavedStatePanedNavHostState.Companion.NavHostScope) {
+        "This PanedNavHostScope instance is not a SavedStatePanedNavHostScope"
+    }
+    return this
 }

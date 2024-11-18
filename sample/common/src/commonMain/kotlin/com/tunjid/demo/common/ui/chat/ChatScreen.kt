@@ -53,6 +53,7 @@ import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -153,12 +154,6 @@ fun Message(
 
     Row(modifier = spaceBetweenAuthors) {
         if (isLastMessageByAuthor) {
-            val sharedImage = movableSharedElementScope.movableSharedElementOf(
-                key = item.sender.name,
-                sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
-                    ProfilePhoto(args, innerModifier)
-                }
-            )
             // Avatar
             Box(
                 modifier = Modifier
@@ -180,14 +175,18 @@ fun Message(
                         }
                     },
             ) {
-                sharedImage(
-                    ProfilePhotoArgs(
+                movableSharedElementScope.updatedMovableSharedElementOf(
+                    key = item.sender.name,
+                    state = ProfilePhotoArgs(
                         profileName = item.sender.name,
                         contentScale = ContentScale.Crop,
                         cornerRadius = 42.dp,
                         contentDescription = null,
                     ),
-                    Modifier.matchParentSize(),
+                    modifier = Modifier.matchParentSize(),
+                    sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
+                        ProfilePhoto(args, innerModifier)
+                    }
                 )
             }
         } else {

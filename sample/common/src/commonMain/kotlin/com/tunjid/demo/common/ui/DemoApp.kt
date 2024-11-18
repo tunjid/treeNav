@@ -23,7 +23,6 @@ import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -61,7 +60,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -78,7 +76,6 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.me.mePaneStrategy
 import com.tunjid.demo.common.ui.profile.profilePaneStrategy
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.compose.PaneState
 import com.tunjid.treenav.compose.PanedNavHost
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
 import com.tunjid.treenav.compose.SavedStatePanedNavHostState
@@ -87,7 +84,6 @@ import com.tunjid.treenav.compose.configurations.paneModifierConfiguration
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.panedNavHostConfiguration
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.configurations.canAnimateOnStartingFrames
 import com.tunjid.treenav.compose.threepane.configurations.predictiveBackConfiguration
 import com.tunjid.treenav.compose.threepane.configurations.threePanedMovableSharedElementConfiguration
 import com.tunjid.treenav.compose.threepane.configurations.threePanedNavHostConfiguration
@@ -138,9 +134,8 @@ fun SampleApp(
             )
             val density = LocalDensity.current
             val movableSharedElementHostState = remember {
-                MovableSharedElementHostState(
-                    sharedTransitionScope = this,
-                    canAnimateOnStartingFrames = PaneState<ThreePane, SampleDestination>::canAnimateOnStartingFrames
+                MovableSharedElementHostState<ThreePane, SampleDestination>(
+                    sharedTransitionScope = this
                 )
             }
 
@@ -164,14 +159,6 @@ fun SampleApp(
                                 )
                                 .background(surfaceColor, RoundedCornerShape(16.dp))
                             else Modifier
-                                .border(16.dp, when(paneState.pane) {
-                                    ThreePane.Primary -> Color.Cyan
-                                    ThreePane.TransientPrimary -> Color.Transparent
-                                    ThreePane.Secondary -> Color.Magenta
-                                    ThreePane.Tertiary -> Color.Yellow
-                                    ThreePane.Overlay -> Color.Transparent
-                                    null -> Color.Transparent
-                                })
                                 .fillMaxSize()
                         }
                         .threePanedNavHostConfiguration(
@@ -210,7 +197,6 @@ fun SampleApp(
                     state = splitLayoutState,
                     modifier = Modifier
                         .fillMaxSize()
-                            then movableSharedElementHostState.modifier
                             then sharedTransitionModifier,
                     itemSeparators = { paneIndex, offset ->
                         PaneSeparator(
