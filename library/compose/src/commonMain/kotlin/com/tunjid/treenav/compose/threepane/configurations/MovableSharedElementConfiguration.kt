@@ -3,6 +3,7 @@ package com.tunjid.treenav.compose.threepane.configurations
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
+import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -78,8 +79,11 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
     override fun <T> movableSharedElementOf(
         key: Any,
         boundsTransform: BoundsTransform,
+        placeHolderSize: PlaceHolderSize,
+        renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
+        alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit = when (paneState.pane) {
         null -> throw IllegalArgumentException(
@@ -95,8 +99,11 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
             else -> delegate.movableSharedElementOf(
                 key = key,
                 boundsTransform = boundsTransform,
+                placeHolderSize = placeHolderSize,
+                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                 zIndexInOverlay = zIndexInOverlay,
                 clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                alternateOutgoingSharedElement = alternateOutgoingSharedElement,
                 sharedElement = sharedElement
             )
         }
@@ -104,15 +111,18 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         ThreePane.TransientPrimary -> delegate.movableSharedElementOf(
             key = key,
             boundsTransform = boundsTransform,
+            placeHolderSize = placeHolderSize,
+            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+            alternateOutgoingSharedElement = alternateOutgoingSharedElement,
             sharedElement = sharedElement
         )
 
         // In the other panes use the element as is
         ThreePane.Secondary,
         ThreePane.Tertiary,
-        ThreePane.Overlay -> sharedElement
+        ThreePane.Overlay -> alternateOutgoingSharedElement ?: sharedElement
     }
 }
 

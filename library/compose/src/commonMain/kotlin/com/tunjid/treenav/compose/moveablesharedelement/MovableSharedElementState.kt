@@ -8,18 +8,19 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
-@Stable
-internal class MovableSharedElementState<State>
 @OptIn(ExperimentalSharedTransitionApi::class)
-constructor(
-    val sharedContentState: SharedTransitionScope.SharedContentState,
+@Stable
+internal class MovableSharedElementState<State>(
+    sharedContentState: SharedTransitionScope.SharedContentState,
     sharedElement: @Composable (State, Modifier) -> Unit,
     onRemoved: () -> Unit
 ) {
 
+    var sharedContentState by mutableStateOf(sharedContentState)
     private var composedRefCount by mutableIntStateOf(0)
 
     val moveableSharedElement: @Composable (Any?, Modifier) -> Unit =
