@@ -16,32 +16,48 @@
 
 package com.tunjid.demo.common.ui.chatrooms
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.collapsingheader.CollapsingHeaderLayout
 import com.tunjid.composables.collapsingheader.CollapsingHeaderState
+import com.tunjid.demo.common.ui.ProfilePhoto
+import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.ChatRoom
+import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
+import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
 fun ChatRoomsScreen(
+    movableSharedElementScope: MovableSharedElementScope,
     state: State,
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier,
@@ -55,7 +71,11 @@ fun ChatRoomsScreen(
             Header(headerState)
         },
         body = {
-            ChatRooms(state, onAction)
+            ChatRooms(
+                movableSharedElementScope = movableSharedElementScope,
+                state = state,
+                onAction = onAction,
+            )
         }
     )
 }
@@ -82,6 +102,7 @@ private fun Header(headerState: CollapsingHeaderState) {
 
 @Composable
 private fun ChatRooms(
+    movableSharedElementScope: MovableSharedElementScope,
     state: State,
     onAction: (Action) -> Unit
 ) {
@@ -93,7 +114,12 @@ private fun ChatRooms(
             key = ChatRoom::name,
             itemContent = { room ->
                 ChatRoomListItem(
+                    movableSharedElementScope = movableSharedElementScope,
                     roomName = room.name,
+                    participants = room.messages
+                        .map(Message::sender)
+                        .distinct()
+                        .take(3),
                     onRoomClicked = {
                         onAction(Action.Navigation.ToRoom(roomName = it))
                     }
@@ -105,7 +131,9 @@ private fun ChatRooms(
 
 @Composable
 fun ChatRoomListItem(
+    movableSharedElementScope: MovableSharedElementScope,
     roomName: String,
+    participants: List<String>,
     modifier: Modifier = Modifier,
     onRoomClicked: (String) -> Unit,
 ) {
@@ -118,12 +146,63 @@ fun ChatRoomListItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .height(68.dp)
+                .padding(
+                    horizontal = 8.dp,
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            ChatRoomParticipants(
+                movableSharedElementScope = movableSharedElementScope,
+                participants = participants,
+                roomName = roomName,
+            )
             Text(
                 text = roomName,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalSharedTransitionApi::class)
+@Composable
+fun ChatRoomParticipants(
+    movableSharedElementScope: MovableSharedElementScope,
+    participants: List<String>,
+    roomName: String,
+) = with(movableSharedElementScope) {
+    FlowRow(
+        modifier = Modifier
+            .width(64.dp)
+            .rotate(
+                if (participants.size == 2) 45f
+                else 0f
+            ),
+        horizontalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        participants.forEach { profileName ->
+            updatedMovableSharedElementOf(
+                key = "$roomName-${profileName}",
+                state = ProfilePhotoArgs(
+                    profileName = profileName,
+                    contentScale = ContentScale.Crop,
+                    contentDescription = null,
+                    cornerRadius = 20.dp,
+                ),
+                modifier = Modifier
+                    .padding(horizontal = 2.dp)
+                    .size(28.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .rotate(
+                        if (participants.size == 2) -45f
+                        else 0f
+                    ),
+                sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
+                    ProfilePhoto(args, innerModifier)
+                }
             )
         }
     }

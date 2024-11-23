@@ -24,6 +24,7 @@ import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
+import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 
 fun chatRoomPaneStrategy(
@@ -37,6 +38,7 @@ fun chatRoomPaneStrategy(
             )
         }
         ChatRoomsScreen(
+            movableSharedElementScope = movableSharedElementScope(),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             onAction = viewModel.accept,
             modifier = Modifier.fillMaxSize(),

@@ -176,7 +176,7 @@ fun Message(
                     },
             ) {
                 movableSharedElementScope.updatedMovableSharedElementOf(
-                    key = item.sender.name,
+                    key = "$roomName-${item.sender.name}",
                     state = ProfilePhotoArgs(
                         profileName = item.sender.name,
                         contentScale = ContentScale.Crop,

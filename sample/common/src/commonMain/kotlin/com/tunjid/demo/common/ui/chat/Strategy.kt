@@ -44,8 +44,6 @@ fun chatPaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
         val viewModel = viewModel<ChatViewModel> {
             ChatViewModel(
                 coroutineScope = scope,
-                chatsRepository = ChatsRepository,
-                profileRepository = ProfileRepository,
                 chat = destination,
             )
         }
