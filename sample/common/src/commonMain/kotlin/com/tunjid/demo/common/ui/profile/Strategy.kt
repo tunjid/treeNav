@@ -44,6 +44,7 @@ fun profilePaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
             ProfileViewModel(
                 coroutineScope = scope,
                 profileName = destination.profileName,
+                roomName = destination.roomName,
             )
         }
         ProfileScreen(

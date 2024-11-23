@@ -28,8 +28,9 @@ import com.tunjid.treenav.compose.utilities.DefaultBoundsTransform
  * Creates movable shared elements that may be shared amongst different [PaneScope]
  * instances.
  */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-interface MovableSharedElementScope {
+interface MovableSharedElementScope : SharedTransitionScope {
 
     /**
      * Creates a movable shared element that accepts a single argument [T] and a [Modifier].
@@ -184,11 +185,12 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
  * Other implementations of [MovableSharedElementScope] may delegate to this for their own
  * movable shared element implementations.
  */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 class PanedMovableSharedElementScope<T, R : Node>(
     paneScope: PaneScope<T, R>,
     private val movableSharedElementHostState: MovableSharedElementHostState<T, R>,
-) : MovableSharedElementScope {
+) : MovableSharedElementScope, SharedTransitionScope by movableSharedElementHostState {
 
     var paneScope by mutableStateOf(paneScope)
 

@@ -42,8 +42,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 
 class ChatViewModel(
     coroutineScope: LifecycleCoroutineScope,
-    chatsRepository: ChatsRepository,
-    profileRepository: ProfileRepository,
+    chatsRepository: ChatsRepository = ChatsRepository,
+    profileRepository: ProfileRepository = ProfileRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
     chat: SampleDestination.Chat,
 ) : ViewModel() {

@@ -2,6 +2,7 @@ package com.tunjid.treenav.compose.threepane.configurations
 
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.foundation.layout.Box
@@ -69,11 +70,12 @@ fun <Destination : Node> PaneScope<ThreePane, Destination>.movableSharedElementS
     return this
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 private class ThreePaneMovableSharedElementScope<Destination : Node>(
     private val hostState: MovableSharedElementHostState<ThreePane, Destination>,
     private val delegate: PanedMovableSharedElementScope<ThreePane, Destination>,
-) : MovableSharedElementScope,
+) : MovableSharedElementScope, SharedTransitionScope by delegate,
     PaneScope<ThreePane, Destination> by delegate.paneScope {
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(

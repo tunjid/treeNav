@@ -115,7 +115,7 @@ private fun ProfilePhoto(
     val profileName = state.profileName ?: state.profile?.name
     if (profileName != null) {
         movableSharedElementScope.updatedMovableSharedElementOf(
-            key = profileName,
+            key = "${state.roomName}-$profileName",
             state = ProfilePhotoArgs(
                 profileName = profileName,
                 contentScale = ContentScale.Crop,

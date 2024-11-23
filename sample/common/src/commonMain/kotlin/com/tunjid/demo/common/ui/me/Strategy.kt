@@ -34,6 +34,7 @@ fun mePaneStrategy(
             ProfileViewModel(
                 coroutineScope = scope,
                 profileName = null,
+                roomName = null,
             )
         }
         ProfileScreen(
