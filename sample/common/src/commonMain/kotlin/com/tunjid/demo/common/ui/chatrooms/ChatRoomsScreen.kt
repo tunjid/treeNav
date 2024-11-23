@@ -146,8 +146,8 @@ fun ChatRoomListItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(68.dp)
                 .padding(
-                    vertical = 16.dp,
                     horizontal = 8.dp,
                 ),
             verticalAlignment = Alignment.CenterVertically
@@ -159,7 +159,8 @@ fun ChatRoomListItem(
             )
             Text(
                 text = roomName,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
     }
@@ -174,7 +175,7 @@ fun ChatRoomParticipants(
 ) = with(movableSharedElementScope) {
     FlowRow(
         modifier = Modifier
-            .width(80.dp)
+            .width(64.dp)
             .rotate(
                 if (participants.size == 2) 45f
                 else 0f
