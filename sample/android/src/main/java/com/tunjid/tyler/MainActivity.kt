@@ -24,11 +24,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.round
+import com.tunjid.demo.common.ui.App
+import com.tunjid.demo.common.ui.AppState
 import com.tunjid.demo.common.ui.AppTheme
-import com.tunjid.demo.common.ui.SampleApp
-import com.tunjid.demo.common.ui.SampleAppState
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectIndexed
 import kotlin.coroutines.cancellation.CancellationException
 
 class MainActivity : AppCompatActivity() {
@@ -37,20 +38,33 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContent {
             AppTheme {
-                val appState = remember { SampleAppState() }
-                SampleApp(appState)
+                val appState = remember { AppState() }
+                App(appState)
 
-                PredictiveBackHandler { progress: Flow<BackEventCompat> ->
+                PredictiveBackHandler { backEvents: Flow<BackEventCompat> ->
                     try {
-                        progress.collectIndexed { index, backEvent ->
-//                            if (index == 0) onStarted()
-                            val touchOffset = Offset(backEvent.touchX, backEvent.touchY)
-                            val progressFraction = backEvent.progress
-                            appState.updatePredictiveBack(touchOffset, progressFraction)
+                        backEvents.collect { backEvent ->
+                            appState.backPreviewState.apply {
+                                atStart = backEvent.swipeEdge == BackEventCompat.EDGE_LEFT
+                                progress = backEvent.progress
+                                pointerOffset = Offset(
+                                    x = backEvent.touchX,
+                                    y = backEvent.touchY
+                                ).round()
+                            }
                         }
+                        // Dismiss back preview
+                        appState.backPreviewState.apply {
+                            progress = Float.NaN
+                            pointerOffset = IntOffset.Zero
+                        }
+                        // Pop navigation
                         appState.goBack()
                     } catch (e: CancellationException) {
-                        appState.cancelPredictiveBack()
+                        appState.backPreviewState.apply {
+                            progress = Float.NaN
+                            pointerOffset = IntOffset.Zero
+                        }
                     }
                 }
             }

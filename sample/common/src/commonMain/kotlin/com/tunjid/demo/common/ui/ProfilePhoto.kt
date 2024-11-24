@@ -25,7 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.tunjid.composables.ui.interpolate
+import com.tunjid.composables.ui.animate
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import treenavigation.sample.common.generated.resources.Res
@@ -39,7 +39,7 @@ fun ProfilePhoto(
     Image(
         modifier = modifier
             .clip(RoundedCornerShape(animateDpAsState(args.cornerRadius).value)),
-        contentScale = args.contentScale.interpolate(),
+        contentScale = args.contentScale.animate(),
         contentDescription = args.contentDescription,
         painter = painterResource(args.profilePhotoResource())
     )

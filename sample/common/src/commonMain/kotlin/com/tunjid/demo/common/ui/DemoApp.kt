@@ -59,16 +59,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.round
+import com.tunjid.composables.backpreview.BackPreviewState
+import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
-import com.tunjid.demo.common.ui.SampleAppState.Companion.rememberPanedNavHostState
+import com.tunjid.demo.common.ui.AppState.Companion.rememberPanedNavHostState
 import com.tunjid.demo.common.ui.chat.chatPaneStrategy
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
 import com.tunjid.demo.common.ui.data.NavigationRepository
@@ -78,6 +77,7 @@ import com.tunjid.demo.common.ui.profile.profilePaneStrategy
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.PanedNavHost
 import com.tunjid.treenav.compose.PanedNavHostConfiguration
+import com.tunjid.treenav.compose.PanedNavHostScope
 import com.tunjid.treenav.compose.SavedStatePanedNavHostState
 import com.tunjid.treenav.compose.configurations.animatePaneBoundsConfiguration
 import com.tunjid.treenav.compose.configurations.paneModifierConfiguration
@@ -96,8 +96,8 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun SampleApp(
-    appState: SampleAppState = remember { SampleAppState() },
+fun App(
+    appState: AppState = remember { AppState() },
 ) {
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -112,25 +112,8 @@ fun SampleApp(
         }
     ) {
         SharedTransitionScope { sharedTransitionModifier ->
-            val order = remember {
-                listOf(
-                    ThreePane.Tertiary,
-                    ThreePane.Secondary,
-                    ThreePane.Primary,
-                )
-            }
-            val splitLayoutState = remember {
-                SplitLayoutState(
-                    orientation = Orientation.Horizontal,
-                    maxCount = order.size,
-                    keyAtIndex = { index ->
-                        val indexDiff = order.size - visibleCount
-                        order[index + indexDiff]
-                    }
-                )
-            }
-            val surfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                animateDpAsState(if (appState.predictiveBackStatus.value) 16.dp else 0.dp).value
+            val backPreviewSurfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                animateDpAsState(if (appState.isPreviewingBack) 16.dp else 0.dp).value
             )
             val density = LocalDensity.current
             val movableSharedElementHostState = remember {
@@ -153,21 +136,20 @@ fun SampleApp(
                         .paneModifierConfiguration {
                             if (paneState.pane == ThreePane.TransientPrimary) Modifier
                                 .fillMaxSize()
-                                .predictiveBackModifier(
-                                    touchOffsetState = appState.backTouchOffsetState,
-                                    progressState = appState.backProgressFractionState
-                                )
-                                .background(surfaceColor, RoundedCornerShape(16.dp))
+                                .backPreview(appState.backPreviewState)
+                                .background(backPreviewSurfaceColor, RoundedCornerShape(16.dp))
                             else Modifier
                                 .fillMaxSize()
                         }
                         .threePanedNavHostConfiguration(
                             windowWidthState = derivedStateOf {
-                                splitLayoutState.size
+                                appState.splitLayoutState.size
                             }
                         )
                         .predictiveBackConfiguration(
-                            isPreviewingBack = appState.predictiveBackStatus,
+                            isPreviewingBack = derivedStateOf {
+                                appState.isPreviewingBack
+                            },
                             backPreviewTransform = MultiStackNav::pop,
                         )
                         .threePanedMovableSharedElementConfiguration(
@@ -189,18 +171,18 @@ fun SampleApp(
                         )
                 },
             ) {
-                val filteredOrder by remember {
-                    derivedStateOf { order.filter { nodeFor(it) != null } }
+                val filteredPaneOrder by remember {
+                    derivedStateOf { appState.filteredPaneOrder(this) }
                 }
-                splitLayoutState.visibleCount = filteredOrder.size
+                appState.splitLayoutState.visibleCount = filteredPaneOrder.size
                 SplitLayout(
-                    state = splitLayoutState,
+                    state = appState.splitLayoutState,
                     modifier = Modifier
                         .fillMaxSize()
                             then sharedTransitionModifier,
                     itemSeparators = { paneIndex, offset ->
                         PaneSeparator(
-                            splitLayoutState = splitLayoutState,
+                            splitLayoutState = appState.splitLayoutState,
                             interactionSource = appState.paneInteractionSourceAt(paneIndex),
                             index = paneIndex,
                             density = density,
@@ -208,7 +190,7 @@ fun SampleApp(
                         )
                     },
                     itemContent = { index ->
-                        val pane = filteredOrder[index]
+                        val pane = filteredPaneOrder[index]
                         Destination(pane)
                         if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
                     }
@@ -281,7 +263,7 @@ fun InteractionSource.isActive(): Boolean {
 }
 
 @Stable
-class SampleAppState(
+class AppState(
     private val navigationRepository: NavigationRepository = NavigationRepository
 ) {
 
@@ -292,12 +274,32 @@ class SampleAppState(
         navigationState
     )
     private val paneInteractionSourceList = mutableStateListOf<MutableInteractionSource>()
-
-    val backTouchOffsetState = mutableStateOf(IntOffset.Zero)
-    val backProgressFractionState = mutableFloatStateOf(Float.NaN)
+    private val paneRenderOrder = listOf(
+        ThreePane.Secondary,
+        ThreePane.Primary,
+    )
 
     val currentNavigation by navigationState
-    val predictiveBackStatus = derivedStateOf { !backProgressFractionState.value.isNaN() }
+    val backPreviewState = BackPreviewState()
+    val splitLayoutState = SplitLayoutState(
+        orientation = Orientation.Horizontal,
+        maxCount = paneRenderOrder.size,
+        minSize = 10.dp,
+        keyAtIndex = { index ->
+            val indexDiff = paneRenderOrder.size - visibleCount
+            paneRenderOrder[index + indexDiff]
+        }
+    )
+
+    internal val isPreviewingBack
+        get() = !backPreviewState.progress.isNaN()
+
+    fun filteredPaneOrder(
+        panedNavHostScope: PanedNavHostScope<ThreePane, SampleDestination>
+    ): List<ThreePane> {
+        val order = paneRenderOrder.filter { panedNavHostScope.nodeFor(it) != null }
+        return order
+    }
 
     fun setTab(destination: SampleDestination.NavTabs) {
         navigationRepository.navigate {
@@ -317,27 +319,13 @@ class SampleAppState(
     fun isInteractingWithPanes(): Boolean =
         paneInteractionSourceList.any { it.isActive() }
 
-    fun updatePredictiveBack(
-        touchOffset: Offset,
-        fraction: Float,
-    ) {
-        backTouchOffsetState.value = touchOffset.round()
-        backProgressFractionState.value = fraction
-    }
-
-    fun cancelPredictiveBack() {
-        backTouchOffsetState.value = IntOffset.Zero
-        backProgressFractionState.value = Float.NaN
-    }
-
     fun goBack() {
-        cancelPredictiveBack()
         navigationRepository.navigate(MultiStackNav::pop)
     }
 
     companion object {
         @Composable
-        fun SampleAppState.rememberPanedNavHostState(
+        fun AppState.rememberPanedNavHostState(
             configurationBlock: PanedNavHostConfiguration<
                     ThreePane,
                     MultiStackNav,
