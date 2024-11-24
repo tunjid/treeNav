@@ -23,12 +23,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tunjid.demo.common.ui.data.ChatsRepository
-import com.tunjid.demo.common.ui.data.ProfileRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.configurations.movableSharedElementScope
+import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 
 fun chatPaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
@@ -48,7 +46,7 @@ fun chatPaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
             )
         }
         ChatScreen(
-            movableSharedElementScope = movableSharedElementScope(),
+            movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
             state = viewModel.state.collectAsStateWithLifecycle().value,
             onAction = viewModel.accept,
             modifier = Modifier.fillMaxSize(),
