@@ -58,7 +58,10 @@ fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
         )
     }
 
-fun <Destination : Node> PaneScope<ThreePane, Destination>.movableSharedElementScope(): MovableSharedElementScope {
+fun <Destination : Node> PaneScope<
+        ThreePane,
+        Destination
+        >.requireThreePaneMovableSharedElementScope(): MovableSharedElementScope {
     check(this is ThreePaneMovableSharedElementScope) {
         """
             The current AdaptivePaneScope (${this::class.qualifiedName}) is not an instance of
