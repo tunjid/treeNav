@@ -52,4 +52,6 @@ dependencies {
     implementation(libs.jetbrains.compose.animation)
 
     implementation(libs.google.material)
+
+    implementation(libs.tunjid.composables)
 }
