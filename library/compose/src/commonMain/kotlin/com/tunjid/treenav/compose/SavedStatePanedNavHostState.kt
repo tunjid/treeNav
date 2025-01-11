@@ -100,7 +100,7 @@ class SavedStatePanedNavHostState<Pane, Destination : Node>(
     override fun scope(): PanedNavHostScope<Pane, Destination> {
         val navigationState by configuration.navigationState
         val panesToNodes = configuration.paneMapping()
-        val saveableStateHolder = rememberSaveableStateHolder()
+        val saveableStateHolder = rememberPanedSaveableStateHolder()
 
         val panedContentScope = remember {
             NavHostScope(
