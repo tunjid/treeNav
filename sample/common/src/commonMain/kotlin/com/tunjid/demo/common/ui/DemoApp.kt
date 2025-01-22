@@ -133,14 +133,6 @@ fun App(
                     .fillMaxSize(),
                 state = appState.rememberPanedNavHostState {
                     this
-                        .paneModifierConfiguration {
-                            if (paneState.pane == ThreePane.TransientPrimary) Modifier
-                                .fillMaxSize()
-                                .backPreview(appState.backPreviewState)
-                                .background(backPreviewSurfaceColor, RoundedCornerShape(16.dp))
-                            else Modifier
-                                .fillMaxSize()
-                        }
                         .threePanedNavHostConfiguration(
                             windowWidthState = derivedStateOf {
                                 appState.splitLayoutState.size
@@ -169,6 +161,14 @@ fun App(
                                 }
                             }
                         )
+                        .paneModifierConfiguration {
+                            if (paneState.pane == ThreePane.TransientPrimary) Modifier
+                                .fillMaxSize()
+                                .backPreview(appState.backPreviewState)
+                                .background(backPreviewSurfaceColor, RoundedCornerShape(16.dp))
+                            else Modifier
+                                .fillMaxSize()
+                        }
                 },
             ) {
                 val filteredPaneOrder by remember {

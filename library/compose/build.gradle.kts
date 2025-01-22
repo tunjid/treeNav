@@ -33,6 +33,8 @@ kotlin {
             dependencies {
                 implementation(project(":library:treenav"))
 
+                implementation(libs.androidx.collection)
+
                 implementation(libs.jetbrains.compose.runtime)
                 implementation(libs.jetbrains.compose.foundation)
                 implementation(libs.jetbrains.compose.foundation.layout)
