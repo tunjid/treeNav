@@ -155,6 +155,311 @@ private val chatData = ChatData(
                     content = "Count me in too!"
                 )
             )
+        ),
+        "Project Updates" to ChatRoom(
+            name = "Project Updates",
+            messages = listOf(
+                Message(
+                    sender = "Diego",
+                    timestamp = Instant.parse("2024-10-06T09:00:00Z"),
+                    content = "Good morning everyone! Just wanted to share a quick update on the project timeline."
+                ),
+                Message(
+                    sender = "Aisha",
+                    timestamp = Instant.parse("2024-10-06T09:05:00Z"),
+                    content = "Thanks Diego! Looking forward to seeing the updated roadmap."
+                ),
+                Message(
+                    sender = "Kenji",
+                    timestamp = Instant.parse("2024-10-06T09:10:00Z"),
+                    content = "Any news on the release date?"
+                )
+            )
+        ),
+        "Weekend Plans" to ChatRoom(
+            name = "Weekend Plans",
+            messages = listOf(
+                Message(
+                    sender = "Bjorn",
+                    timestamp = Instant.parse("2024-10-06T10:00:00Z"),
+                    content = "Any fun plans for the weekend?"
+                ),
+                Message(
+                    sender = "Lin",
+                    timestamp = Instant.parse("2024-10-06T10:05:00Z"),
+                    content = "I'm planning to go hiking!"
+                ),
+                Message(
+                    sender = "Diego",
+                    timestamp = Instant.parse("2024-10-06T10:10:00Z"),
+                    content = "I'm going to a concert on Saturday night."
+                )
+            )
+        ),
+        "UI/UX Feedback" to ChatRoom(
+            name = "UI/UX Feedback",
+            messages = listOf(
+                Message(
+                    sender = "Diego",
+                    timestamp = Instant.parse("2024-10-07T11:00:00Z"),
+                    content = "Hey team, I've got some initial designs for the chat UI. Any feedback?"
+                ),
+                Message(
+                    sender = "Aisha",
+                    timestamp = Instant.parse("2024-10-07T11:05:00Z"),
+                    content = "Looks good! I think the message bubbles could be a bit bigger though."
+                ),
+                Message(
+                    sender = "Bjorn",
+                    timestamp = Instant.parse("2024-10-07T11:10:00Z"),
+                    content = "Agreed, and maybe add some more whitespace between messages?"
+                )
+            )
+        ),
+        "Team Building" to ChatRoom(
+            name = "Team Building",
+            messages = listOf(
+                Message(
+                    sender = "Kenji",
+                    timestamp = Instant.parse("2024-10-07T14:00:00Z"),
+                    content = "We should plan a team building activity soon!"
+                ),
+                Message(
+                    sender = "Lin",
+                    timestamp = Instant.parse("2024-10-07T14:05:00Z"),
+                    content = "Great idea! How about bowling?"
+                ),
+                Message(
+                    sender = "Diego",
+                    timestamp = Instant.parse("2024-10-07T14:10:00Z"),
+                    content = "Escape room?"
+                )
+            )
+        ),
+        "Bug Reports" to ChatRoom(
+            name = "Bug Reports",
+            messages = listOf(
+                Message(
+                    sender = "Bjorn",
+                    timestamp = Instant.parse("2024-10-08T10:00:00Z"),
+                    content = "Found a bug in the message sending function. It crashes when sending a message with an empty string."
+                ),
+                Message(
+                    sender = "Kenji",
+                    timestamp = Instant.parse("2024-10-08T10:05:00Z"),
+                    content = "Thanks for reporting! I'll take a look."
+                )
+            )
+        ),
+        "Feature Requests" to ChatRoom(
+            name = "Feature Requests",
+            messages = listOf(
+                Message(
+                    sender = "Aisha",
+                    timestamp = Instant.parse("2024-10-08T15:00:00Z"),
+                    content = "It would be great to have a feature for sending voice messages."
+                ),
+                Message(
+                    sender = "Diego",
+                    timestamp = Instant.parse("2024-10-08T15:05:00Z"),
+                    content = "Good idea! I'll add it to the roadmap."
+                )
+            )
+        ),
+        "Coffee Break" to ChatRoom(
+            name = "Coffee Break",
+            messages = listOf(
+                Message(
+                    sender = "Lin",
+                    timestamp = Instant.parse("2024-10-09T11:00:00Z"),
+                    content = "Coffee break anyone?"
+                ),
+                Message(
+                    sender = "Aisha",
+                    timestamp = Instant.parse("2024-10-09T11:05:00Z"),
+                    content = "I'm in!"
+                )
+            )
+        ),
+        "Funny Memes" to ChatRoom(
+            name = "Funny Memes",
+            messages = listOf(
+                Message(
+                    sender = "Bjorn",
+                    timestamp = Instant.parse("2024-10-09T16:00:00Z"),
+                    content = "Check out this hilarious meme! [link to meme]"
+                ),
+                Message(
+                    sender = "Diego",
+                    timestamp = Instant.parse("2024-10-09T16:05:00Z"),
+                    content = "LOL! That's a good one."
+                )
+            )
+        ),
+        "Productivity Tips" to ChatRoom(
+            name = "Productivity Tips",
+            messages = listOf(
+                Message(
+                    sender = "Kenji",
+                    timestamp = Instant.parse("2024-10-10T09:00:00Z"),
+                    content = "Any tips for staying focused and productive?"
+                ),
+                Message(
+                    sender = "Lin",
+                    timestamp = Instant.parse("2024-10-10T09:05:00Z"),
+                    content = "I use the Pomodoro Technique. It really helps!"
+                )
+            )
+        ),
+        "Travel Recommendations" to ChatRoom( // New chat room
+            name = "Travel Recommendations",
+            messages = listOf(
+                Message(
+                    sender = "Aisha",
+                    timestamp = Instant.parse("2024-10-10T11:00:00Z"),
+                    content = "I'm planning a trip to Europe next month. Any recommendations?"
+                ),
+                Message(
+                    sender = "Bjorn",
+                    timestamp = Instant.parse("2024-10-10T11:05:00Z"),
+                    content = "You should definitely visit Stockholm! It's a beautiful city."
+                )
+            )
+        ),
+        "Food Talk" to ChatRoom( // New chat room
+            name = "Food Talk",
+            messages = listOf(
+                Message(
+                    sender = "Diego",
+                    timestamp = Instant.parse("2024-10-10T14:00:00Z"),
+                    content = "What's everyone having for lunch?"
+                ),
+                Message(
+                    sender = "Kenji",
+                    timestamp = Instant.parse("2024-10-10T14:05:00Z"),
+                    content = "Sushi!"
+                )
+            )
+        ),
+        "Book Club" to ChatRoom( // New chat room
+            name = "Book Club",
+            messages = listOf(
+                Message(
+                    sender = "Lin",
+                    timestamp = Instant.parse("2024-10-11T09:00:00Z"),
+                    content = "Has anyone read the new book by [author name]?"
+                ),
+                Message(
+                    sender = "Aisha",
+                    timestamp = Instant.parse("2024-10-11T09:05:00Z"),
+                    content = "I have! It was amazing."
+                )
+            )
+        ),
+        "Movie Night" to ChatRoom( // New chat room
+            name = "Movie Night",
+            messages = listOf(
+                Message(
+                    sender = "Bjorn",
+                    timestamp = Instant.parse("2024-10-11T12:00:00Z"),
+                    content = "Anyone up for a movie night this weekend?"
+                ),
+                Message(
+                    sender = "Diego",
+                    timestamp = Instant.parse("2024-10-11T12:05:00Z"),
+                    content = "I'm in!"
+                )
+            )
+        ),
+        "Pet Pictures" to ChatRoom( // New chat room
+            name = "Pet Pictures",
+            messages = listOf(
+                Message(
+                    sender = "Kenji",
+                    timestamp = Instant.parse("2024-10-11T15:00:00Z"),
+                    content = "Share pictures of your pets!"
+                ),
+                Message(
+                    sender = "Lin",
+                    timestamp = Instant.parse("2024-10-11T15:05:00Z"),
+                    content = "Here's my cat, Mittens! [picture of cat]"
+                )
+            )
+        ),
+        "Gardening Enthusiasts" to ChatRoom( // New chat room
+            name = "Gardening Enthusiasts",
+            messages = listOf(
+                Message(
+                    sender = "Aisha",
+                    timestamp = Instant.parse("2024-10-12T10:00:00Z"),
+                    content = "Anyone else have a green thumb?"
+                ),
+                Message(
+                    sender = "Bjorn",
+                    timestamp = Instant.parse("2024-10-12T10:05:00Z"),
+                    content = "I love gardening! I have a small balcony garden."
+                )
+            )
+        ),
+        "Gaming Group" to ChatRoom( // New chat room
+            name = "Gaming Group",
+            messages = listOf(
+                Message(
+                    sender = "Diego",
+                    timestamp = Instant.parse("2024-10-12T13:00:00Z"),
+                    content = "Anyone play [game name]?"
+                ),
+                Message(
+                    sender = "Kenji",
+                    timestamp = Instant.parse("2024-10-12T13:05:00Z"),
+                    content = "I do! I'm a huge fan."
+                )
+            )
+        ),
+        "Music Lovers" to ChatRoom( // New chat room
+            name = "Music Lovers",
+            messages = listOf(
+                Message(
+                    sender = "Lin",
+                    timestamp = Instant.parse("2024-10-12T16:00:00Z"),
+                    content = "What's everyone listening to these days?"
+                ),
+                Message(
+                    sender = "Aisha",
+                    timestamp = Instant.parse("2024-10-12T16:05:00Z"),
+                    content = "I'm really into [artist name] lately."
+                )
+            )
+        ),
+        "Photography Club" to ChatRoom( // New chat room
+            name = "Photography Club",
+            messages = listOf(
+                Message(
+                    sender = "Bjorn",
+                    timestamp = Instant.parse("2024-10-13T09:00:00Z"),
+                    content = "Anyone interested in photography?"
+                ),
+                Message(
+                    sender = "Diego",
+                    timestamp = Instant.parse("2024-10-13T09:05:00Z"),
+                    content = "I am! I love taking pictures."
+                )
+            )
+        ),
+        "DIY Projects" to ChatRoom( // New chat room
+            name = "DIY Projects",
+            messages = listOf(
+                Message(
+                    sender = "Kenji",
+                    timestamp = Instant.parse("2024-10-13T11:00:00Z"),
+                    content = "Anyone working on any cool DIY projects?"
+                ),
+                Message(
+                    sender = "Lin",
+                    timestamp = Instant.parse("2024-10-13T11:05:00Z"),
+                    content = "I'm building a bookshelf!"
+                )
+            )
         )
     ),
     profiles = mapOf(
