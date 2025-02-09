@@ -49,7 +49,7 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
      * A set of node ids that are animating out.
      */
     val destinationIdsAnimatingOut: Set<String>,
-) : PanedNavigationState<Pane, Destination> {
+) {
     companion object {
         internal fun <T, R : Node> initial(
             slots: Collection<Slot>,
@@ -66,7 +66,7 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
     }
 
     internal fun paneStateFor(
-        slot: Slot
+        slot: Slot,
     ): PaneState<Pane, Destination> {
         val node = destinationFor(slot)
         val pane = node?.let(::paneFor)
@@ -80,19 +80,19 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
     }
 
     internal fun slotFor(
-        pane: Pane
+        pane: Pane,
     ): Slot? = destinationIdsToAdaptiveSlots[
         panesToDestinations[pane]?.id
     ]
 
     private fun paneFor(
-        node: Node
+        node: Node,
     ): Pane? = panesToDestinations.firstNotNullOfOrNull { (pane, paneRoute) ->
         if (paneRoute?.id == node.id) pane else null
     }
 
     private fun destinationFor(
-        slot: Slot
+        slot: Slot,
     ): Destination? = destinationIdsToAdaptiveSlots.firstNotNullOfOrNull { (nodeId, nodeSlot) ->
         if (nodeSlot == slot) panesToDestinations.firstNotNullOfOrNull { (_, node) ->
             if (node?.id == nodeId) node
@@ -101,12 +101,12 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
         else null
     }
 
-    override fun destinationFor(
-        pane: Pane
+    fun destinationFor(
+        pane: Pane,
     ): Destination? = panesToDestinations[pane]
 
-    override fun adaptationsIn(
-        pane: Pane
+    fun adaptationsIn(
+        pane: Pane,
     ): Set<Adaptation> {
         val swaps = swapAdaptations.filter { pane in it }
         return if (swaps.isEmpty()) when (panesToDestinations[pane]?.id) {
@@ -206,7 +206,7 @@ internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Dest
         }
 
 /**
- * Trims unneeded metadata from the [PanedNavigationState]
+ * Trims unneeded metadata from the [SlotBasedPanedNavigationState]
  */
 internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.prune(): SlotBasedPanedNavigationState<Pane, Destination> =
     copy(

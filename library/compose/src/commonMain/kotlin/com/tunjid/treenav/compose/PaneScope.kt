@@ -91,7 +91,7 @@ internal data class SlotPaneState<Pane, Destination : Node>(
 ) : PaneState<Pane, Destination>
 
 /**
- * A spot taken by an [PaneStrategy] that may be moved in from pane to pane.
+ * A spot taken by an [PaneEntry] that may be moved in from pane to pane.
  */
 @JvmInline
 internal value class Slot internal constructor(val index: Int)

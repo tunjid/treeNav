@@ -24,7 +24,7 @@ import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.treenav.compose.threepane.configurations.requireThreePaneMovableSharedElementScope
+import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
 
 fun chatRoomPaneStrategy(

@@ -23,15 +23,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.PaneScope
-import com.tunjid.treenav.compose.PanedNavHostConfiguration
-import com.tunjid.treenav.compose.delegated
 import com.tunjid.treenav.compose.utilities.AnimatedBoundsState
 import com.tunjid.treenav.compose.utilities.AnimatedBoundsState.Companion.animateBounds
 import com.tunjid.treenav.compose.utilities.DefaultBoundsTransform
 
 /**
- * A [PanedNavHostConfiguration] that animates the bounds of each [Pane] displayed within it.
+ * A [MultiPaneDisplayState] that animates the bounds of each [Pane] displayed within it.
  * This is useful for scenarios where the panes move within a layout hierarchy to accommodate
  * other panes.
  *
@@ -41,32 +40,23 @@ import com.tunjid.treenav.compose.utilities.DefaultBoundsTransform
  * skipping an animation in progress.
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
-fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
-        Pane,
-        NavigationState,
-        Destination
-        >.animatePaneBoundsConfiguration(
+fun <Pane, NavigationState : Node, Destination : Node> animatePaneBoundsTransform(
     lookaheadScope: LookaheadScope,
     paneBoundsTransform: PaneScope<Pane, Destination>.() -> BoundsTransform = { DefaultBoundsTransform },
     shouldAnimatePane: PaneScope<Pane, Destination>.() -> Boolean = { true },
-): PanedNavHostConfiguration<Pane, NavigationState, Destination> =
-    delegated { navigationDestination ->
-        val originalStrategy = strategyTransform(navigationDestination)
-        originalStrategy.delegated(
-            render = render@{ paneDestination ->
-                Box(
-                    modifier = Modifier.animateBounds(
-                        state = remember {
-                            AnimatedBoundsState(
-                                lookaheadScope = lookaheadScope,
-                                boundsTransform = paneBoundsTransform(),
-                                inProgress = { shouldAnimatePane() }
-                            )
-                        }
+): Transform<Pane, NavigationState, Destination> =
+    RenderTransform { destination, original ->
+        Box(
+            modifier = Modifier.animateBounds(
+                state = remember {
+                    AnimatedBoundsState(
+                        lookaheadScope = lookaheadScope,
+                        boundsTransform = paneBoundsTransform(),
+                        inProgress = { shouldAnimatePane() }
                     )
-                ) {
-                    originalStrategy.render(this@render, paneDestination)
                 }
-            }
-        )
+            )
+        ) {
+            original(destination)
+        }
     }

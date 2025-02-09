@@ -1,0 +1,170 @@
+/*
+ * Copyright 2021 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.tunjid.treenav.compose
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.configurations.DestinationTransform
+import com.tunjid.treenav.compose.configurations.PaneTransform
+import com.tunjid.treenav.compose.configurations.RenderTransform
+import com.tunjid.treenav.compose.configurations.Transform
+
+/**
+ * Class for configuring a [MultiPaneDisplay] for selecting, adapting and placing navigation
+ * destinations into different panes from an arbitrary [navigationState].
+ *
+ * @param panes a list of panes that is possible to show in the [MultiPaneDisplay] in all
+ * possible configurations. The panes should consist of enum class instances, or a sealed class
+ * hierarchy of kotlin objects.
+ * @param navigationState the navigation state to be adapted into various panes.
+ * @param backStackTransform a transform to read the back stack of the navigation state.
+ * @param destinationTransform a transform of the [navigationState] to its current destination.
+ * @param panesToDestinationsTransform provides the strategy used to adapt the current
+ * [Destination] to the panes available.
+ * @param renderTransform the transform used to render a [Destination] in its pane.
+ */
+class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> internal constructor(
+    val panes: List<Pane>,
+    val navigationState: State<NavigationState>,
+    val backStackTransform: (NavigationState) -> List<Destination>,
+    val destinationTransform: (NavigationState) -> Destination,
+    val panesToDestinationsTransform: @Composable (Destination) -> Map<Pane, Destination?>,
+    val renderTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
+) {
+    internal val currentDestination: State<Destination> = derivedStateOf {
+        destinationTransform(navigationState.value)
+    }
+}
+
+/**
+ * Provides an [MultiPaneDisplayState] for configuring a [MultiPaneDisplay] for
+ * showing different navigation destinations into different panes from an arbitrary
+ * [navigationState].
+ *
+ * @param panes a list of panes that is possible to show in the [MultiPaneDisplay] in all
+ * possible configurations. The panes should consist of enum class instances, or a sealed class
+ * hierarchy of kotlin objects.
+ * @param navigationState the navigation state to be adapted into various panes.
+ * @param backStackTransform a transform to read the back stack of the navigation state.
+ * @param destinationTransform a transform of the [navigationState] to its current destination.
+ * @param paneEntry provides the [Transform]s and content needed to render
+ * a [Destination] in its pane.
+ * @param transforms a list of transforms applied to every [Destination] before it is
+ * rendered in its pane. Order matters; they are applied from last to first.
+ */
+fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
+    panes: List<Pane>,
+    navigationState: State<NavigationState>,
+    backStackTransform: (NavigationState) -> List<Destination>,
+    destinationTransform: (NavigationState) -> Destination,
+    paneEntry: (Destination) -> PaneEntry<Pane, Destination>,
+    transforms: List<Transform<Pane, NavigationState, Destination>>,
+) = transforms.fold(
+    initial = MultiPaneDisplayState(
+        panes = panes,
+        navigationState = navigationState,
+        backStackTransform = backStackTransform,
+        destinationTransform = destinationTransform,
+        panesToDestinationsTransform = { destination ->
+            paneEntry(destination).paneTransform(destination)
+        },
+        renderTransform = { destination ->
+            val nav = paneEntry(destination)
+            with(nav.renderTransform) {
+                Render(
+                    destination = destination,
+                    original = nav.content,
+                )
+            }
+        }
+    ),
+    operation = MultiPaneDisplayState<Pane, NavigationState, Destination>::plus
+)
+
+/**
+ * The current destination in a given [paneScope].
+ */
+@Composable
+internal fun <Pane, Destination : Node> MultiPaneDisplayState<
+        Pane,
+        *,
+        Destination
+        >.Destination(
+    paneScope: PaneScope<Pane, Destination>,
+) {
+    val current = remember(paneScope.paneState.currentDestination) {
+        paneScope.paneState.currentDestination
+    } ?: return
+
+    paneScope.renderTransform(current)
+}
+
+/**
+ * THe current pane mapping to use in the [MultiPaneDisplay].
+ */
+@Composable
+internal fun <Pane, Destination : Node>
+        MultiPaneDisplayState<Pane, *, Destination>.panesToDestinations(): Map<Pane, Destination?> {
+    val current by currentDestination
+    return panesToDestinationsTransform(current)
+}
+
+private operator fun <Pane, NavigationState : Node, Destination : Node>
+        MultiPaneDisplayState<Pane, NavigationState, Destination>.plus(
+    transform: Transform<Pane, NavigationState, Destination>,
+): MultiPaneDisplayState<Pane, NavigationState, Destination> =
+    MultiPaneDisplayState(
+        panes = panes,
+        navigationState = navigationState,
+        backStackTransform = backStackTransform,
+        destinationTransform = when (transform) {
+            is DestinationTransform -> { destination ->
+                transform.toDestination(
+                    navigationState = destination,
+                    original = destinationTransform
+                )
+            }
+
+            else -> destinationTransform
+        },
+        panesToDestinationsTransform = when (transform) {
+            is PaneTransform -> { destination ->
+                transform.toPanesAndDestinations(
+                    destination = destination,
+                    original = panesToDestinationsTransform,
+                )
+            }
+
+            else -> panesToDestinationsTransform
+        },
+        renderTransform = when (transform) {
+            is RenderTransform -> { destination ->
+                with(transform) {
+                    Render(
+                        destination = destination,
+                        original = renderTransform,
+                    )
+                }
+            }
+
+            else -> renderTransform
+        },
+    )

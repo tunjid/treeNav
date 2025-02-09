@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneScope
-import com.tunjid.treenav.compose.PanedNavHost
+import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.utilities.DefaultBoundsTransform
 
 /**
@@ -129,7 +129,7 @@ fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
 )
 
 /**
- * State for managing movable shared elements within a single [PanedNavHost].
+ * State for managing movable shared elements within a single [MultiPaneDisplay].
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
