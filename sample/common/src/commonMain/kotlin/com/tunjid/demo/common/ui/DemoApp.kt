@@ -171,10 +171,8 @@ fun App(
                         }
                 },
             ) {
-                val filteredPaneOrder by remember {
-                    derivedStateOf { appState.filteredPaneOrder(this) }
-                }
-                appState.splitLayoutState.visibleCount = filteredPaneOrder.size
+                appState.panedNavHostScope = this
+                appState.splitLayoutState.visibleCount = appState.filteredPaneOrder.size
                 SplitLayout(
                     state = appState.splitLayoutState,
                     modifier = Modifier
@@ -190,7 +188,7 @@ fun App(
                         )
                     },
                     itemContent = { index ->
-                        val pane = filteredPaneOrder[index]
+                        val pane = appState.filteredPaneOrder[index]
                         Destination(pane)
                         if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
                     }
@@ -275,6 +273,7 @@ class AppState(
     )
     private val paneInteractionSourceList = mutableStateListOf<MutableInteractionSource>()
     private val paneRenderOrder = listOf(
+        ThreePane.Tertiary,
         ThreePane.Secondary,
         ThreePane.Primary,
     )
@@ -294,11 +293,12 @@ class AppState(
     internal val isPreviewingBack
         get() = !backPreviewState.progress.isNaN()
 
-    fun filteredPaneOrder(
-        panedNavHostScope: PanedNavHostScope<ThreePane, SampleDestination>
-    ): List<ThreePane> {
-        val order = paneRenderOrder.filter { panedNavHostScope.nodeFor(it) != null }
-        return order
+    internal var panedNavHostScope by mutableStateOf<PanedNavHostScope<ThreePane, SampleDestination>?>(
+        null
+    )
+
+    val filteredPaneOrder: List<ThreePane> by derivedStateOf {
+        paneRenderOrder.filter { panedNavHostScope?.nodeFor(it) != null }
     }
 
     fun setTab(destination: SampleDestination.NavTabs) {
