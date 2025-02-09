@@ -74,6 +74,7 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.me.mePaneStrategy
 import com.tunjid.demo.common.ui.profile.profilePaneStrategy
 import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.backStack
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
@@ -336,13 +337,12 @@ class AppState(
                     panes = ThreePane.entries.toList(),
                     navigationState = navigationState,
                     backStackTransform = { multiStackNav ->
-                        generateSequence(multiStackNav) { current ->
-                            current.pop().takeUnless(current::equals)
-                        }
-                            .flatMap { listOf(it.current) + (it.current?.children ?: emptyList()) }
+                        multiStackNav.backStack(
+                            includeCurrentDestinationChildren = true,
+                            placeChildrenBeforeParent = true,
+                        )
                             .filterIsInstance<SampleDestination>()
                             .toList()
-                            .asReversed()
                     },
                     destinationTransform = {
                         it.current as? SampleDestination ?: throw IllegalArgumentException(

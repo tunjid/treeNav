@@ -21,7 +21,7 @@ package com.tunjid.treenav
  */
 data class StackNav(
     val name: String,
-    override val children: List<Node> = listOf()
+    override val children: List<Node> = listOf(),
 ) : Node {
     override val id: String get() = name
 }
@@ -54,6 +54,36 @@ fun StackNav.pop(popLast: Boolean = false) = when {
 fun StackNav.popToRoot() = copy(
     children = children.take(1)
 )
+
+/**
+ * Returns a sequence of each destination on the back stack for this [StackNav] as defined by
+ * [StackNav.pop].
+ *
+ * @param includeCurrentDestinationChildren when true, the result of [Node.children] for each
+ * [Node] is included in the back stack.
+ * @param placeChildrenBeforeParent when true, the result of [Node.children] are paced before
+ * the parent [Node] in the back stack.
+ */
+fun StackNav.backStack(
+    includeCurrentDestinationChildren: Boolean,
+    placeChildrenBeforeParent: Boolean = false,
+): Sequence<Node> =
+    if (!includeCurrentDestinationChildren && placeChildrenBeforeParent) throw IllegalArgumentException(
+        "Cannot place children nodes before the parent if children are not included"
+    )
+    else generateSequence(this) { current ->
+        current.pop().takeUnless(current::equals)
+    }
+        .flatMap { nav ->
+            val parent = listOfNotNull(nav.current)
+            val children = nav.current
+                ?.children
+                ?.takeIf { includeCurrentDestinationChildren }
+                ?: emptyList()
+
+            if (placeChildrenBeforeParent) children + parent
+            else parent + children
+        }
 
 /**
  * Indicates if there's a [Node] available to pop up to
