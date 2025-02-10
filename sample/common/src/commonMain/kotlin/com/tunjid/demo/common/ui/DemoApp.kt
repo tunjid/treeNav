@@ -349,7 +349,7 @@ class AppState(
                             "MultiStackNav leaf node ${it.current} must be an AppDestination"
                         )
                     },
-                    paneEntry = { destination ->
+                    entryProvider = { destination ->
                         when (destination) {
                             SampleDestination.NavTabs.ChatRooms -> chatRoomPaneStrategy()
 

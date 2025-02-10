@@ -65,7 +65,7 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
  * @param navigationState the navigation state to be adapted into various panes.
  * @param backStackTransform a transform to read the back stack of the navigation state.
  * @param destinationTransform a transform of the [navigationState] to its current destination.
- * @param paneEntry provides the [Transform]s and content needed to render
+ * @param entryProvider provides the [Transform]s and content needed to render
  * a [Destination] in its pane.
  * @param transforms a list of transforms applied to every [Destination] before it is
  * rendered in its pane. Order matters; they are applied from last to first.
@@ -75,7 +75,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
     navigationState: State<NavigationState>,
     backStackTransform: (NavigationState) -> List<Destination>,
     destinationTransform: (NavigationState) -> Destination,
-    paneEntry: (Destination) -> PaneEntry<Pane, Destination>,
+    entryProvider: (Destination) -> PaneEntry<Pane, Destination>,
     transforms: List<Transform<Pane, NavigationState, Destination>>,
 ) = transforms.fold(
     initial = MultiPaneDisplayState(
@@ -84,10 +84,10 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
         backStackTransform = backStackTransform,
         destinationTransform = destinationTransform,
         panesToDestinationsTransform = { destination ->
-            paneEntry(destination).paneTransform(destination)
+            entryProvider(destination).paneTransform(destination)
         },
         renderTransform = { destination ->
-            val nav = paneEntry(destination)
+            val nav = entryProvider(destination)
             with(nav.renderTransform) {
                 Render(
                     destination = destination,

@@ -24,17 +24,15 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.Order
 import com.tunjid.treenav.compose.lifecycle.DestinationViewModelStoreCreator
 import com.tunjid.treenav.compose.lifecycle.rememberDestinationLifecycleOwner
-import com.tunjid.treenav.traverse
 
 @Stable
-internal class SlottedMultiPaneDisplayScope<Pane, Destination : Node>(
+internal class SlottedMultiPaneDisplayScope<Pane, NavigationState : Node, Destination : Node>(
     panes: List<Pane>,
     initialPanesToNodes: Map<Pane, Destination?>,
     saveableStateHolder: SaveableStateHolder,
-    val displayState: MultiPaneDisplayState<Pane, *, Destination>,
+    val displayState: MultiPaneDisplayState<Pane, NavigationState, Destination>,
 ) : MultiPaneDisplayScope<Pane, Destination>, SaveableStateHolder by saveableStateHolder {
 
     private val slots = List(
@@ -91,7 +89,7 @@ internal class SlottedMultiPaneDisplayScope<Pane, Destination : Node>(
     ): Destination? = panedNavigationState.destinationFor(pane)
 
     internal fun onNewNavigationState(
-        navigationState: Node,
+        navigationState: NavigationState,
         panesToNodes: Map<Pane, Destination?>,
     ) {
         updateAdaptiveNavigationState {
@@ -217,12 +215,17 @@ internal class SlottedMultiPaneDisplayScope<Pane, Destination : Node>(
     ) {
         panedNavigationState = panedNavigationState.block()
     }
-}
 
-private fun Node.backStackIds() =
-    mutableSetOf<String>().apply {
-        traverse(Order.DepthFirst) { add(it.id) }
-    }
+
+    private fun NavigationState.backStackIds(): MutableSet<String> =
+        displayState.backStackTransform(
+            this
+        )
+            .fold(mutableSetOf()) { set, destination ->
+                set.add(destination.id)
+                set
+            }
+}
 
 //fun <Pane, Destination : Node> PanedNavHostScope<
 //        Pane,
