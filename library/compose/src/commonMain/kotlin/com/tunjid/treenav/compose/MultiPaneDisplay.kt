@@ -81,8 +81,10 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
     content: @Composable MultiPaneDisplayScope<Pane, Destination>.() -> Unit,
 ) {
 
-    val backStack by derivedStateOf {
-        state.backStackTransform(state.navigationState.value)
+    val backStack by remember {
+        derivedStateOf {
+            state.backStackTransform(state.navigationState.value)
+        }
     }
     val panesToNodes = state.panesToDestinations()
     val saveableStateHolder = rememberPanedSaveableStateHolder()
