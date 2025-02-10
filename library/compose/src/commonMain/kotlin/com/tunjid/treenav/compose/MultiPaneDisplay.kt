@@ -19,8 +19,9 @@ package com.tunjid.treenav.compose
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
@@ -80,24 +81,28 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
     content: @Composable MultiPaneDisplayScope<Pane, Destination>.() -> Unit,
 ) {
 
-    val navigationState by state.navigationState
+    val backStack by derivedStateOf {
+        state.backStackTransform(state.navigationState.value)
+    }
     val panesToNodes = state.panesToDestinations()
     val saveableStateHolder = rememberPanedSaveableStateHolder()
 
     val panedContentScope = remember {
         SlottedMultiPaneDisplayScope(
             panes = state.panes,
+            initialBackStack = backStack,
             initialPanesToNodes = panesToNodes,
             saveableStateHolder = saveableStateHolder,
             displayState = state,
         )
     }
 
-    LaunchedEffect(navigationState, panesToNodes) {
-        panedContentScope.onNewNavigationState(
-            navigationState = navigationState,
+    DisposableEffect(backStack, panesToNodes) {
+        panedContentScope.onBackStackChanged(
+            backStack = backStack,
             panesToNodes = panesToNodes
         )
+        onDispose { }
     }
 
     Box(

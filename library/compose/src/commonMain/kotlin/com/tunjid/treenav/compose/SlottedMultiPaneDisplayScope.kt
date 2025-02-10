@@ -28,11 +28,12 @@ import com.tunjid.treenav.compose.lifecycle.DestinationViewModelStoreCreator
 import com.tunjid.treenav.compose.lifecycle.rememberDestinationLifecycleOwner
 
 @Stable
-internal class SlottedMultiPaneDisplayScope<Pane, NavigationState : Node, Destination : Node>(
+internal class SlottedMultiPaneDisplayScope<Pane, Destination : Node>(
     panes: List<Pane>,
+    initialBackStack: List<Destination>,
     initialPanesToNodes: Map<Pane, Destination?>,
     saveableStateHolder: SaveableStateHolder,
-    val displayState: MultiPaneDisplayState<Pane, NavigationState, Destination>,
+    val displayState: MultiPaneDisplayState<Pane, *, Destination>,
 ) : MultiPaneDisplayScope<Pane, Destination>, SaveableStateHolder by saveableStateHolder {
 
     private val slots = List(
@@ -45,7 +46,7 @@ internal class SlottedMultiPaneDisplayScope<Pane, NavigationState : Node, Destin
             .adaptTo(
                 slots = slots,
                 panesToNodes = initialPanesToNodes,
-                backStackIds = displayState.navigationState.value.backStackIds(),
+                backStackIds = initialBackStack.ids(),
             )
     )
 
@@ -88,15 +89,15 @@ internal class SlottedMultiPaneDisplayScope<Pane, NavigationState : Node, Destin
         pane: Pane,
     ): Destination? = panedNavigationState.destinationFor(pane)
 
-    internal fun onNewNavigationState(
-        navigationState: NavigationState,
+    internal fun onBackStackChanged(
+        backStack: List<Destination>,
         panesToNodes: Map<Pane, Destination?>,
     ) {
         updateAdaptiveNavigationState {
             adaptTo(
                 slots = slots.toSet(),
                 panesToNodes = panesToNodes,
-                backStackIds = navigationState.backStackIds()
+                backStackIds = backStack.ids()
             )
         }
     }
@@ -217,14 +218,11 @@ internal class SlottedMultiPaneDisplayScope<Pane, NavigationState : Node, Destin
     }
 
 
-    private fun NavigationState.backStackIds(): MutableSet<String> =
-        displayState.backStackTransform(
-            this
-        )
-            .fold(mutableSetOf()) { set, destination ->
-                set.add(destination.id)
-                set
-            }
+    private fun List<Destination>.ids(): MutableSet<String> =
+        fold(mutableSetOf()) { set, destination ->
+            set.add(destination.id)
+            set
+        }
 }
 
 //fun <Pane, Destination : Node> PanedNavHostScope<
