@@ -22,9 +22,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.configurations.DestinationTransform
-import com.tunjid.treenav.compose.configurations.PaneTransform
-import com.tunjid.treenav.compose.configurations.Transform
+import com.tunjid.treenav.compose.transforms.DestinationTransform
+import com.tunjid.treenav.compose.transforms.PaneTransform
+import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
@@ -49,30 +49,30 @@ inline fun <NavigationState : Node, reified Destination : Node>
 
         override fun toDestination(
             navigationState: NavigationState,
-            original: (NavigationState) -> Destination,
+            previousTransform: (NavigationState) -> Destination,
         ): Destination {
-            val current = original(navigationState)
-            lastPrimaryDestination = current
-            return if (isPreviewingBack.value) original(navigationState.backPreviewTransform())
-            else current
+            val previousDestination = previousTransform(navigationState)
+            lastPrimaryDestination = previousDestination
+            return if (isPreviewingBack.value) previousTransform(navigationState.backPreviewTransform())
+            else previousDestination
         }
 
         @Composable
         override fun toPanesAndDestinations(
             destination: Destination,
-            original: @Composable (Destination) -> Map<ThreePane, Destination?>,
+            previousTransform: @Composable (Destination) -> Map<ThreePane, Destination?>,
         ): Map<ThreePane, Destination?> {
-            val originalMapping = original(destination)
+            val previousMapping = previousTransform(destination)
             val isPreviewing by isPreviewingBack
-            if (!isPreviewing) return originalMapping
+            if (!isPreviewing) return previousMapping
             // Back is being previewed, therefore the original mapping is already for back.
             // Pass the previous primary value into transient.
             val transientDestination = checkNotNull(lastPrimaryDestination) {
                 "Attempted to show last destination without calling destination transform"
             }
-            val paneMapping = original(transientDestination)
+            val paneMapping = previousTransform(transientDestination)
             val transient = paneMapping[ThreePane.Primary]
-            return originalMapping + (ThreePane.TransientPrimary to transient)
+            return previousMapping + (ThreePane.TransientPrimary to transient)
         }
     }
 }

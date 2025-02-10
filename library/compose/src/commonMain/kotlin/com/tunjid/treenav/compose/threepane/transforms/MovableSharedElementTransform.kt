@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.PaneScope
-import com.tunjid.treenav.compose.configurations.RenderTransform
-import com.tunjid.treenav.compose.configurations.Transform
+import com.tunjid.treenav.compose.transforms.RenderTransform
+import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.PanedMovableSharedElementScope
@@ -31,7 +31,7 @@ fun <NavigationState : Node, Destination : Node>
         threePanedMovableSharedElementTransform(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
 ): Transform<ThreePane, NavigationState, Destination> =
-    RenderTransform { navigationDestination, original ->
+    RenderTransform { destination, previousTransform ->
         val delegate = remember {
             PanedMovableSharedElementScope(
                 paneScope = this,
@@ -47,7 +47,7 @@ fun <NavigationState : Node, Destination : Node>
             )
         }
 
-        original(movableSharedElementScope, navigationDestination)
+        previousTransform(movableSharedElementScope, destination)
     }
 
 fun <Destination : Node> PaneScope<

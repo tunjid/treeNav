@@ -6,8 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.configurations.PaneTransform
-import com.tunjid.treenav.compose.configurations.Transform
+import com.tunjid.treenav.compose.transforms.PaneTransform
+import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
@@ -22,10 +22,10 @@ fun <NavigationState : Node, Destination : Node>
     secondaryPaneBreakPoint: State<Dp> = mutableStateOf(SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
     tertiaryPaneBreakPoint: State<Dp> = mutableStateOf(TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
 ): Transform<ThreePane, NavigationState, Destination> =
-    PaneTransform { destination, original ->
+    PaneTransform { destination, previousTransform ->
         // Consider navigation state different if window size class changes
         val windowWidthDp by windowWidthState
-        val originalMapping = original(destination)
+        val originalMapping = previousTransform(destination)
         val primaryNode = originalMapping[ThreePane.Primary]
         mapOf(
             ThreePane.Primary to primaryNode,

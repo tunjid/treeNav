@@ -22,10 +22,10 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.configurations.DestinationTransform
-import com.tunjid.treenav.compose.configurations.PaneTransform
-import com.tunjid.treenav.compose.configurations.RenderTransform
-import com.tunjid.treenav.compose.configurations.Transform
+import com.tunjid.treenav.compose.transforms.DestinationTransform
+import com.tunjid.treenav.compose.transforms.PaneTransform
+import com.tunjid.treenav.compose.transforms.RenderTransform
+import com.tunjid.treenav.compose.transforms.Transform
 
 /**
  * Class for configuring a [MultiPaneDisplay] for selecting, adapting and placing navigation
@@ -91,7 +91,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
             with(nav.renderTransform) {
                 Render(
                     destination = destination,
-                    original = nav.content,
+                    previousTransform = nav.content,
                 )
             }
         }
@@ -139,7 +139,7 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
             is DestinationTransform -> { destination ->
                 transform.toDestination(
                     navigationState = destination,
-                    original = destinationTransform
+                    previousTransform = destinationTransform
                 )
             }
 
@@ -149,7 +149,7 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
             is PaneTransform -> { destination ->
                 transform.toPanesAndDestinations(
                     destination = destination,
-                    original = panesToDestinationsTransform,
+                    previousTransform = panesToDestinationsTransform,
                 )
             }
 
@@ -160,7 +160,7 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
                 with(transform) {
                     Render(
                         destination = destination,
-                        original = renderTransform,
+                        previousTransform = renderTransform,
                     )
                 }
             }

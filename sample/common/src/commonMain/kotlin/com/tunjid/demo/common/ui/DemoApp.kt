@@ -18,9 +18,12 @@ package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.animateBounds
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
@@ -76,16 +79,15 @@ import com.tunjid.demo.common.ui.profile.profilePaneStrategy
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.backStack
 import com.tunjid.treenav.compose.MultiPaneDisplay
-import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
-import com.tunjid.treenav.compose.configurations.Transform
-import com.tunjid.treenav.compose.configurations.animatePaneBoundsTransform
-import com.tunjid.treenav.compose.configurations.paneModifierTransform
+import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.transforms.predictiveBackTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
+import com.tunjid.treenav.compose.transforms.Transform
+import com.tunjid.treenav.compose.transforms.paneModifierTransform
 import com.tunjid.treenav.current
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
@@ -150,28 +152,28 @@ fun App(
                         threePanedMovableSharedElementTransform(
                             movableSharedElementHostState = movableSharedElementHostState
                         ),
-                        animatePaneBoundsTransform(
-                            lookaheadScope = this@SharedTransitionScope,
-                            shouldAnimatePane = {
-                                when (paneState.pane) {
-                                    ThreePane.Primary,
-                                    ThreePane.TransientPrimary,
-                                    ThreePane.Secondary,
-                                    ThreePane.Tertiary,
-                                        -> canAnimatePanes
-
-                                    null,
-                                    ThreePane.Overlay,
-                                        -> false
-                                }
-                            }
-                        ),
                         paneModifierTransform {
-                            if (paneState.pane == ThreePane.TransientPrimary) Modifier
+                            val modifier = Modifier.animateBounds(
+                                lookaheadScope = this@SharedTransitionScope,
+                                boundsTransform = { _, _ ->
+                                    when (paneState.pane) {
+                                        ThreePane.Primary,
+                                        ThreePane.TransientPrimary,
+                                        ThreePane.Secondary,
+                                        ThreePane.Tertiary,
+                                            -> if (canAnimatePanes) spring() else snap()
+
+                                        null,
+                                        ThreePane.Overlay,
+                                            -> snap()
+                                    }
+                                }
+                            )
+                            if (paneState.pane == ThreePane.TransientPrimary) modifier
                                 .fillMaxSize()
                                 .backPreview(appState.backPreviewState)
                                 .background(backPreviewSurfaceColor, RoundedCornerShape(16.dp))
-                            else Modifier
+                            else modifier
                                 .fillMaxSize()
                         }
                     )

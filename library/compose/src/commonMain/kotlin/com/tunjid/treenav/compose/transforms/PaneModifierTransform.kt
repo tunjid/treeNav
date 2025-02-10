@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.configurations
+package com.tunjid.treenav.compose.transforms
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier
@@ -31,10 +31,10 @@ import com.tunjid.treenav.compose.PaneScope
 fun <Pane, NavigationState : Node, Destination : Node> paneModifierTransform(
     paneModifier: PaneScope<Pane, Destination>.() -> Modifier = { Modifier },
 ): Transform<Pane, NavigationState, Destination> =
-    RenderTransform { destination, original ->
+    RenderTransform { destination, previousTransform ->
         Box(
             modifier = paneModifier()
         ) {
-            original(destination)
+            previousTransform(destination)
         }
     }

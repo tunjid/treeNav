@@ -1,4 +1,4 @@
-package com.tunjid.treenav.compose.configurations
+package com.tunjid.treenav.compose.transforms
 
 import androidx.compose.runtime.Composable
 import com.tunjid.treenav.Node
@@ -11,7 +11,7 @@ fun interface DestinationTransform<Pane, NavigationState : Node, Destination : N
     : Transform<Pane, NavigationState, Destination> {
     fun toDestination(
         navigationState: NavigationState,
-        original: (NavigationState) -> Destination,
+        previousTransform: (NavigationState) -> Destination,
     ): Destination
 }
 
@@ -20,7 +20,7 @@ fun interface PaneTransform<Pane, Destination : Node>
     @Composable
     fun toPanesAndDestinations(
         destination: Destination,
-        original: @Composable (Destination) -> Map<Pane, Destination?>,
+        previousTransform: @Composable (Destination) -> Map<Pane, Destination?>,
     ): Map<Pane, Destination?>
 }
 
@@ -29,7 +29,7 @@ fun interface RenderTransform<Pane, Destination : Node>
     @Composable
     fun PaneScope<Pane, Destination>.Render(
         destination: Destination,
-        original: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
+        previousTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
     )
 }
 
