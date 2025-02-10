@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Adaptation.Swap
+import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.PaneEntry
 import com.tunjid.treenav.compose.PaneScope
 
@@ -85,7 +86,7 @@ enum class ThreePane {
 }
 
 /**
- * A strategy for selectively running animations in list detail flows. When:
+ * A [PaneEntry] for selectively running animations in [ThreePane] [MultiPaneDisplay]. When:
  * - A navigation destination moves between the [ThreePane.Primary] and [ThreePane.Secondary]
  *     panes, the pane animations are not run to provide a seamless movement experience.
  * - A navigation destination moves between the [ThreePane.Primary] and
@@ -96,7 +97,7 @@ enum class ThreePane {
  * @param paneMapping the mapping of panes to navigation destinations.
  * @param render the Composable for rendering the current destination.
  */
-fun <R : Node> threePaneListDetailStrategy(
+fun <R : Node> threePaneEntry(
     enterTransition: PaneScope<ThreePane, R>.() -> EnterTransition = { DefaultFadeIn },
     exitTransition: PaneScope<ThreePane, R>.() -> ExitTransition = { DefaultFadeOut },
     paneMapping: @Composable (R) -> Map<ThreePane, R?> = {

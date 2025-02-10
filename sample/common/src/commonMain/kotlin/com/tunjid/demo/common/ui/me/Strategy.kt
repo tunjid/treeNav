@@ -24,10 +24,10 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.profile.ProfileScreen
 import com.tunjid.demo.common.ui.profile.ProfileViewModel
 import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
-import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
+import com.tunjid.treenav.compose.threepane.threePaneEntry
 
 fun mePaneStrategy(
-) = threePaneListDetailStrategy<SampleDestination>(
+) = threePaneEntry<SampleDestination>(
     render = {
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ProfileViewModel> {

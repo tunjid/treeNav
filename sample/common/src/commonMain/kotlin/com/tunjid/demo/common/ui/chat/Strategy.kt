@@ -27,9 +27,9 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
-import com.tunjid.treenav.compose.threepane.threePaneListDetailStrategy
+import com.tunjid.treenav.compose.threepane.threePaneEntry
 
-fun chatPaneStrategy() = threePaneListDetailStrategy<SampleDestination>(
+fun chatPaneStrategy() = threePaneEntry<SampleDestination>(
     paneMapping = { destination ->
         mapOf(
             ThreePane.Primary to destination,
