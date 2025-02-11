@@ -69,7 +69,7 @@ import com.tunjid.composables.backpreview.BackPreviewState
 import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
-import com.tunjid.demo.common.ui.AppState.Companion.rememberPanedNavHostState
+import com.tunjid.demo.common.ui.AppState.Companion.rememberMultiPaneDisplayState
 import com.tunjid.demo.common.ui.chat.chatPaneStrategy
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
 import com.tunjid.demo.common.ui.data.NavigationRepository
@@ -132,7 +132,7 @@ fun App(
             MultiPaneDisplay(
                 modifier = Modifier
                     .fillMaxSize(),
-                state = appState.rememberPanedNavHostState(
+                state = appState.rememberMultiPaneDisplayState(
                     listOf(
                         threePanedAdaptiveTransform(
                             windowWidthState = remember {
@@ -179,7 +179,7 @@ fun App(
                     )
                 ),
             ) {
-                appState.panedNavHostScope = this
+                appState.displayScope = this
                 appState.splitLayoutState.visibleCount = appState.filteredPaneOrder.size
                 SplitLayout(
                     state = appState.splitLayoutState,
@@ -299,12 +299,12 @@ class AppState(
     internal val isPreviewingBack
         get() = !backPreviewState.progress.isNaN()
 
-    internal var panedNavHostScope by mutableStateOf<MultiPaneDisplayScope<ThreePane, SampleDestination>?>(
+    internal var displayScope by mutableStateOf<MultiPaneDisplayScope<ThreePane, SampleDestination>?>(
         null
     )
 
     val filteredPaneOrder: List<ThreePane> by derivedStateOf {
-        paneRenderOrder.filter { panedNavHostScope?.nodeFor(it) != null }
+        paneRenderOrder.filter { displayScope?.destinationIn(it) != null }
     }
 
     fun setTab(destination: SampleDestination.NavTabs) {
@@ -331,7 +331,7 @@ class AppState(
 
     companion object {
         @Composable
-        fun AppState.rememberPanedNavHostState(
+        fun AppState.rememberMultiPaneDisplayState(
             transforms: List<Transform<ThreePane, MultiStackNav, SampleDestination>>,
         ): MultiPaneDisplayState<ThreePane, MultiStackNav, SampleDestination> {
             val displayState = remember {

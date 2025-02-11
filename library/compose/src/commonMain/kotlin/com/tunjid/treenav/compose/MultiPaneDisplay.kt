@@ -19,11 +19,7 @@ package com.tunjid.treenav.compose
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
@@ -48,7 +44,7 @@ interface MultiPaneDisplayScope<Pane, Destination : Node> {
         pane: Pane,
     ): Set<Adaptation>
 
-    fun nodeFor(
+    fun destinationIn(
         pane: Pane,
     ): Destination?
 }
@@ -69,10 +65,10 @@ interface MultiPaneDisplayScope<Pane, Destination : Node> {
  * follows the [Lifecycle] of its immediate parent, unless it is animating out or placed in the
  * backstack. This is defined by [PaneScope.isActive], which is a function of the backing
  * [AnimatedContent] for each [Pane] displayed and if the current [Destination]
- * matches [MultiPaneDisplayScope.nodeFor] in the visible [Pane].
+ * matches [MultiPaneDisplayScope.destinationIn] in the visible [Pane].
  *
  * @param state the driving [MultiPaneDisplayState] that applies adaptive semantics and
- * strategies for each navigation destination shown in the [MultiPaneDisplay].
+ * transforms for each navigation destination shown in the [MultiPaneDisplay].
  */
 @Composable
 fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
@@ -80,52 +76,12 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
     modifier: Modifier = Modifier,
     content: @Composable MultiPaneDisplayScope<Pane, Destination>.() -> Unit,
 ) {
-    val backStack by remember {
-        derivedStateOf {
-            state.backStackTransform(state.navigationState.value)
-        }
-    }
-
     Box(
         modifier = modifier
     ) {
-        val panesToNodes = state.panesToDestinations()
-        val saveableStateHolder = rememberPanedSaveableStateHolder()
-        val displayScope = remember {
-            SlottedMultiPaneDisplayScope(
-                panes = state.panes,
-                initialBackStack = backStack,
-                initialPanesToNodes = panesToNodes,
-                saveableStateHolder = saveableStateHolder,
-                paneRenderer = {
-                    val currentDestination = remember(paneState.currentDestination) {
-                        paneState.currentDestination
-                    }
-                    currentDestination?.let { destination ->
-                        state.renderTransform(this, destination)
-                    }
-                },
-            )
-        }
-
-        DisposableEffect(backStack, panesToNodes) {
-            displayScope.onBackStackChanged(
-                backStack = backStack,
-                panesToNodes = panesToNodes
-            )
-            onDispose { }
-        }
-
-        displayScope.content()
+        SlottedMultiPaneDisplayScope(
+            state = state,
+            content = content
+        )
     }
-}
-
-/**
- * The current pane mapping to use in the [MultiPaneDisplay].
- */
-@Composable
-private fun <Pane, Destination : Node>
-        MultiPaneDisplayState<Pane, *, Destination>.panesToDestinations(): Map<Pane, Destination?> {
-    val current by currentDestination
-    return panesToDestinationsTransform(current)
 }

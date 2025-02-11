@@ -27,8 +27,48 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.lifecycle.DestinationViewModelStoreCreator
 import com.tunjid.treenav.compose.lifecycle.rememberDestinationLifecycleOwner
 
+@Composable
+internal fun <Destination : Node, NavigationState : Node, Pane> SlottedMultiPaneDisplayScope(
+    state: MultiPaneDisplayState<Pane, NavigationState, Destination>,
+    content: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
+) {
+    val backStack by remember {
+        derivedStateOf {
+            state.backStackTransform(state.navigationState.value)
+        }
+    }
+    val panesToNodes = state.panesToDestinationsTransform(state.currentDestination.value)
+    val saveableStateHolder = rememberPanedSaveableStateHolder()
+    val displayScope = remember {
+        SlottedMultiPaneDisplayScope(
+            panes = state.panes,
+            initialBackStack = backStack,
+            initialPanesToNodes = panesToNodes,
+            saveableStateHolder = saveableStateHolder,
+            paneRenderer = {
+                val currentDestination = remember(paneState.currentDestination) {
+                    paneState.currentDestination
+                }
+                currentDestination?.let { destination ->
+                    state.renderTransform(this, destination)
+                }
+            },
+        )
+    }
+
+    DisposableEffect(backStack, panesToNodes) {
+        displayScope.onBackStackChanged(
+            backStack = backStack,
+            panesToNodes = panesToNodes
+        )
+        onDispose { }
+    }
+
+    displayScope.content()
+}
+
 @Stable
-internal class SlottedMultiPaneDisplayScope<Pane, Destination : Node>(
+private class SlottedMultiPaneDisplayScope<Pane, Destination : Node>(
     panes: List<Pane>,
     initialBackStack: List<Destination>,
     initialPanesToNodes: Map<Pane, Destination?>,
@@ -85,11 +125,11 @@ internal class SlottedMultiPaneDisplayScope<Pane, Destination : Node>(
         pane: Pane,
     ): Set<Adaptation> = panedNavigationState.adaptationsIn(pane)
 
-    override fun nodeFor(
+    override fun destinationIn(
         pane: Pane,
     ): Destination? = panedNavigationState.destinationFor(pane)
 
-    internal fun onBackStackChanged(
+    fun onBackStackChanged(
         backStack: List<Destination>,
         panesToNodes: Map<Pane, Destination?>,
     ) {
@@ -216,7 +256,6 @@ internal class SlottedMultiPaneDisplayScope<Pane, Destination : Node>(
     ) {
         panedNavigationState = panedNavigationState.block()
     }
-
 
     private fun List<Destination>.ids(): MutableSet<String> =
         fold(mutableSetOf()) { set, destination ->
