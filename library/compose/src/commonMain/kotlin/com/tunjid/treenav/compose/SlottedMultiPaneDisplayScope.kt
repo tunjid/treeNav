@@ -33,7 +33,7 @@ internal class SlottedMultiPaneDisplayScope<Pane, Destination : Node>(
     initialBackStack: List<Destination>,
     initialPanesToNodes: Map<Pane, Destination?>,
     saveableStateHolder: SaveableStateHolder,
-    val displayState: MultiPaneDisplayState<Pane, *, Destination>,
+    private val paneRenderer: @Composable (PaneScope<Pane, Destination>.() -> Unit),
 ) : MultiPaneDisplayScope<Pane, Destination>, SaveableStateHolder by saveableStateHolder {
 
     private val slots = List(
@@ -154,7 +154,7 @@ internal class SlottedMultiPaneDisplayScope<Pane, Destination : Node>(
                     LocalViewModelStoreOwner provides destinationViewModelOwner,
                 ) {
                     SaveableStateProvider(destination.id) {
-                        displayState.Destination(paneScope = scope)
+                        scope.paneRenderer()
 
                         DisposableEffect(Unit) {
                             onDispose {

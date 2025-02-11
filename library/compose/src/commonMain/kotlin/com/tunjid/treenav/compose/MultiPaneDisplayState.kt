@@ -19,8 +19,6 @@ package com.tunjid.treenav.compose
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.transforms.DestinationTransform
 import com.tunjid.treenav.compose.transforms.PaneTransform
@@ -98,34 +96,6 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
     ),
     operation = MultiPaneDisplayState<Pane, NavigationState, Destination>::plus
 )
-
-/**
- * The current destination in a given [paneScope].
- */
-@Composable
-internal fun <Pane, Destination : Node> MultiPaneDisplayState<
-        Pane,
-        *,
-        Destination
-        >.Destination(
-    paneScope: PaneScope<Pane, Destination>,
-) {
-    val current = remember(paneScope.paneState.currentDestination) {
-        paneScope.paneState.currentDestination
-    } ?: return
-
-    paneScope.renderTransform(current)
-}
-
-/**
- * THe current pane mapping to use in the [MultiPaneDisplay].
- */
-@Composable
-internal fun <Pane, Destination : Node>
-        MultiPaneDisplayState<Pane, *, Destination>.panesToDestinations(): Map<Pane, Destination?> {
-    val current by currentDestination
-    return panesToDestinationsTransform(current)
-}
 
 private operator fun <Pane, NavigationState : Node, Destination : Node>
         MultiPaneDisplayState<Pane, NavigationState, Destination>.plus(

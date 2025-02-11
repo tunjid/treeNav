@@ -80,36 +80,52 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
     modifier: Modifier = Modifier,
     content: @Composable MultiPaneDisplayScope<Pane, Destination>.() -> Unit,
 ) {
-
     val backStack by remember {
         derivedStateOf {
             state.backStackTransform(state.navigationState.value)
         }
     }
-    val panesToNodes = state.panesToDestinations()
-    val saveableStateHolder = rememberPanedSaveableStateHolder()
-
-    val panedContentScope = remember {
-        SlottedMultiPaneDisplayScope(
-            panes = state.panes,
-            initialBackStack = backStack,
-            initialPanesToNodes = panesToNodes,
-            saveableStateHolder = saveableStateHolder,
-            displayState = state,
-        )
-    }
-
-    DisposableEffect(backStack, panesToNodes) {
-        panedContentScope.onBackStackChanged(
-            backStack = backStack,
-            panesToNodes = panesToNodes
-        )
-        onDispose { }
-    }
 
     Box(
         modifier = modifier
     ) {
-        panedContentScope.content()
+        val panesToNodes = state.panesToDestinations()
+        val saveableStateHolder = rememberPanedSaveableStateHolder()
+        val displayScope = remember {
+            SlottedMultiPaneDisplayScope(
+                panes = state.panes,
+                initialBackStack = backStack,
+                initialPanesToNodes = panesToNodes,
+                saveableStateHolder = saveableStateHolder,
+                paneRenderer = {
+                    val currentDestination = remember(paneState.currentDestination) {
+                        paneState.currentDestination
+                    }
+                    currentDestination?.let { destination ->
+                        state.renderTransform(this, destination)
+                    }
+                },
+            )
+        }
+
+        DisposableEffect(backStack, panesToNodes) {
+            displayScope.onBackStackChanged(
+                backStack = backStack,
+                panesToNodes = panesToNodes
+            )
+            onDispose { }
+        }
+
+        displayScope.content()
     }
+}
+
+/**
+ * The current pane mapping to use in the [MultiPaneDisplay].
+ */
+@Composable
+private fun <Pane, Destination : Node>
+        MultiPaneDisplayState<Pane, *, Destination>.panesToDestinations(): Map<Pane, Destination?> {
+    val current by currentDestination
+    return panesToDestinationsTransform(current)
 }
