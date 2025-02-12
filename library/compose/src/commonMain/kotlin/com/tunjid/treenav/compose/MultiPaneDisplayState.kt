@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.transforms.CompoundTransform
 import com.tunjid.treenav.compose.transforms.DestinationTransform
 import com.tunjid.treenav.compose.transforms.PaneTransform
 import com.tunjid.treenav.compose.transforms.RenderTransform
@@ -101,7 +102,11 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
         MultiPaneDisplayState<Pane, NavigationState, Destination>.plus(
     transform: Transform<Pane, NavigationState, Destination>,
 ): MultiPaneDisplayState<Pane, NavigationState, Destination> =
-    MultiPaneDisplayState(
+    if (transform is CompoundTransform) transform.transforms.fold(
+        initial = this,
+        operation = MultiPaneDisplayState<Pane, NavigationState, Destination>::plus,
+    )
+    else MultiPaneDisplayState(
         panes = panes,
         navigationState = navigationState,
         backStackTransform = backStackTransform,
