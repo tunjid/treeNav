@@ -108,42 +108,33 @@ fun <R : Node> threePaneEntry(
     paneTransform = paneMapping,
     renderTransform = { destination, original ->
         val state = paneState
-        val modifier = when (state.pane) {
+        val shouldAnimate = when (state.pane) {
             ThreePane.Primary,
             ThreePane.Secondary,
                 -> when {
-                ThreePane.PrimaryToSecondary in state.adaptations
-                        || ThreePane.SecondaryToPrimary in state.adaptations
-                    -> Modifier
-
-                else -> Modifier
-                    .animateEnterExit(
-                        enter = enterTransition(),
-                        exit = exitTransition()
-                    )
+                ThreePane.PrimaryToSecondary in state.adaptations -> false
+                ThreePane.SecondaryToPrimary in state.adaptations -> false
+                else -> true
             }
 
             ThreePane.TransientPrimary -> when {
-                ThreePane.PrimaryToTransient in state.adaptations -> Modifier
-
-                else -> Modifier
-                    .animateEnterExit(
-                        enter = enterTransition(),
-                        exit = exitTransition()
-                    )
+                ThreePane.PrimaryToTransient in state.adaptations -> false
+                else -> true
             }
 
-            else -> Modifier
-                .animateEnterExit(
-                    enter = enterTransition(),
-                    exit = exitTransition()
-                )
+            else -> true
         }
         Box(
-            modifier = modifier
-        ) {
-            original(destination)
-        }
+            modifier =
+            if (shouldAnimate) Modifier.animateEnterExit(
+                enter = enterTransition(),
+                exit = exitTransition()
+            )
+            else Modifier,
+            content = {
+                original(destination)
+            }
+        )
 
     },
     content = render
@@ -159,9 +150,4 @@ private val DefaultFadeIn = fadeIn(
 
 private val DefaultFadeOut = fadeOut(
     animationSpec = RouteTransitionAnimationSpec,
-)
-
-private val NoTransition = PaneScope.Transitions(
-    enter = EnterTransition.None,
-    exit = ExitTransition.None,
 )

@@ -18,8 +18,6 @@ package com.tunjid.treenav.compose
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -45,13 +43,6 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
      */
     val isActive: Boolean
 
-    /**
-     * Describes how a destination transitions after an adaptive change
-     */
-    data class Transitions(
-        val enter: EnterTransition,
-        val exit: ExitTransition,
-    )
 }
 
 /**
