@@ -83,7 +83,7 @@ import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.transforms.predictiveBackTransform
+import com.tunjid.treenav.compose.threepane.transforms.backPreviewTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
 import com.tunjid.treenav.compose.transforms.Transform
@@ -141,13 +141,13 @@ fun App(
                                 }
                             }
                         ),
-                        predictiveBackTransform(
+                        backPreviewTransform(
                             isPreviewingBack = remember {
                                 derivedStateOf {
                                     appState.isPreviewingBack
                                 }
                             },
-                            backPreviewTransform = MultiStackNav::pop,
+                            navigationStateBackTransform = MultiStackNav::pop,
                         ),
                         threePanedMovableSharedElementTransform(
                             movableSharedElementHostState = movableSharedElementHostState

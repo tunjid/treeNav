@@ -26,18 +26,18 @@ import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.compose.transforms.compoundTransform
 
 /**
- * An [Transform] that moves the destination in a [ThreePane.Primary] pane, to
- * to the [ThreePane.TransientPrimary] pane when a predictive back gesture is in progress.
+ * An [Transform] that moves the current [Destination] in a [ThreePane.Primary] pane, to
+ * to the [ThreePane.TransientPrimary] pane when "back" is being previewed.
  *
  * @param isPreviewingBack provides the state of the predictive back gesture.
  * True if the gesture is ongoing.
- * @param backPreviewTransform provides the [NavigationState] if the predictive back gesture
- * were to be completed.
+ * @param navigationStateBackTransform provides the [NavigationState] if the app were to
+ * go "back".
  */
 inline fun <NavigationState : Node, reified Destination : Node>
-        predictiveBackTransform(
+        backPreviewTransform(
     isPreviewingBack: State<Boolean>,
-    crossinline backPreviewTransform: NavigationState.() -> NavigationState,
+    crossinline navigationStateBackTransform: NavigationState.() -> NavigationState,
 ): Transform<ThreePane, NavigationState, Destination> {
     var lastPrimaryDestination by mutableStateOf<Destination?>(null)
 
@@ -45,7 +45,7 @@ inline fun <NavigationState : Node, reified Destination : Node>
         destinationTransform = { navigationState, previousTransform ->
             val previousDestination = previousTransform(navigationState)
             lastPrimaryDestination = previousDestination
-            if (isPreviewingBack.value) previousTransform(navigationState.backPreviewTransform())
+            if (isPreviewingBack.value) previousTransform(navigationState.navigationStateBackTransform())
             else previousDestination
         },
         paneTransform = paneTransform@{ destination, previousTransform ->
