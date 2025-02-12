@@ -22,15 +22,17 @@ import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Adaptation.Swap
+import com.tunjid.treenav.compose.MultiPaneDisplay
+import com.tunjid.treenav.compose.PaneEntry
 import com.tunjid.treenav.compose.PaneScope
-import com.tunjid.treenav.compose.PaneStrategy
-import com.tunjid.treenav.compose.paneStrategy
 
 /**
- * A [PaneStrategy] for apps that display up to 3 major panes as once.
+ * A [PaneEntry] for apps that display up to 3 major panes as once.
  * It also provides extra panes for transient content.
  */
 enum class ThreePane {
@@ -84,7 +86,7 @@ enum class ThreePane {
 }
 
 /**
- * A strategy for selectively running animations in list detail flows. When:
+ * A [PaneEntry] for selectively running animations in [ThreePane] [MultiPaneDisplay]. When:
  * - A navigation destination moves between the [ThreePane.Primary] and [ThreePane.Secondary]
  *     panes, the pane animations are not run to provide a seamless movement experience.
  * - A navigation destination moves between the [ThreePane.Primary] and
@@ -95,46 +97,56 @@ enum class ThreePane {
  * @param paneMapping the mapping of panes to navigation destinations.
  * @param render the Composable for rendering the current destination.
  */
-fun <R : Node> threePaneListDetailStrategy(
+fun <R : Node> threePaneEntry(
     enterTransition: PaneScope<ThreePane, R>.() -> EnterTransition = { DefaultFadeIn },
     exitTransition: PaneScope<ThreePane, R>.() -> ExitTransition = { DefaultFadeOut },
     paneMapping: @Composable (R) -> Map<ThreePane, R?> = {
         mapOf(ThreePane.Primary to it)
     },
-    render: @Composable PaneScope<ThreePane, R>.(R) -> Unit
-): PaneStrategy<ThreePane, R> = paneStrategy(
-    paneMapping = paneMapping,
-    transitions = {
+    render: @Composable PaneScope<ThreePane, R>.(R) -> Unit,
+) = PaneEntry(
+    paneTransform = paneMapping,
+    renderTransform = { destination, original ->
         val state = paneState
-        when (state.pane) {
+        val modifier = when (state.pane) {
             ThreePane.Primary,
-            ThreePane.Secondary -> when {
+            ThreePane.Secondary,
+                -> when {
                 ThreePane.PrimaryToSecondary in state.adaptations
                         || ThreePane.SecondaryToPrimary in state.adaptations
-                -> NoTransition
+                    -> Modifier
 
-                else -> PaneScope.Transitions(
-                    enter = enterTransition(),
-                    exit = exitTransition()
-                )
+                else -> Modifier
+                    .animateEnterExit(
+                        enter = enterTransition(),
+                        exit = exitTransition()
+                    )
             }
 
             ThreePane.TransientPrimary -> when {
-                ThreePane.PrimaryToTransient in state.adaptations -> NoTransition
+                ThreePane.PrimaryToTransient in state.adaptations -> Modifier
 
-                else -> PaneScope.Transitions(
+                else -> Modifier
+                    .animateEnterExit(
+                        enter = enterTransition(),
+                        exit = exitTransition()
+                    )
+            }
+
+            else -> Modifier
+                .animateEnterExit(
                     enter = enterTransition(),
                     exit = exitTransition()
                 )
-            }
-
-            else -> PaneScope.Transitions(
-                enter = enterTransition(),
-                exit = exitTransition()
-            )
         }
+        Box(
+            modifier = modifier
+        ) {
+            original(destination)
+        }
+
     },
-    render = render
+    content = render
 )
 
 private val RouteTransitionAnimationSpec: FiniteAnimationSpec<Float> = tween(

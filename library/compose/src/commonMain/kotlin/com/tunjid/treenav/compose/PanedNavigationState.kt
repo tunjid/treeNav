@@ -1,29 +1,5 @@
 package com.tunjid.treenav.compose
 
-import com.tunjid.treenav.Node
-
-/**
- * State providing details about data in each pane [Pane] it hosts.
- */
-interface PanedNavigationState<Pane, Destination : Node> {
-
-    /**
-     * The current [Destination] in this [pane].
-     * @param pane the [Pane] to query.
-     */
-    fun destinationFor(
-        pane: Pane,
-    ): Destination?
-
-    /**
-     * Adaptations involving this [pane] after the last navigation state change.
-     * @param pane the affected [Pane].
-     */
-    fun adaptationsIn(
-        pane: Pane,
-    ): Set<Adaptation>
-}
-
 /**
  * A description of the process that the layout undertook to adapt to the present
  * pane in its new configuration.

@@ -14,37 +14,27 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.configurations
+package com.tunjid.treenav.compose.transforms
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.PaneScope
-import com.tunjid.treenav.compose.PanedNavHostConfiguration
-import com.tunjid.treenav.compose.delegated
 
 /**
- * A [PanedNavHostConfiguration] that allows for centrally defining the [Modifier] for
+ * A [MultiPaneDisplayState] that allows for centrally defining the [Modifier] for
  * each [Pane] displayed within it.
  *
  * @param paneModifier a lambda for specifying the [Modifier] for each [Pane] in a [PaneScope].
  */
-fun <Pane, NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
-        Pane,
-        NavigationState,
-        Destination
-        >.paneModifierConfiguration(
+fun <Pane, NavigationState : Node, Destination : Node> paneModifierTransform(
     paneModifier: PaneScope<Pane, Destination>.() -> Modifier = { Modifier },
-): PanedNavHostConfiguration<Pane, NavigationState, Destination> =
-    delegated { navigationDestination ->
-        val originalStrategy = strategyTransform(navigationDestination)
-        originalStrategy.delegated(
-            render = render@{ paneDestination ->
-                Box(
-                    modifier = paneModifier()
-                ) {
-                    originalStrategy.render(this@render, paneDestination)
-                }
-            }
-        )
+): Transform<Pane, NavigationState, Destination> =
+    RenderTransform { destination, previousTransform ->
+        Box(
+            modifier = paneModifier()
+        ) {
+            previousTransform(destination)
+        }
     }

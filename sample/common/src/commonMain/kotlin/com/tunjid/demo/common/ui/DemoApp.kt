@@ -18,9 +18,12 @@ package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.animateBounds
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
@@ -48,7 +51,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -67,7 +69,7 @@ import com.tunjid.composables.backpreview.BackPreviewState
 import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
-import com.tunjid.demo.common.ui.AppState.Companion.rememberPanedNavHostState
+import com.tunjid.demo.common.ui.AppState.Companion.rememberMultiPaneDisplayState
 import com.tunjid.demo.common.ui.chat.chatPaneStrategy
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
 import com.tunjid.demo.common.ui.data.NavigationRepository
@@ -75,18 +77,17 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.me.mePaneStrategy
 import com.tunjid.demo.common.ui.profile.profilePaneStrategy
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.compose.PanedNavHost
-import com.tunjid.treenav.compose.PanedNavHostConfiguration
-import com.tunjid.treenav.compose.PanedNavHostScope
-import com.tunjid.treenav.compose.SavedStatePanedNavHostState
-import com.tunjid.treenav.compose.configurations.animatePaneBoundsConfiguration
-import com.tunjid.treenav.compose.configurations.paneModifierConfiguration
+import com.tunjid.treenav.backStack
+import com.tunjid.treenav.compose.MultiPaneDisplay
+import com.tunjid.treenav.compose.MultiPaneDisplayScope
+import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
-import com.tunjid.treenav.compose.panedNavHostConfiguration
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.configurations.predictiveBackConfiguration
-import com.tunjid.treenav.compose.threepane.configurations.threePanedMovableSharedElementConfiguration
-import com.tunjid.treenav.compose.threepane.configurations.threePanedNavHostConfiguration
+import com.tunjid.treenav.compose.threepane.transforms.backPreviewTransform
+import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
+import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
+import com.tunjid.treenav.compose.transforms.Transform
+import com.tunjid.treenav.compose.transforms.paneModifierTransform
 import com.tunjid.treenav.current
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
@@ -128,50 +129,57 @@ fun App(
                 canAnimatePanes = !interactingWithPanes
             }
 
-            PanedNavHost(
+            MultiPaneDisplay(
                 modifier = Modifier
                     .fillMaxSize(),
-                state = appState.rememberPanedNavHostState {
-                    this
-                        .threePanedNavHostConfiguration(
-                            windowWidthState = derivedStateOf {
-                                appState.splitLayoutState.size
-                            }
-                        )
-                        .predictiveBackConfiguration(
-                            isPreviewingBack = derivedStateOf {
-                                appState.isPreviewingBack
-                            },
-                            backPreviewTransform = MultiStackNav::pop,
-                        )
-                        .threePanedMovableSharedElementConfiguration(
-                            movableSharedElementHostState = movableSharedElementHostState
-                        )
-                        .animatePaneBoundsConfiguration(
-                            lookaheadScope = this@SharedTransitionScope,
-                            shouldAnimatePane = {
-                                when (paneState.pane) {
-                                    ThreePane.Primary,
-                                    ThreePane.TransientPrimary,
-                                    ThreePane.Secondary,
-                                    ThreePane.Tertiary -> canAnimatePanes
-
-                                    null,
-                                    ThreePane.Overlay -> false
+                state = appState.rememberMultiPaneDisplayState(
+                    listOf(
+                        threePanedAdaptiveTransform(
+                            windowWidthState = remember {
+                                derivedStateOf {
+                                    appState.splitLayoutState.size
                                 }
                             }
-                        )
-                        .paneModifierConfiguration {
-                            if (paneState.pane == ThreePane.TransientPrimary) Modifier
+                        ),
+                        backPreviewTransform(
+                            isPreviewingBack = remember {
+                                derivedStateOf {
+                                    appState.isPreviewingBack
+                                }
+                            },
+                            navigationStateBackTransform = MultiStackNav::pop,
+                        ),
+                        threePanedMovableSharedElementTransform(
+                            movableSharedElementHostState = movableSharedElementHostState
+                        ),
+                        paneModifierTransform {
+                            val modifier = Modifier.animateBounds(
+                                lookaheadScope = this@SharedTransitionScope,
+                                boundsTransform = { _, _ ->
+                                    when (paneState.pane) {
+                                        ThreePane.Primary,
+                                        ThreePane.TransientPrimary,
+                                        ThreePane.Secondary,
+                                        ThreePane.Tertiary,
+                                            -> if (canAnimatePanes) spring() else snap()
+
+                                        null,
+                                        ThreePane.Overlay,
+                                            -> snap()
+                                    }
+                                }
+                            )
+                            if (paneState.pane == ThreePane.TransientPrimary) modifier
                                 .fillMaxSize()
                                 .backPreview(appState.backPreviewState)
                                 .background(backPreviewSurfaceColor, RoundedCornerShape(16.dp))
-                            else Modifier
+                            else modifier
                                 .fillMaxSize()
                         }
-                },
+                    )
+                ),
             ) {
-                appState.panedNavHostScope = this
+                appState.displayScope = this
                 appState.splitLayoutState.visibleCount = appState.filteredPaneOrder.size
                 SplitLayout(
                     state = appState.splitLayoutState,
@@ -262,15 +270,13 @@ fun InteractionSource.isActive(): Boolean {
 
 @Stable
 class AppState(
-    private val navigationRepository: NavigationRepository = NavigationRepository
+    private val navigationRepository: NavigationRepository = NavigationRepository,
 ) {
 
     private val navigationState = mutableStateOf(
         navigationRepository.navigationStateFlow.value
     )
-    private val panedNavHostConfiguration = sampleAppNavHostConfiguration(
-        navigationState
-    )
+
     private val paneInteractionSourceList = mutableStateListOf<MutableInteractionSource>()
     private val paneRenderOrder = listOf(
         ThreePane.Tertiary,
@@ -293,12 +299,12 @@ class AppState(
     internal val isPreviewingBack
         get() = !backPreviewState.progress.isNaN()
 
-    internal var panedNavHostScope by mutableStateOf<PanedNavHostScope<ThreePane, SampleDestination>?>(
+    internal var displayScope by mutableStateOf<MultiPaneDisplayScope<ThreePane, SampleDestination>?>(
         null
     )
 
     val filteredPaneOrder: List<ThreePane> by derivedStateOf {
-        paneRenderOrder.filter { panedNavHostScope?.nodeFor(it) != null }
+        paneRenderOrder.filter { displayScope?.destinationIn(it) != null }
     }
 
     fun setTab(destination: SampleDestination.NavTabs) {
@@ -325,17 +331,38 @@ class AppState(
 
     companion object {
         @Composable
-        fun AppState.rememberPanedNavHostState(
-            configurationBlock: PanedNavHostConfiguration<
-                    ThreePane,
-                    MultiStackNav,
-                    SampleDestination
-                    >.() -> PanedNavHostConfiguration<ThreePane, MultiStackNav, SampleDestination>
-        ): SavedStatePanedNavHostState<ThreePane, SampleDestination> {
-            val panedNavHostState = remember {
-                SavedStatePanedNavHostState(
+        fun AppState.rememberMultiPaneDisplayState(
+            transforms: List<Transform<ThreePane, MultiStackNav, SampleDestination>>,
+        ): MultiPaneDisplayState<ThreePane, MultiStackNav, SampleDestination> {
+            val displayState = remember {
+                MultiPaneDisplayState(
                     panes = ThreePane.entries.toList(),
-                    configuration = panedNavHostConfiguration.configurationBlock(),
+                    navigationState = navigationState,
+                    backStackTransform = { multiStackNav ->
+                        multiStackNav.backStack(
+                            includeCurrentDestinationChildren = true,
+                            placeChildrenBeforeParent = true,
+                        )
+                            .filterIsInstance<SampleDestination>()
+                            .toList()
+                    },
+                    destinationTransform = {
+                        it.current as? SampleDestination ?: throw IllegalArgumentException(
+                            "MultiStackNav leaf node ${it.current} must be an AppDestination"
+                        )
+                    },
+                    entryProvider = { destination ->
+                        when (destination) {
+                            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneStrategy()
+
+                            SampleDestination.NavTabs.Me -> mePaneStrategy()
+
+                            is SampleDestination.Chat -> chatPaneStrategy()
+
+                            is SampleDestination.Profile -> profilePaneStrategy()
+                        }
+                    },
+                    transforms = transforms,
                 )
             }
             DisposableEffect(Unit) {
@@ -346,32 +373,10 @@ class AppState(
                 }
                 onDispose { job.cancel() }
             }
-            return panedNavHostState
+            return displayState
         }
     }
 }
-
-private fun sampleAppNavHostConfiguration(
-    multiStackNavState: State<MultiStackNav>
-) = panedNavHostConfiguration(
-    navigationState = multiStackNavState,
-    destinationTransform = { multiStackNav ->
-        multiStackNav.current as? SampleDestination ?: throw IllegalArgumentException(
-            "MultiStackNav leaf node ${multiStackNav.current} must be an AppDestination"
-        )
-    },
-    strategyTransform = { destination ->
-        when (destination) {
-            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneStrategy()
-
-            SampleDestination.NavTabs.Me -> mePaneStrategy()
-
-            is SampleDestination.Chat -> chatPaneStrategy()
-
-            is SampleDestination.Profile -> profilePaneStrategy()
-        }
-    }
-)
 
 private val PaneSeparatorActiveWidthDp = 56.dp
 private val PaneSeparatorTouchTargetWidthDp = 16.dp

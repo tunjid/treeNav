@@ -24,7 +24,7 @@ data class MultiStackNav(
     val name: String,
     val indexHistory: List<Int> = listOf(0),
     val currentIndex: Int = 0,
-    val stacks: List<StackNav> = listOf()
+    val stacks: List<StackNav> = listOf(),
 ) : Node {
     override val id: String get() = name
     override val children: List<Node> get() = stacks
@@ -78,6 +78,36 @@ fun MultiStackNav.popToRoot(indexToPop: Int = currentIndex) = copy(
         else stackNav
     }
 )
+
+/**
+ * Returns a sequence of each destination on the back stack for this [StackNav] as defined by
+ * [MultiStackNav.pop].
+ *
+ * @param includeCurrentDestinationChildren when true, the result of [Node.children] for each
+ * [Node] is included in the back stack.
+ * @param placeChildrenBeforeParent when true, the result of [Node.children] are paced before
+ * the parent [Node] in the back stack.
+ */
+fun MultiStackNav.backStack(
+    includeCurrentDestinationChildren: Boolean,
+    placeChildrenBeforeParent: Boolean = false,
+): Sequence<Node> =
+    if (!includeCurrentDestinationChildren && placeChildrenBeforeParent) throw IllegalArgumentException(
+        "Cannot place children nodes before the parent if children are not included"
+    )
+    else generateSequence(this) { current ->
+        current.pop().takeUnless(current::equals)
+    }
+        .flatMap { nav ->
+            val parent = listOfNotNull(nav.current)
+            val children = nav.current
+                ?.children
+                ?.takeIf { includeCurrentDestinationChildren }
+                ?: emptyList()
+
+            if (placeChildrenBeforeParent) children + parent
+            else parent + children
+        }
 
 /**
  * Performs the given [operation] with the [StackNav] at [MultiStackNav.currentIndex]

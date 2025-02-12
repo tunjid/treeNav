@@ -1,4 +1,4 @@
-package com.tunjid.treenav.compose.threepane.configurations
+package com.tunjid.treenav.compose.threepane.transforms
 
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -11,51 +11,43 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.PaneScope
-import com.tunjid.treenav.compose.PanedNavHost
-import com.tunjid.treenav.compose.PanedNavHostConfiguration
-import com.tunjid.treenav.compose.delegated
-import com.tunjid.treenav.compose.moveablesharedelement.PanedMovableSharedElementScope
+import com.tunjid.treenav.compose.transforms.RenderTransform
+import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.PanedMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
- * An [PanedNavHostConfiguration] that applies semantics of movable shared elements to
+ * A [Transform] that applies semantics of movable shared elements to
  * [ThreePane] layouts.
  *
  * @param movableSharedElementHostState the host state for coordinating movable shared elements.
- * There should be one instance of this per [PanedNavHost].
+ * There should be one instance of this per [MultiPaneDisplay].
  */
-fun <NavigationState : Node, Destination : Node> PanedNavHostConfiguration<
-        ThreePane,
-        NavigationState,
-        Destination
-        >.threePanedMovableSharedElementConfiguration(
+fun <NavigationState : Node, Destination : Node>
+        threePanedMovableSharedElementTransform(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
-): PanedNavHostConfiguration<ThreePane, NavigationState, Destination> =
-    delegated { navigationDestination ->
-        val originalStrategy = strategyTransform(navigationDestination)
-        originalStrategy.delegated(
-            render = { paneDestination ->
-                val delegate = remember {
-                    PanedMovableSharedElementScope(
-                        paneScope = this,
-                        movableSharedElementHostState = movableSharedElementHostState,
-                    )
-                }
-                delegate.paneScope = this
+): Transform<ThreePane, NavigationState, Destination> =
+    RenderTransform { destination, previousTransform ->
+        val delegate = remember {
+            PanedMovableSharedElementScope(
+                paneScope = this,
+                movableSharedElementHostState = movableSharedElementHostState,
+            )
+        }
+        delegate.paneScope = this
 
-                val movableSharedElementScope = remember {
-                    ThreePaneMovableSharedElementScope(
-                        hostState = movableSharedElementHostState,
-                        delegate = delegate,
-                    )
-                }
+        val movableSharedElementScope = remember {
+            ThreePaneMovableSharedElementScope(
+                hostState = movableSharedElementHostState,
+                delegate = delegate,
+            )
+        }
 
-                originalStrategy.render(movableSharedElementScope, paneDestination)
-            },
-        )
+        previousTransform(movableSharedElementScope, destination)
     }
 
 fun <Destination : Node> PaneScope<
@@ -89,7 +81,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
         alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
-        sharedElement: @Composable (T, Modifier) -> Unit
+        sharedElement: @Composable (T, Modifier) -> Unit,
     ): @Composable (T, Modifier) -> Unit = when (paneState.pane) {
         null -> throw IllegalArgumentException(
             "Shared elements may only be used in non null panes"
@@ -127,7 +119,8 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         // In the other panes use the element as is
         ThreePane.Secondary,
         ThreePane.Tertiary,
-        ThreePane.Overlay -> alternateOutgoingSharedElement ?: sharedElement
+        ThreePane.Overlay,
+            -> alternateOutgoingSharedElement ?: sharedElement
     }
 }
 

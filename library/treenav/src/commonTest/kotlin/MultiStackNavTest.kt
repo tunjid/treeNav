@@ -17,6 +17,7 @@
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Order
 import com.tunjid.treenav.StackNav
+import com.tunjid.treenav.backStack
 import com.tunjid.treenav.flatten
 import com.tunjid.treenav.minus
 import com.tunjid.treenav.pop
@@ -315,6 +316,73 @@ class MultiStackNavTest {
                 .minus(subject)
                 .filterIsInstance<TestNode>()
                 .toSet()
+        )
+    }
+
+    @Test
+    fun testBackStack() {
+        val pushed = subject
+            .push(TestNode("A", children = listOf(TestNode("1"))))
+            .push(TestNode("B"))
+            .push(TestNode("C"))
+            .switch(toIndex = 2)
+            .push(TestNode("D"))
+            .push(TestNode("E", children = listOf(TestNode("1"), TestNode("2"))))
+            .switch(toIndex = 1)
+            .push(TestNode("F"))
+
+        assertEquals(
+            listOf(
+                TestNode("F"),
+                TestNode("E", children = listOf(TestNode("1"), TestNode("2"))),
+                TestNode("D"),
+                TestNode("C"),
+                TestNode("B"),
+                TestNode("A", children = listOf(TestNode("1"))),
+            ),
+            pushed.backStack(
+                includeCurrentDestinationChildren = false,
+                placeChildrenBeforeParent = false,
+            )
+                .toList()
+        )
+
+        assertEquals(
+            expected = listOf(
+                TestNode("F"),
+                TestNode("E", children = listOf(TestNode("1"), TestNode("2"))),
+                TestNode("1"),
+                TestNode("2"),
+                TestNode("D"),
+                TestNode("C"),
+                TestNode("B"),
+                TestNode("A", children = listOf(TestNode("1"))),
+                TestNode("1"),
+            ),
+            actual = pushed.backStack(
+                includeCurrentDestinationChildren = true,
+                placeChildrenBeforeParent = false,
+            )
+                .toList()
+        )
+
+        assertEquals(
+            expected = listOf(
+                TestNode("F"),
+                TestNode("1"),
+                TestNode("2"),
+                TestNode("E", children = listOf(TestNode("1"), TestNode("2"))),
+                TestNode("D"),
+                TestNode("C"),
+                TestNode("B"),
+                TestNode("1"),
+                TestNode("A", children = listOf(TestNode("1"))),
+            ),
+            actual = pushed.backStack(
+                includeCurrentDestinationChildren = true,
+                placeChildrenBeforeParent = true,
+            )
+                .toList()
         )
     }
 }
