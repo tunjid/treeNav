@@ -18,20 +18,15 @@ package com.tunjid.treenav.compose
 
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,9 +45,10 @@ internal fun <Destination : Node, NavigationState : Node, Pane> Navigation3Multi
     state: MultiPaneDisplayState<Pane, NavigationState, Destination>,
     content: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) {
-    val backStack by remember {
-        derivedStateOf {
-            state.backStackTransform(state.navigationState.value)
+    val backStack = remember { mutableStateListOf<Destination>() }.also { mutableBackStack ->
+        state.backStackTransform(state.navigationState.value).let { currentBackStack ->
+            mutableBackStack.clear()
+            mutableBackStack.addAll(currentBackStack)
         }
     }
     val panesToNodes = state.panesToDestinationsTransform(state.currentDestination.value)
@@ -235,4 +231,9 @@ private class Navigation3MultiPaneDisplayScope<Pane, Destination : Node>(
 
 private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     TODO()
+}
+
+@Composable
+private fun rememberUpdatedSnapshotList() {
+
 }
