@@ -18,6 +18,9 @@ package com.tunjid.treenav.compose
 
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -41,7 +44,7 @@ import androidx.navigation3.SavedStateNavEntryDecorator
 import com.tunjid.treenav.Node
 
 @Composable
-internal fun <Destination : Node, NavigationState : Node, Pane> Navigation3MultiPaneDisplayScope(
+internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntryMultiPaneDisplayScope(
     state: MultiPaneDisplayState<Pane, NavigationState, Destination>,
     content: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) {
@@ -83,7 +86,9 @@ internal fun <Destination : Node, NavigationState : Node, Pane> Navigation3Multi
                                 it.key.id == paneState.currentDestination?.id
                             }
                         }
-                        currentEntry?.content?.invoke(currentEntry.key) ?: println("COULD NOT FIND")
+                        checkNotNull(currentEntry) {
+                            "There is no entry for the current navigation destination with id ${paneState.currentDestination?.id}"
+                        }.content(currentEntry.key)
                     },
                 )
             }
@@ -171,13 +176,13 @@ private class Navigation3MultiPaneDisplayScope<Pane, Destination : Node>(
         )
         paneTransition.AnimatedContent(
             contentKey = { it.currentDestination?.id },
-//            transitionSpec = {
-//                ContentTransform(
-//                    targetContentEnter = EnterTransition.None,
-//                    initialContentExit = ExitTransition.None,
-//                    sizeTransform = null,
-//                )
-//            }
+            transitionSpec = {
+                ContentTransform(
+                    targetContentEnter = EnterTransition.None,
+                    initialContentExit = ExitTransition.None,
+                    sizeTransform = null,
+                )
+            }
         ) { targetPaneState ->
             val scope = remember {
                 AnimatedPaneScope(
@@ -196,23 +201,12 @@ private class Navigation3MultiPaneDisplayScope<Pane, Destination : Node>(
 
             val destination = targetPaneState.currentDestination
             if (destination != null) {
-
                 CompositionLocalProvider(
                     LocalPaneScope provides scope
                 ) {
                     scope.paneRenderer()
                 }
             }
-
-
-            // Remove route ids that have animated out
-//            DisposableEffect(Unit) {
-//                val inRouteId = targetPaneState.currentDestination?.id
-//                println("IN: $inRouteId")
-//                onDispose {
-//                    println("OUT: $inRouteId")
-//                }
-//            }
         }
     }
 
@@ -231,9 +225,4 @@ private class Navigation3MultiPaneDisplayScope<Pane, Destination : Node>(
 
 private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     TODO()
-}
-
-@Composable
-private fun rememberUpdatedSnapshotList() {
-
 }

@@ -83,7 +83,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
 //            state = state,
 //            content = content
 //        )
-        Navigation3MultiPaneDisplayScope(
+        DecoratedNavEntryMultiPaneDisplayScope(
             state = state,
             content = content
         )
