@@ -55,6 +55,9 @@ kotlin {
                 implementation(libs.jetbrains.compose.material3.adaptive.layout)
                 implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)
 
+                implementation(libs.jetbrains.compose.material.icons.core)
+                implementation(libs.jetbrains.compose.material.icons.extended)
+
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.datetime)
 

@@ -79,7 +79,11 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
     Box(
         modifier = modifier
     ) {
-        SlottedMultiPaneDisplayScope(
+//        SlottedMultiPaneDisplayScope(
+//            state = state,
+//            content = content
+//        )
+        Navigation3MultiPaneDisplayScope(
             state = state,
             content = content
         )
