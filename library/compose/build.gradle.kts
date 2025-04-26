@@ -1,6 +1,7 @@
 plugins {
     kotlin("multiplatform")
     id("publishing-library-convention")
+    id("android-library-convention")
     id("kotlin-jvm-convention")
     id("maven-publish")
     signing
@@ -11,8 +12,8 @@ plugins {
 
 kotlin {
     applyDefaultHierarchyTemplate()
+    androidTarget()
     jvm {
-        withJava()
         testRuns["test"].executionTask.configure {
             useJUnit()
         }
@@ -46,11 +47,16 @@ kotlin {
 
 
                 implementation(libs.androidx.navigation3)
-//                implementation(libs.androidx.viewmodel.navigation3)
                 implementation(libs.jetbrains.savedstate.compose)
 
             }
         }
+        androidMain {
+            dependencies {
+                implementation(libs.androidx.viewmodel.navigation3)
+            }
+        }
+
         commonTest {
             dependencies {
                 implementation(kotlin("test"))
