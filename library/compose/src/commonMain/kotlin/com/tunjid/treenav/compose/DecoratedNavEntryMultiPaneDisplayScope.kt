@@ -65,13 +65,16 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
     state: MultiPaneDisplayState<Pane, NavigationState, Destination>,
     content: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) {
+    val navigationState by state.navigationState
     val backStack = remember { mutableStateListOf<Destination>() }.also { mutableBackStack ->
-        state.backStackTransform(state.navigationState.value).let { currentBackStack ->
+        state.backStackTransform(navigationState).let { currentBackStack ->
             mutableBackStack.clear()
             mutableBackStack.addAll(currentBackStack)
         }
     }
-    val panesToNodes = state.panesToDestinationsTransform(state.currentDestination.value)
+    val panesToNodes = state.panesToDestinationsTransform(
+        state.destinationTransform(navigationState)
+    )
 
     DecoratedNavEntryProvider(
         backStack = backStack,
