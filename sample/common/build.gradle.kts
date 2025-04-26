@@ -45,6 +45,7 @@ kotlin {
                 implementation(libs.jetbrains.compose.animation)
                 implementation(libs.jetbrains.compose.material3)
                 implementation(libs.jetbrains.compose.foundation.layout)
+                implementation(libs.jetbrains.compose.ui.backhandler)
 
                 implementation(libs.jetbrains.lifecycle.runtime)
                 implementation(libs.jetbrains.lifecycle.runtime.compose)
