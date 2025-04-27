@@ -17,10 +17,17 @@
 package com.tunjid.treenav.compose
 
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.StackNav
+import com.tunjid.treenav.backStack
 import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.current
+import com.tunjid.treenav.pop
+import com.tunjid.treenav.push
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /*
  * Copyright 2021 Google LLC
@@ -38,7 +45,10 @@ import kotlin.test.assertEquals
  * limitations under the License.
  */
 
-data class TestNode(val name: String) : Node {
+data class TestNode(
+    val name: String,
+    override val children: List<TestNode> = emptyList(),
+) : Node {
     override val id: String get() = name
 }
 
@@ -61,7 +71,8 @@ class SlotBasedAdaptiveNavigationStateTest {
     @Test
     fun testFirstSinglePaneAdaptation() {
         subject.testAdaptTo(
-            panesToNodes = mapOf(
+            navState = EmptyNavState,
+            panesToDestinations = mapOf(
                 ThreePane.Primary to TestNode(name = "A"),
             )
         )
@@ -85,7 +96,8 @@ class SlotBasedAdaptiveNavigationStateTest {
     fun testFirstTriplePaneAdaptation() {
         subject
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                     ThreePane.Secondary to TestNode(name = "B"),
                     ThreePane.Tertiary to TestNode(name = "C"),
@@ -140,12 +152,14 @@ class SlotBasedAdaptiveNavigationStateTest {
     fun testSameAdaptationInSinglePane() {
         subject
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                 )
             )
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                 )
             )
@@ -169,14 +183,16 @@ class SlotBasedAdaptiveNavigationStateTest {
     fun testSameAdaptationInThreePanes() {
         subject
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                     ThreePane.Secondary to TestNode(name = "B"),
                     ThreePane.Tertiary to TestNode(name = "C"),
                 )
             )
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                     ThreePane.Secondary to TestNode(name = "B"),
                     ThreePane.Tertiary to TestNode(name = "C"),
@@ -231,14 +247,16 @@ class SlotBasedAdaptiveNavigationStateTest {
     fun testChangeAdaptationInThreePanes() {
         subject
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                     ThreePane.Secondary to TestNode(name = "B"),
                     ThreePane.Tertiary to TestNode(name = "C"),
                 )
             )
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "B"),
                     ThreePane.Secondary to TestNode(name = "C"),
                     ThreePane.Tertiary to TestNode(name = "A"),
@@ -302,12 +320,14 @@ class SlotBasedAdaptiveNavigationStateTest {
     fun testListToListDetailAdaptation() {
         subject
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                 )
             )
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "B"),
                     ThreePane.Secondary to TestNode(name = "A"),
                 )
@@ -352,7 +372,8 @@ class SlotBasedAdaptiveNavigationStateTest {
     fun testSinglePanePredictiveBackAdaptation() {
         subject
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                 )
             )
@@ -363,7 +384,8 @@ class SlotBasedAdaptiveNavigationStateTest {
                 )
             }
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "B"),
                 )
             )
@@ -374,7 +396,8 @@ class SlotBasedAdaptiveNavigationStateTest {
                 )
             }
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                     ThreePane.TransientPrimary to TestNode(name = "B"),
                 )
@@ -416,13 +439,15 @@ class SlotBasedAdaptiveNavigationStateTest {
     fun testDoublePaneToSinglePanePredictiveBackAdaptation() {
         subject
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                     ThreePane.Secondary to TestNode(name = "B"),
                 )
             )
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "C"),
                     ThreePane.TransientPrimary to TestNode(name = "A"),
                 )
@@ -470,13 +495,15 @@ class SlotBasedAdaptiveNavigationStateTest {
     fun testDoublePaneToDoublePanePredictiveBackAdaptation() {
         subject
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "A"),
                     ThreePane.Secondary to TestNode(name = "B"),
                 )
             )
             .testAdaptTo(
-                panesToNodes = mapOf(
+                navState = EmptyNavState,
+                panesToDestinations = mapOf(
                     ThreePane.Primary to TestNode(name = "C"),
                     ThreePane.Secondary to TestNode(name = "D"),
                     ThreePane.TransientPrimary to TestNode(name = "A"),
@@ -531,12 +558,62 @@ class SlotBasedAdaptiveNavigationStateTest {
             }
     }
 
+    @Test
+    fun testIsPop() {
+        val navStates = (1..3).fold(listOf(StartNavState)) { navStateList, index ->
+            navStateList + navStateList.last().push(TestNode(index.toString()))
+        }
+
+        subject = navStates.indices
+            .fold(subject) { foldedSubject, index ->
+                foldedSubject
+                    .testAdaptTo(
+                        navState = navStates[index],
+                        panesToDestinations = mapOf(
+                            ThreePane.Primary to navStates[index].current(),
+                        )
+                    )
+                    .apply {
+                        assertFalse(isPop)
+                    }
+            }
+
+        val poppedNavStates = navStates.map { it.pop(popLast = true) }
+
+        poppedNavStates.indices
+            .reversed()
+            .fold(subject) { foldedSubject, index ->
+                foldedSubject
+                    .testAdaptTo(
+                        navState = poppedNavStates[index],
+                        panesToDestinations = mapOf(
+                            ThreePane.Primary to navStates[index].current(),
+                        )
+                    )
+                    .apply {
+                        assertTrue(isPop)
+                    }
+            }
+    }
+
     private fun SlotBasedPanedNavigationState<ThreePane, TestNode>.testAdaptTo(
-        panesToNodes: Map<ThreePane, TestNode>
+        navState: StackNav,
+        panesToDestinations: Map<ThreePane, TestNode?>,
     ) = adaptTo(
         slots = slots,
-        backStackIds = emptySet(),
-        panesToNodes = panesToNodes
+        backStackIds = navState.backStack(
+            includeCurrentDestinationChildren = true,
+            placeChildrenBeforeParent = true,
+        )
+            .filterIsInstance<TestNode>()
+            .map { it.id },
+        panesToDestinations = panesToDestinations
     )
 }
 
+private val EmptyNavState = StackNav(
+    name = "TestNavState",
+    children = emptyList(),
+)
+
+private val StartNavState = EmptyNavState.push(TestNode("0"))

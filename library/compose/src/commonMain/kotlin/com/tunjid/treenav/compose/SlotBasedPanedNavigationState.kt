@@ -26,6 +26,10 @@ import com.tunjid.treenav.compose.Adaptation.Change.contains
 @Immutable
 internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
     /**
+     * True if this navigation change is as a result of popping the backStack.
+     */
+    val isPop: Boolean,
+    /**
      * Moves between panes within a navigation sequence.
      */
     val swapAdaptations: Set<Adaptation.Swap<Pane>>,
@@ -44,7 +48,7 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
     /**
      * A set of node ids that may be returned to.
      */
-    val backStackIds: Set<String>,
+    val backStackIds: List<String>,
     /**
      * A set of node ids that are animating out.
      */
@@ -54,12 +58,13 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
         internal fun <T, R : Node> initial(
             slots: Collection<Slot>,
         ): SlotBasedPanedNavigationState<T, R> = SlotBasedPanedNavigationState(
+            isPop = false,
             swapAdaptations = emptySet(),
             panesToDestinations = emptyMap(),
             destinationIdsToAdaptiveSlots = slots.associateBy(
                 keySelector = Slot::toString
             ),
-            backStackIds = emptySet(),
+            backStackIds = emptyList(),
             destinationIdsAnimatingOut = emptySet(),
             previousPanesToDestinations = emptyMap(),
         )
@@ -109,11 +114,12 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
         pane: Pane,
     ): Set<Adaptation> {
         val swaps = swapAdaptations.filter { pane in it }
-        return if (swaps.isEmpty()) when (panesToDestinations[pane]?.id) {
+        val adaptations = if (swaps.isEmpty()) when (panesToDestinations[pane]?.id) {
             previousPanesToDestinations[pane]?.id -> setOf(Adaptation.Same)
             else -> setOf(Adaptation.Change)
         }
         else swaps.toSet()
+        return if (isPop) adaptations + Adaptation.Pop else adaptations
     }
 }
 
@@ -124,7 +130,7 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
 internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
     slots: Set<Slot>,
     panesToDestinations: Map<T, R?>,
-    backStackIds: Set<String>,
+    backStackIds: List<String>,
 ): SlotBasedPanedNavigationState<T, R> {
     val previous = this
 
@@ -179,6 +185,15 @@ internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
     }
 
     return SlotBasedPanedNavigationState(
+        backStackIds.let popCheck@{ ids ->
+            if (ids.size >= previous.backStackIds.size) return@popCheck false
+            if (ids.isEmpty()) return@popCheck true
+
+            for (index in ids.indices) {
+                if (ids[index] != previous.backStackIds[index]) return@popCheck false
+            }
+            true
+        },
         // If the values of the nodes to panes are the same, no swaps occurred.
         swapAdaptations = when (previous.panesToDestinations.mapValues { it.value?.id }) {
             panesToDestinations.mapValues { it.value?.id } -> previous.swapAdaptations

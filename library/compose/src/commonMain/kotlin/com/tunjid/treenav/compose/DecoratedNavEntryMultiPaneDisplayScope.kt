@@ -112,9 +112,9 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
                     },
                 )
             }
-            DisposableEffect(backStack, panesToDestinations) {
+            DisposableEffect(navigationState, panesToDestinations) {
                 displayScope.onBackStackChanged(
-                    backStack = backStack,
+                    backStackIds = backStack.map { it.id },
                     panesToDestinations = panesToDestinations
                 )
                 onDispose { }
@@ -143,7 +143,7 @@ private class DecoratedNavEntryMultiPaneDisplayScope<Pane, Destination : Node>(
             .adaptTo(
                 slots = slots,
                 panesToDestinations = initialPanesToDestinations,
-                backStackIds = initialBackStack.ids(),
+                backStackIds = initialBackStack.map { it.id },
             )
     )
 
@@ -170,14 +170,14 @@ private class DecoratedNavEntryMultiPaneDisplayScope<Pane, Destination : Node>(
     ): Destination? = panedNavigationState.destinationFor(pane)
 
     fun onBackStackChanged(
-        backStack: List<Destination>,
+        backStackIds: List<String>,
         panesToDestinations: Map<Pane, Destination?>,
     ) {
         updateAdaptiveNavigationState {
             adaptTo(
                 slots = slots.toSet(),
                 panesToDestinations = panesToDestinations,
-                backStackIds = backStack.ids()
+                backStackIds = backStackIds,
             )
         }
     }
@@ -235,16 +235,12 @@ private class DecoratedNavEntryMultiPaneDisplayScope<Pane, Destination : Node>(
     ) {
         panedNavigationState = panedNavigationState.block()
     }
-
-    private fun List<Destination>.ids(): MutableSet<String> =
-        fold(mutableSetOf()) { set, destination ->
-            set.add(destination.id)
-            set
-        }
 }
 
 private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
-    TODO()
+    throw IllegalArgumentException(
+        "PaneScope should not be read until provided in the composition"
+    )
 }
 
 @Stable

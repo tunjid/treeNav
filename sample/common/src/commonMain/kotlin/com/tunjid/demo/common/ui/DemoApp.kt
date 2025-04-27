@@ -344,7 +344,6 @@ class AppState(
                             placeChildrenBeforeParent = true,
                         )
                             .filterIsInstance<SampleDestination>()
-                            .toList()
                     },
                     destinationTransform = {
                         it.current as? SampleDestination ?: throw IllegalArgumentException(

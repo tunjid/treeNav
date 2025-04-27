@@ -17,6 +17,12 @@ sealed class Adaptation {
     data object Change : Adaptation()
 
     /**
+     * The current navigation state is considered identical
+     * to that preceding the penultimate navigation state.
+     */
+    data object Pop : Adaptation()
+
+    /**
      * Destinations were swapped in between panes
      */
     data class Swap<Pane>(
