@@ -40,7 +40,7 @@ class ProfileViewModel(
     navigationRepository: NavigationRepository = NavigationRepository,
     profileName: String?,
     roomName: String?,
-) : ViewModel(),
+) : ViewModel(coroutineScope),
     ActionStateMutator<Action, StateFlow<State>> by coroutineScope.actionStateFlowMutator(
         initialState = State(
             roomName = roomName,

@@ -43,6 +43,7 @@ import androidx.navigation3.SaveableStateNavEntryDecorator
 import androidx.navigation3.SavedStateNavEntryDecorator
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.decorators.DefaultViewModelStoreNavEntryDecorator
+import com.tunjid.treenav.compose.decorators.TransitionAwareLifecycleNavEntryDecorator
 
 @Composable
 internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntryMultiPaneDisplayScope(
@@ -60,6 +61,10 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
         state.destinationTransform(navigationState)
     )
 
+    val transitionAwareLifecycleNavEntryDecorator = remember {
+        TransitionAwareLifecycleNavEntryDecorator()
+    }
+
     DecoratedNavEntryProvider(
         backStack = backStack,
         entryProvider = { node ->
@@ -75,6 +80,7 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
         entryDecorators = listOf(
             SaveableStateNavEntryDecorator,
             SavedStateNavEntryDecorator,
+            transitionAwareLifecycleNavEntryDecorator,
             CastPlatformViewModelStoreNavEntryDecorator,
         ),
         content = { entries ->

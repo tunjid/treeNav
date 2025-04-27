@@ -48,7 +48,7 @@ class ChatViewModel(
     profileRepository: ProfileRepository = ProfileRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
     chat: SampleDestination.Chat,
-) : ViewModel(),
+) : ViewModel(coroutineScope),
     ActionStateMutator<Action, StateFlow<State>> by coroutineScope.actionStateFlowMutator(
         initialState = State(),
         inputs = listOf(

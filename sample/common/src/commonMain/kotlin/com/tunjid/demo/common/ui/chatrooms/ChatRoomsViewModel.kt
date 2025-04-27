@@ -38,7 +38,7 @@ class ChatRoomsViewModel(
     coroutineScope: LifecycleCoroutineScope,
     chatsRepository: ChatsRepository = ChatsRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
-) : ViewModel(),
+) : ViewModel(coroutineScope),
     ActionStateMutator<Action, StateFlow<State>> by coroutineScope.actionStateFlowMutator(
         initialState = State(),
         inputs = listOf(
