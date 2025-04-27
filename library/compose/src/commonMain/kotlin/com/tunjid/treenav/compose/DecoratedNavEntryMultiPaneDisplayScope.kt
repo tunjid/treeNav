@@ -96,7 +96,7 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
         content = { entries ->
             val updatedEntries by rememberUpdatedState(entries)
             val displayScope = remember {
-                Navigation3MultiPaneDisplayScope(
+                DecoratedNavEntryMultiPaneDisplayScope(
                     panes = state.panes,
                     initialBackStack = backStack,
                     initialPanesToDestinations = panesToDestinations,
@@ -126,7 +126,7 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
 }
 
 @Stable
-private class Navigation3MultiPaneDisplayScope<Pane, Destination : Node>(
+private class DecoratedNavEntryMultiPaneDisplayScope<Pane, Destination : Node>(
     panes: List<Pane>,
     initialBackStack: List<Destination>,
     initialPanesToDestinations: Map<Pane, Destination?>,
