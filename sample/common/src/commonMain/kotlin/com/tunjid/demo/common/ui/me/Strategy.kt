@@ -26,7 +26,7 @@ import com.tunjid.demo.common.ui.profile.ProfileViewModel
 import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
-fun mePaneStrategy(
+fun mePaneEntry(
 ) = threePaneEntry<SampleDestination>(
     render = {
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope

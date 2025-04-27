@@ -29,7 +29,7 @@ import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
-fun chatPaneStrategy() = threePaneEntry<SampleDestination>(
+fun chatPaneEntry() = threePaneEntry<SampleDestination>(
     paneMapping = { destination ->
         mapOf(
             ThreePane.Primary to destination,

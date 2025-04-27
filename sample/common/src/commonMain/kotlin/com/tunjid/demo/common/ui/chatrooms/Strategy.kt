@@ -27,7 +27,7 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
-fun chatRoomPaneStrategy(
+fun chatRoomPaneEntry(
 ) = threePaneEntry<SampleDestination>(
     render = {
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope

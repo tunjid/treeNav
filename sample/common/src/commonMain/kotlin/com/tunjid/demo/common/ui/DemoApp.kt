@@ -70,12 +70,12 @@ import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.demo.common.ui.AppState.Companion.rememberMultiPaneDisplayState
-import com.tunjid.demo.common.ui.chat.chatPaneStrategy
-import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
+import com.tunjid.demo.common.ui.chat.chatPaneEntry
+import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneEntry
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.demo.common.ui.me.mePaneStrategy
-import com.tunjid.demo.common.ui.profile.profilePaneStrategy
+import com.tunjid.demo.common.ui.me.mePaneEntry
+import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.backStack
 import com.tunjid.treenav.compose.MultiPaneDisplay
@@ -350,13 +350,13 @@ class AppState(
                     },
                     entryProvider = { destination ->
                         when (destination) {
-                            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneStrategy()
+                            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneEntry()
 
-                            SampleDestination.NavTabs.Me -> mePaneStrategy()
+                            SampleDestination.NavTabs.Me -> mePaneEntry()
 
-                            is SampleDestination.Chat -> chatPaneStrategy()
+                            is SampleDestination.Chat -> chatPaneEntry()
 
-                            is SampleDestination.Profile -> profilePaneStrategy()
+                            is SampleDestination.Profile -> profilePaneEntry()
                         }
                     },
                     transforms = transforms,
