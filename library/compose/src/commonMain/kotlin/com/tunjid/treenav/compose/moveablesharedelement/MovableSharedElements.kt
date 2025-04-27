@@ -7,6 +7,9 @@ import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -20,9 +23,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.MultiPaneDisplay
-import com.tunjid.treenav.compose.utilities.DefaultBoundsTransform
+import com.tunjid.treenav.compose.PaneScope
 
 /**
  * Creates movable shared elements that may be shared amongst different [PaneScope]
@@ -264,3 +266,12 @@ private val ParentClip: OverlayClip =
             return state.parentSharedContentState?.clipPathInOverlay
         }
     }
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+private val DefaultBoundsTransform = BoundsTransform { _, _ ->
+    spring(
+        dampingRatio = Spring.DampingRatioNoBouncy,
+        stiffness = Spring.StiffnessMediumLow,
+        visibilityThreshold = Rect.VisibilityThreshold
+    )
+}
