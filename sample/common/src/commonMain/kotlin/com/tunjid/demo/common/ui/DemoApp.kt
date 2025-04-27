@@ -133,50 +133,48 @@ fun App(
                 modifier = Modifier
                     .fillMaxSize(),
                 state = appState.rememberMultiPaneDisplayState(
-                    listOf(
-                        threePanedAdaptiveTransform(
-                            windowWidthState = remember {
-                                derivedStateOf {
+                    remember {
+                        listOf(
+                            threePanedAdaptiveTransform(
+                                windowWidthState = derivedStateOf {
                                     appState.splitLayoutState.size
                                 }
-                            }
-                        ),
-                        backPreviewTransform(
-                            isPreviewingBack = remember {
-                                derivedStateOf {
+                            ),
+                            backPreviewTransform(
+                                isPreviewingBack = derivedStateOf {
                                     appState.isPreviewingBack
-                                }
-                            },
-                            navigationStateBackTransform = MultiStackNav::pop,
-                        ),
-                        threePanedMovableSharedElementTransform(
-                            movableSharedElementHostState = movableSharedElementHostState
-                        ),
-                        paneModifierTransform {
-                            val modifier = Modifier.animateBounds(
-                                lookaheadScope = this@SharedTransitionScope,
-                                boundsTransform = { _, _ ->
-                                    when (paneState.pane) {
-                                        ThreePane.Primary,
-                                        ThreePane.TransientPrimary,
-                                        ThreePane.Secondary,
-                                        ThreePane.Tertiary,
-                                            -> if (canAnimatePanes) spring() else snap()
+                                },
+                                navigationStateBackTransform = MultiStackNav::pop,
+                            ),
+                            threePanedMovableSharedElementTransform(
+                                movableSharedElementHostState = movableSharedElementHostState
+                            ),
+                            paneModifierTransform {
+                                val modifier = Modifier.animateBounds(
+                                    lookaheadScope = this@SharedTransitionScope,
+                                    boundsTransform = { _, _ ->
+                                        when (paneState.pane) {
+                                            ThreePane.Primary,
+                                            ThreePane.TransientPrimary,
+                                            ThreePane.Secondary,
+                                            ThreePane.Tertiary,
+                                                -> if (canAnimatePanes) spring() else snap()
 
-                                        null,
-                                        ThreePane.Overlay,
-                                            -> snap()
+                                            null,
+                                            ThreePane.Overlay,
+                                                -> snap()
+                                        }
                                     }
-                                }
-                            )
-                            if (paneState.pane == ThreePane.TransientPrimary) modifier
-                                .fillMaxSize()
-                                .backPreview(appState.backPreviewState)
-                                .background(backPreviewSurfaceColor, RoundedCornerShape(16.dp))
-                            else modifier
-                                .fillMaxSize()
-                        }
-                    )
+                                )
+                                if (paneState.pane == ThreePane.TransientPrimary) modifier
+                                    .fillMaxSize()
+                                    .backPreview(appState.backPreviewState)
+                                    .background(backPreviewSurfaceColor, RoundedCornerShape(16.dp))
+                                else modifier
+                                    .fillMaxSize()
+                            }
+                        )
+                    }
                 ),
             ) {
                 appState.displayScope = this
