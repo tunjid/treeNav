@@ -28,6 +28,7 @@ import com.tunjid.demo.common.ui.data.ProfileRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.navigationAction
 import com.tunjid.demo.common.ui.data.navigationMutations
+import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
@@ -37,6 +38,7 @@ import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
 import com.tunjid.treenav.swap
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 
@@ -46,8 +48,8 @@ class ChatViewModel(
     profileRepository: ProfileRepository = ProfileRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
     chat: SampleDestination.Chat,
-) : ViewModel() {
-    private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
+) : ViewModel(),
+    ActionStateMutator<Action, StateFlow<State>> by coroutineScope.actionStateFlowMutator(
         initialState = State(),
         inputs = listOf(
             profileRepository.meMutations(),
@@ -72,16 +74,11 @@ class ChatViewModel(
         }
     )
 
-    val state = mutator.state
-
-    val accept = mutator.accept
-}
-
 private fun ProfileRepository.meMutations(): Flow<Mutation<State>> =
     me.mapToMutation { copy(me = it) }
 
 private fun ChatsRepository.chatRoomMutations(
-    chat: SampleDestination.Chat
+    chat: SampleDestination.Chat,
 ): Flow<Mutation<State>> =
     room(roomName = chat.roomName)
         .mapToMutation { copy(room = it) }
@@ -115,7 +112,7 @@ data class State(
     val me: Profile? = null,
     val room: ChatRoom? = null,
     val isInPrimaryPane: Boolean = true,
-    val chats: List<MessageItem> = emptyList()
+    val chats: List<MessageItem> = emptyList(),
 )
 
 data class MessageItem(
@@ -124,11 +121,11 @@ data class MessageItem(
 )
 
 sealed class Action(
-    val key: String
+    val key: String,
 ) {
 
     data class UpdateInPrimaryPane(
-        val isInPrimaryPane: Boolean
+        val isInPrimaryPane: Boolean,
     ) : Action("UpdateInPrimaryPane")
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
