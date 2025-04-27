@@ -17,8 +17,7 @@ sealed class Adaptation {
     data object Change : Adaptation()
 
     /**
-     * The current navigation state is considered identical
-     * to that preceding the penultimate navigation state.
+     * The current back stack is a sublist of a previously displayed back stack.
      */
     data object Pop : Adaptation()
 
