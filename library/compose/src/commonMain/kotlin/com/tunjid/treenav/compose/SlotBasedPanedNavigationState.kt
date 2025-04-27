@@ -123,7 +123,7 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
  */
 internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
     slots: Set<Slot>,
-    panesToNodes: Map<T, R?>,
+    panesToDestinations: Map<T, R?>,
     backStackIds: Set<String>,
 ): SlotBasedPanedNavigationState<T, R> {
     val previous = this
@@ -139,13 +139,13 @@ internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
         .sortedByDescending(previouslyUsedSlots::contains)
         .toMutableSet()
 
-    val unplacedNodeIds = panesToNodes.values.mapNotNull { it?.id }.toMutableSet()
+    val unplacedNodeIds = panesToDestinations.values.mapNotNull { it?.id }.toMutableSet()
 
     val nodeIdsToAdaptiveSlots = mutableMapOf<String?, Slot>()
     val swapAdaptations = mutableSetOf<Adaptation.Swap<T>>()
 
     // Process nodes that swapped panes from old to new
-    for ((toPane, toNode) in panesToNodes.entries) {
+    for ((toPane, toNode) in panesToDestinations.entries) {
         if (toNode == null) continue
         for ((fromPane, fromNode) in previous.panesToDestinations.entries) {
             // Find a previous node from the last state
@@ -181,7 +181,7 @@ internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
     return SlotBasedPanedNavigationState(
         // If the values of the nodes to panes are the same, no swaps occurred.
         swapAdaptations = when (previous.panesToDestinations.mapValues { it.value?.id }) {
-            panesToNodes.mapValues { it.value?.id } -> previous.swapAdaptations
+            panesToDestinations.mapValues { it.value?.id } -> previous.swapAdaptations
             else -> swapAdaptations
         },
         previousPanesToDestinations = previous.panesToDestinations.keys.associateWith(
@@ -189,7 +189,7 @@ internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
         ),
         destinationIdsToAdaptiveSlots = nodeIdsToAdaptiveSlots,
         backStackIds = backStackIds,
-        panesToDestinations = panesToNodes,
+        panesToDestinations = panesToDestinations,
         destinationIdsAnimatingOut = previous.destinationIdsAnimatingOut,
     )
 

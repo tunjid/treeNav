@@ -72,7 +72,7 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
             mutableBackStack.addAll(currentBackStack)
         }
     }
-    val panesToNodes = state.panesToDestinationsTransform(
+    val panesToDestinations = state.panesToDestinationsTransform(
         state.destinationTransform(navigationState)
     )
 
@@ -99,7 +99,7 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
                 Navigation3MultiPaneDisplayScope(
                     panes = state.panes,
                     initialBackStack = backStack,
-                    initialPanesToNodes = panesToNodes,
+                    initialPanesToDestinations = panesToDestinations,
                     paneRenderer = {
                         val currentEntry = remember(paneState.currentDestination?.id) {
                             updatedEntries.findLast {
@@ -112,10 +112,10 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
                     },
                 )
             }
-            DisposableEffect(backStack, panesToNodes) {
+            DisposableEffect(backStack, panesToDestinations) {
                 displayScope.onBackStackChanged(
                     backStack = backStack,
-                    panesToNodes = panesToNodes
+                    panesToDestinations = panesToDestinations
                 )
                 onDispose { }
             }
@@ -129,7 +129,7 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
 private class Navigation3MultiPaneDisplayScope<Pane, Destination : Node>(
     panes: List<Pane>,
     initialBackStack: List<Destination>,
-    initialPanesToNodes: Map<Pane, Destination?>,
+    initialPanesToDestinations: Map<Pane, Destination?>,
     private val paneRenderer: @Composable (PaneScope<Pane, Destination>.() -> Unit),
 ) : MultiPaneDisplayScope<Pane, Destination> {
 
@@ -142,7 +142,7 @@ private class Navigation3MultiPaneDisplayScope<Pane, Destination : Node>(
         value = SlotBasedPanedNavigationState.initial<Pane, Destination>(slots = slots)
             .adaptTo(
                 slots = slots,
-                panesToNodes = initialPanesToNodes,
+                panesToDestinations = initialPanesToDestinations,
                 backStackIds = initialBackStack.ids(),
             )
     )
@@ -171,12 +171,12 @@ private class Navigation3MultiPaneDisplayScope<Pane, Destination : Node>(
 
     fun onBackStackChanged(
         backStack: List<Destination>,
-        panesToNodes: Map<Pane, Destination?>,
+        panesToDestinations: Map<Pane, Destination?>,
     ) {
         updateAdaptiveNavigationState {
             adaptTo(
                 slots = slots.toSet(),
-                panesToNodes = panesToNodes,
+                panesToDestinations = panesToDestinations,
                 backStackIds = backStack.ids()
             )
         }
