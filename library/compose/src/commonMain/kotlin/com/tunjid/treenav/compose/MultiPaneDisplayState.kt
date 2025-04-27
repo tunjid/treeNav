@@ -47,11 +47,7 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
     val destinationTransform: (NavigationState) -> Destination,
     val panesToDestinationsTransform: @Composable (Destination) -> Map<Pane, Destination?>,
     val renderTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
-) {
-    internal val currentDestination: State<Destination> = derivedStateOf {
-        destinationTransform(navigationState.value)
-    }
-}
+)
 
 /**
  * Provides an [MultiPaneDisplayState] for configuring a [MultiPaneDisplay] for

@@ -45,6 +45,7 @@ kotlin {
                 implementation(libs.jetbrains.compose.animation)
                 implementation(libs.jetbrains.compose.material3)
                 implementation(libs.jetbrains.compose.foundation.layout)
+                implementation(libs.jetbrains.compose.ui.backhandler)
 
                 implementation(libs.jetbrains.lifecycle.runtime)
                 implementation(libs.jetbrains.lifecycle.runtime.compose)
@@ -54,6 +55,9 @@ kotlin {
                 implementation(libs.jetbrains.compose.material3.adaptive)
                 implementation(libs.jetbrains.compose.material3.adaptive.layout)
                 implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)
+
+                implementation(libs.jetbrains.compose.material.icons.core)
+                implementation(libs.jetbrains.compose.material.icons.extended)
 
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.datetime)

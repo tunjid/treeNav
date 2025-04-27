@@ -25,19 +25,21 @@ import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.navigationAction
 import com.tunjid.demo.common.ui.data.navigationMutations
+import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.treenav.push
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 class ChatRoomsViewModel(
     coroutineScope: LifecycleCoroutineScope,
     chatsRepository: ChatsRepository = ChatsRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
-) : ViewModel() {
-    private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
+) : ViewModel(coroutineScope),
+    ActionStateMutator<Action, StateFlow<State>> by coroutineScope.actionStateFlowMutator(
         initialState = State(),
         inputs = listOf(
             chatsRepository.loadMutations()
@@ -55,22 +57,17 @@ class ChatRoomsViewModel(
         }
     )
 
-    val state = mutator.state
-
-    val accept = mutator.accept
-}
-
 private fun ChatsRepository.loadMutations(): Flow<Mutation<State>> = rooms.mapToMutation {
     copy(chatRooms = it)
 }
 
 
 data class State(
-    val chatRooms: List<ChatRoom> = emptyList()
+    val chatRooms: List<ChatRoom> = emptyList(),
 )
 
 sealed class Action(
-    val key: String
+    val key: String,
 ) {
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data class ToRoom(

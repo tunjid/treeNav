@@ -80,15 +80,17 @@ fun MultiStackNav.popToRoot(indexToPop: Int = currentIndex) = copy(
 )
 
 /**
- * Returns a sequence of each destination on the back stack for this [StackNav] as defined by
+ * Returns a sequence of each destination on the back stack for this [MultiStackNav] as defined by
  * [MultiStackNav.pop].
+ *
+ * Note that this sequence is reversed; i.e the first item is the [Node] on top of the stack.
  *
  * @param includeCurrentDestinationChildren when true, the result of [Node.children] for each
  * [Node] is included in the back stack.
  * @param placeChildrenBeforeParent when true, the result of [Node.children] are paced before
  * the parent [Node] in the back stack.
  */
-fun MultiStackNav.backStack(
+fun MultiStackNav.reversedBackStackSequence(
     includeCurrentDestinationChildren: Boolean,
     placeChildrenBeforeParent: Boolean = false,
 ): Sequence<Node> =
@@ -110,6 +112,27 @@ fun MultiStackNav.backStack(
         }
 
 /**
+ * Returns a [List] representing the back stack for this [MultiStackNav] as defined by
+ * [MultiStackNav.pop].
+ *
+ * @see [MultiStackNav.reversedBackStackSequence]
+ *
+ * @param includeCurrentDestinationChildren when true, the result of [Node.children] for each
+ * [Node] is included in the back stack.
+ * @param placeChildrenBeforeParent when true, the result of [Node.children] are paced before
+ * the parent [Node] in the back stack.
+ */
+fun MultiStackNav.backStack(
+    includeCurrentDestinationChildren: Boolean,
+    placeChildrenBeforeParent: Boolean = false,
+): List<Node> = reversedBackStackSequence(
+    includeCurrentDestinationChildren = includeCurrentDestinationChildren,
+    placeChildrenBeforeParent = !placeChildrenBeforeParent
+)
+    .toList()
+    .asReversed()
+
+/**
  * Performs the given [operation] with the [StackNav] at [MultiStackNav.currentIndex]
  */
 private inline fun MultiStackNav.atCurrentIndex(operation: StackNav.() -> StackNav) = copy(
@@ -120,3 +143,11 @@ private inline fun MultiStackNav.atCurrentIndex(operation: StackNav.() -> StackN
 )
 
 val MultiStackNav.current: Node? get() = stacks.getOrNull(currentIndex)?.children?.lastOrNull()
+
+inline fun <reified T: Node> MultiStackNav.current(): T? {
+    val node = current ?: return null
+    check(node is T) {
+        "Expected the current node to be of type ${T::class.qualifiedName} but was ${node::class.qualifiedName}."
+    }
+    return node
+}

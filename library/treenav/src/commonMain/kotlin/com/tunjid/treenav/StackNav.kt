@@ -59,12 +59,14 @@ fun StackNav.popToRoot() = copy(
  * Returns a sequence of each destination on the back stack for this [StackNav] as defined by
  * [StackNav.pop].
  *
+ * Note that this sequence is reversed; i.e the first item is the [Node] on top of the stack.
+ *
  * @param includeCurrentDestinationChildren when true, the result of [Node.children] for each
  * [Node] is included in the back stack.
  * @param placeChildrenBeforeParent when true, the result of [Node.children] are paced before
  * the parent [Node] in the back stack.
  */
-fun StackNav.backStack(
+fun StackNav.reversedBackStackSequence(
     includeCurrentDestinationChildren: Boolean,
     placeChildrenBeforeParent: Boolean = false,
 ): Sequence<Node> =
@@ -86,8 +88,37 @@ fun StackNav.backStack(
         }
 
 /**
+ * Returns a [List] representing the back stack for this [StackNav] as defined by
+ * [StackNav.pop].
+ *
+ * @see [StackNav.reversedBackStackSequence]
+ *
+ * @param includeCurrentDestinationChildren when true, the result of [Node.children] for each
+ * [Node] is included in the back stack.
+ * @param placeChildrenBeforeParent when true, the result of [Node.children] are paced before
+ * the parent [Node] in the back stack.
+ */
+fun StackNav.backStack(
+    includeCurrentDestinationChildren: Boolean,
+    placeChildrenBeforeParent: Boolean = false,
+): List<Node> = reversedBackStackSequence(
+    includeCurrentDestinationChildren = includeCurrentDestinationChildren,
+    placeChildrenBeforeParent = !placeChildrenBeforeParent
+)
+    .toList()
+    .asReversed()
+
+/**
  * Indicates if there's a [Node] available to pop up to
  */
-val StackNav.canPop get() = children.size > 1
+val StackNav.canPop: Boolean get() = children.size > 1
 
-val StackNav.current get() = children.lastOrNull()
+val StackNav.current: Node? get() = children.lastOrNull()
+
+inline fun <reified T: Node> StackNav.current(): T? {
+    val node = current ?: return null
+    check(node is T) {
+        "Expected the current node to be of type ${T::class.qualifiedName} but was ${node::class.qualifiedName}."
+    }
+    return node
+}

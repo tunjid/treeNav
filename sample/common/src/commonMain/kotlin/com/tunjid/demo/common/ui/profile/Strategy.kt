@@ -28,7 +28,7 @@ import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
-fun profilePaneStrategy() = threePaneEntry<SampleDestination>(
+fun profilePaneEntry() = threePaneEntry<SampleDestination>(
     paneMapping = { destination ->
         check(destination is SampleDestination.Profile)
         mapOf(

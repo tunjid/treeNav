@@ -24,6 +24,7 @@ import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.demo.common.ui.data.ProfileRepository
 import com.tunjid.demo.common.ui.data.navigationAction
 import com.tunjid.demo.common.ui.data.navigationMutations
+import com.tunjid.mutator.ActionStateMutator
 import com.tunjid.mutator.Mutation
 import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
@@ -31,6 +32,7 @@ import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.pop
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 class ProfileViewModel(
     coroutineScope: LifecycleCoroutineScope,
@@ -38,8 +40,8 @@ class ProfileViewModel(
     navigationRepository: NavigationRepository = NavigationRepository,
     profileName: String?,
     roomName: String?,
-) : ViewModel() {
-    private val mutator = coroutineScope.actionStateFlowMutator<Action, State>(
+) : ViewModel(coroutineScope),
+    ActionStateMutator<Action, StateFlow<State>> by coroutineScope.actionStateFlowMutator(
         initialState = State(
             roomName = roomName,
             profileName = profileName,
@@ -60,11 +62,6 @@ class ProfileViewModel(
         }
     )
 
-    val state = mutator.state
-
-    val accept = mutator.accept
-}
-
 private fun ProfileRepository.profileMutations(
     profileName: String?,
 ): Flow<Mutation<State>> =
@@ -74,11 +71,11 @@ private fun ProfileRepository.profileMutations(
 data class State(
     val roomName: String? = null,
     val profileName: String? = null,
-    val profile: Profile? = null
+    val profile: Profile? = null,
 )
 
 sealed class Action(
-    val key: String
+    val key: String,
 ) {
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data object Pop : Navigation(), NavigationAction by navigationAction(

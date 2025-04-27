@@ -70,12 +70,12 @@ import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.demo.common.ui.AppState.Companion.rememberMultiPaneDisplayState
-import com.tunjid.demo.common.ui.chat.chatPaneStrategy
-import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneStrategy
+import com.tunjid.demo.common.ui.chat.chatPaneEntry
+import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneEntry
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.demo.common.ui.me.mePaneStrategy
-import com.tunjid.demo.common.ui.profile.profilePaneStrategy
+import com.tunjid.demo.common.ui.me.mePaneEntry
+import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.backStack
 import com.tunjid.treenav.compose.MultiPaneDisplay
@@ -133,50 +133,48 @@ fun App(
                 modifier = Modifier
                     .fillMaxSize(),
                 state = appState.rememberMultiPaneDisplayState(
-                    listOf(
-                        threePanedAdaptiveTransform(
-                            windowWidthState = remember {
-                                derivedStateOf {
+                    remember {
+                        listOf(
+                            threePanedAdaptiveTransform(
+                                windowWidthState = derivedStateOf {
                                     appState.splitLayoutState.size
                                 }
-                            }
-                        ),
-                        backPreviewTransform(
-                            isPreviewingBack = remember {
-                                derivedStateOf {
+                            ),
+                            backPreviewTransform(
+                                isPreviewingBack = derivedStateOf {
                                     appState.isPreviewingBack
-                                }
-                            },
-                            navigationStateBackTransform = MultiStackNav::pop,
-                        ),
-                        threePanedMovableSharedElementTransform(
-                            movableSharedElementHostState = movableSharedElementHostState
-                        ),
-                        paneModifierTransform {
-                            val modifier = Modifier.animateBounds(
-                                lookaheadScope = this@SharedTransitionScope,
-                                boundsTransform = { _, _ ->
-                                    when (paneState.pane) {
-                                        ThreePane.Primary,
-                                        ThreePane.TransientPrimary,
-                                        ThreePane.Secondary,
-                                        ThreePane.Tertiary,
-                                            -> if (canAnimatePanes) spring() else snap()
+                                },
+                                navigationStateBackTransform = MultiStackNav::pop,
+                            ),
+                            threePanedMovableSharedElementTransform(
+                                movableSharedElementHostState = movableSharedElementHostState
+                            ),
+                            paneModifierTransform {
+                                val modifier = Modifier.animateBounds(
+                                    lookaheadScope = this@SharedTransitionScope,
+                                    boundsTransform = { _, _ ->
+                                        when (paneState.pane) {
+                                            ThreePane.Primary,
+                                            ThreePane.TransientPrimary,
+                                            ThreePane.Secondary,
+                                            ThreePane.Tertiary,
+                                                -> if (canAnimatePanes) spring() else snap()
 
-                                        null,
-                                        ThreePane.Overlay,
-                                            -> snap()
+                                            null,
+                                            ThreePane.Overlay,
+                                                -> snap()
+                                        }
                                     }
-                                }
-                            )
-                            if (paneState.pane == ThreePane.TransientPrimary) modifier
-                                .fillMaxSize()
-                                .backPreview(appState.backPreviewState)
-                                .background(backPreviewSurfaceColor, RoundedCornerShape(16.dp))
-                            else modifier
-                                .fillMaxSize()
-                        }
-                    )
+                                )
+                                if (paneState.pane == ThreePane.TransientPrimary) modifier
+                                    .fillMaxSize()
+                                    .backPreview(appState.backPreviewState)
+                                    .background(backPreviewSurfaceColor, RoundedCornerShape(16.dp))
+                                else modifier
+                                    .fillMaxSize()
+                            }
+                        )
+                    }
                 ),
             ) {
                 appState.displayScope = this
@@ -344,7 +342,6 @@ class AppState(
                             placeChildrenBeforeParent = true,
                         )
                             .filterIsInstance<SampleDestination>()
-                            .toList()
                     },
                     destinationTransform = {
                         it.current as? SampleDestination ?: throw IllegalArgumentException(
@@ -353,13 +350,13 @@ class AppState(
                     },
                     entryProvider = { destination ->
                         when (destination) {
-                            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneStrategy()
+                            SampleDestination.NavTabs.ChatRooms -> chatRoomPaneEntry()
 
-                            SampleDestination.NavTabs.Me -> mePaneStrategy()
+                            SampleDestination.NavTabs.Me -> mePaneEntry()
 
-                            is SampleDestination.Chat -> chatPaneStrategy()
+                            is SampleDestination.Chat -> chatPaneEntry()
 
-                            is SampleDestination.Profile -> profilePaneStrategy()
+                            is SampleDestination.Profile -> profilePaneEntry()
                         }
                     },
                     transforms = transforms,

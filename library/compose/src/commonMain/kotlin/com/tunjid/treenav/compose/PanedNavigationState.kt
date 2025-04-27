@@ -17,6 +17,11 @@ sealed class Adaptation {
     data object Change : Adaptation()
 
     /**
+     * The current back stack is a sublist of a previously displayed back stack.
+     */
+    data object Pop : Adaptation()
+
+    /**
      * Destinations were swapped in between panes
      */
     data class Swap<Pane>(

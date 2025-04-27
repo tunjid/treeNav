@@ -18,6 +18,7 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.Order
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.backStack
+import com.tunjid.treenav.reversedBackStackSequence
 import com.tunjid.treenav.current
 import com.tunjid.treenav.flatten
 import com.tunjid.treenav.minus
@@ -158,7 +159,7 @@ class StackNavTest {
     }
 
     @Test
-    fun testBackStack() {
+    fun testReversedBackStack() {
         val pushed = subject
             .push(TestNode("A", children = listOf(TestNode("1"))))
             .push(TestNode("B"))
@@ -176,7 +177,7 @@ class StackNavTest {
                 TestNode("B"),
                 TestNode("A", children = listOf(TestNode("1"))),
             ),
-            pushed.backStack(
+            pushed.reversedBackStackSequence(
                 includeCurrentDestinationChildren = false,
                 placeChildrenBeforeParent = false,
             )
@@ -184,6 +185,19 @@ class StackNavTest {
         )
 
         assertEquals(
+            pushed.reversedBackStackSequence(
+                includeCurrentDestinationChildren = false,
+                placeChildrenBeforeParent = false,
+            )
+                .toList(),
+            pushed.backStack(
+                includeCurrentDestinationChildren = false,
+                placeChildrenBeforeParent = true,
+            )
+                .asReversed()
+        )
+
+        assertEquals(
             expected = listOf(
                 TestNode("F"),
                 TestNode("E", children = listOf(TestNode("1"), TestNode("2"))),
@@ -195,11 +209,24 @@ class StackNavTest {
                 TestNode("A", children = listOf(TestNode("1"))),
                 TestNode("1"),
             ),
-            actual = pushed.backStack(
+            actual = pushed.reversedBackStackSequence(
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = false,
             )
                 .toList()
+        )
+
+        assertEquals(
+            pushed.reversedBackStackSequence(
+                includeCurrentDestinationChildren = true,
+                placeChildrenBeforeParent = false,
+            )
+                .toList(),
+            pushed.backStack(
+                includeCurrentDestinationChildren = true,
+                placeChildrenBeforeParent = true,
+            )
+                .asReversed()
         )
 
         assertEquals(
@@ -214,11 +241,24 @@ class StackNavTest {
                 TestNode("1"),
                 TestNode("A", children = listOf(TestNode("1"))),
             ),
-            actual = pushed.backStack(
+            actual = pushed.reversedBackStackSequence(
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = true,
             )
                 .toList()
+        )
+
+        assertEquals(
+            pushed.reversedBackStackSequence(
+                includeCurrentDestinationChildren = true,
+                placeChildrenBeforeParent = true,
+            )
+                .toList(),
+            pushed.backStack(
+                includeCurrentDestinationChildren = true,
+                placeChildrenBeforeParent = false,
+            )
+                .asReversed()
         )
     }
 }
