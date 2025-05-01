@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose
+package com.tunjid.treenav.compose.navigation3.decorators
 
-import androidx.compose.runtime.Stable
-import androidx.lifecycle.viewmodel.navigation3.ViewModelStoreNavEntryDecorator
-
-@Stable
-internal actual val PlatformViewModelStoreNavEntryDecorator: Any?
-    get() = ViewModelStoreNavEntryDecorator
+internal fun getIdForKey(key: Any, count: Int): Int = 31 * key.hashCode() + count

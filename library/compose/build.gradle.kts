@@ -45,15 +45,15 @@ kotlin {
                 implementation(libs.jetbrains.lifecycle.viewmodel)
                 implementation(libs.jetbrains.lifecycle.viewmodel.compose)
 
-
-                implementation(libs.androidx.navigation3)
+//                implementation(libs.androidx.navigation3)
                 implementation(libs.jetbrains.savedstate.compose)
 
             }
         }
         androidMain {
             dependencies {
-                implementation(libs.androidx.viewmodel.navigation3)
+                implementation(libs.androidx.activity.compose)
+//                implementation(libs.androidx.viewmodel.navigation3)
             }
         }
 

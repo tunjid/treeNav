@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.decorators
+package com.tunjid.treenav.compose.navigation3.decorators
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -36,10 +37,13 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation3.NavEntry
-import androidx.navigation3.NavEntryDecorator
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
+import com.tunjid.treenav.compose.navigation3.NavEntry
+import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
+
+@Stable
+internal expect val ViewModelStoreNavEntryDecorator: NavEntryDecorator
 
 /**
  * Provides the content of a [NavEntry] with a [ViewModelStoreOwner] and provides that
@@ -187,7 +191,7 @@ internal object DefaultViewModelStoreNavEntryDecorator : NavEntryDecorator {
     }
 }
 
-private class EntryViewModel : ViewModel() {
+internal class EntryViewModel : ViewModel() {
     private val owners = mutableMapOf<Any, ViewModelStore>()
     val ownerInBackStack = mutableListOf<Any>()
 
@@ -213,5 +217,3 @@ internal class ViewModelStoreNavLocalInfo {
     @Suppress("PrimitiveInCollection") // The order of the element matters
     internal val idsInComposition: LinkedHashSet<Int> = LinkedHashSet<Int>()
 }
-
-internal fun getIdForKey(key: Any, count: Int): Int = 31 * key.hashCode() + count

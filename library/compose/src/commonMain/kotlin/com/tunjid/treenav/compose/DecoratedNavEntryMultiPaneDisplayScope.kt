@@ -36,14 +36,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.navigation3.DecoratedNavEntryProvider
-import androidx.navigation3.NavEntry
-import androidx.navigation3.NavEntryDecorator
-import androidx.navigation3.SaveableStateNavEntryDecorator
-import androidx.navigation3.SavedStateNavEntryDecorator
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.decorators.DefaultViewModelStoreNavEntryDecorator
-import com.tunjid.treenav.compose.decorators.TransitionAwareLifecycleNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.DecoratedNavEntryProvider
+import com.tunjid.treenav.compose.navigation3.NavEntry
+import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.decorators.DefaultViewModelStoreNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.decorators.SaveableStateNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.decorators.SavedStateNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.decorators.TransitionAwareLifecycleNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.decorators.ViewModelStoreNavEntryDecorator
 
 @Composable
 internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntryMultiPaneDisplayScope(
@@ -81,7 +82,7 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
             SaveableStateNavEntryDecorator,
             SavedStateNavEntryDecorator,
             transitionAwareLifecycleNavEntryDecorator,
-            CastPlatformViewModelStoreNavEntryDecorator,
+            ViewModelStoreNavEntryDecorator,
         ),
         content = { entries ->
             val updatedEntries by rememberUpdatedState(entries)
@@ -233,11 +234,4 @@ private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     )
 }
 
-@Stable
-private val CastPlatformViewModelStoreNavEntryDecorator: NavEntryDecorator
-    get() = PlatformViewModelStoreNavEntryDecorator as? NavEntryDecorator
-        ?: DefaultViewModelStoreNavEntryDecorator
-
-@Stable
-internal expect val PlatformViewModelStoreNavEntryDecorator: Any?
 

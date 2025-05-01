@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.decorators
+package com.tunjid.treenav.compose.navigation3.decorators
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -30,8 +30,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.navigation3.NavEntry
-import androidx.navigation3.NavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.NavEntry
+import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
 
 internal class TransitionAwareLifecycleNavEntryDecorator : NavEntryDecorator {
 
