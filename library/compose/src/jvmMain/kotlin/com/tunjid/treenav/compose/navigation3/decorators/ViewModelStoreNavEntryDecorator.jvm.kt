@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose
+package com.tunjid.treenav.compose.navigation3.decorators
 
 import androidx.compose.runtime.Stable
+import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
 
 @Stable
-internal actual val PlatformViewModelStoreNavEntryDecorator: Any?
-    get() = null
+internal actual val ViewModelStoreNavEntryDecorator: NavEntryDecorator
+    get() = DefaultViewModelStoreNavEntryDecorator
