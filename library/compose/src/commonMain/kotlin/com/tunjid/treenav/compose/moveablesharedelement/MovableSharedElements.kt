@@ -7,9 +7,6 @@ import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.VisibilityThreshold
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -18,11 +15,8 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.Defaults
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.PaneScope
 
@@ -109,11 +103,11 @@ fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
     key: Any,
     state: T,
     modifier: Modifier = Modifier,
-    boundsTransform: BoundsTransform = DefaultBoundsTransform,
+    boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
     placeHolderSize: PlaceHolderSize = contentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
-    clipInOverlayDuringTransition: OverlayClip = ParentClip,
+    clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
     alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)? = null,
     sharedElement: @Composable (T, Modifier) -> Unit
 ) = movableSharedElementOf(
@@ -235,7 +229,7 @@ class PanedMovableSharedElementScope<T, R : Node>(
                         // The element is being shared in its new destination, stop showing it
                         // in the in active one
                         movableSharedElementHostState.isCurrentlyShared(key)
-                                && movableSharedElementHostState.isMatchFound(key) -> EmptyElement(
+                                && movableSharedElementHostState.isMatchFound(key) -> Defaults.EmptyElement(
                             state,
                             Modifier.matchParentSize()
                         )
@@ -250,28 +244,4 @@ class PanedMovableSharedElementScope<T, R : Node>(
             }
         }
     }
-}
-
-private val EmptyElement: @Composable (Any?, Modifier) -> Unit = { _, _ -> }
-
-@ExperimentalSharedTransitionApi
-private val ParentClip: OverlayClip =
-    object : OverlayClip {
-        override fun getClipPath(
-            state: SharedContentState,
-            bounds: Rect,
-            layoutDirection: LayoutDirection,
-            density: Density
-        ): Path? {
-            return state.parentSharedContentState?.clipPathInOverlay
-        }
-    }
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-private val DefaultBoundsTransform = BoundsTransform { _, _ ->
-    spring(
-        dampingRatio = Spring.DampingRatioNoBouncy,
-        stiffness = Spring.StiffnessMediumLow,
-        visibilityThreshold = Rect.VisibilityThreshold
-    )
 }

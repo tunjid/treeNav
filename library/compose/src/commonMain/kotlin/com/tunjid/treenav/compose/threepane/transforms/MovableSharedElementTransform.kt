@@ -56,10 +56,9 @@ fun <Destination : Node> PaneScope<
         >.requireThreePaneMovableSharedElementScope(): MovableSharedElementScope {
     check(this is ThreePaneMovableSharedElementScope) {
         """
-            The current AdaptivePaneScope (${this::class.qualifiedName}) is not an instance of
-            a ThreePaneMovableSharedElementScope. You must configure your ThreePane AdaptiveNavHost with
-            AdaptiveNavHostConfiguration.movableSharedElementConfiguration(movableSharedElementHostState).
-           
+            The current PaneScope (${this::class.qualifiedName}) is not an instance of
+            a ThreePaneMovableSharedElementScope. You must configure your ThreePane MultiPaneDisplay with
+            threePanedMovableSharedElementTransform().
         """.trimIndent()
     }
     return this
