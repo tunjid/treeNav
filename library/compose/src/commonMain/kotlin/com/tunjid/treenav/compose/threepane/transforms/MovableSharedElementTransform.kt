@@ -69,8 +69,12 @@ fun <Destination : Node> PaneScope<
 private class ThreePaneMovableSharedElementScope<Destination : Node>(
     private val hostState: MovableSharedElementHostState<ThreePane, Destination>,
     private val delegate: PanedMovableSharedElementScope<ThreePane, Destination>,
-) : MovableSharedElementScope, SharedTransitionScope by delegate,
+) : MovableSharedElementScope,
     PaneScope<ThreePane, Destination> by delegate.paneScope {
+
+    override val sharedTransitionScope: SharedTransitionScope
+        get() = delegate.sharedTransitionScope
+
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
         key: Any,

@@ -17,13 +17,10 @@
 package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.animateBounds
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.snap
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
@@ -42,12 +39,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -58,6 +54,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -99,20 +96,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun App(
     appState: AppState = remember { AppState() },
-) {
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            SampleDestination.NavTabs.entries.forEach {
-                item(
-                    icon = { Icon(it.icon, contentDescription = it.title) },
-                    label = { Text(it.title) },
-                    selected = it == appState.currentNavigation.current,
-                    onClick = { appState.setTab(it) }
-                )
-            }
-        }
+) = Scaffold {
+    CompositionLocalProvider(
+        LocalAppState provides appState,
     ) {
-        SharedTransitionScope { sharedTransitionModifier ->
+        SharedTransitionLayout(Modifier.fillMaxSize()) {
             val backPreviewSurfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
                 animateDpAsState(if (appState.isPreviewingBack) 16.dp else 0.dp).value
             )
@@ -122,13 +110,6 @@ fun App(
                     sharedTransitionScope = this
                 )
             }
-
-            var canAnimatePanes by remember { mutableStateOf(true) }
-            val interactingWithPanes = appState.isInteractingWithPanes()
-            LaunchedEffect(interactingWithPanes) {
-                canAnimatePanes = !interactingWithPanes
-            }
-
             MultiPaneDisplay(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -136,6 +117,12 @@ fun App(
                     remember {
                         listOf(
                             threePanedAdaptiveTransform(
+                                secondaryPaneBreakPoint = mutableStateOf(
+                                    SecondaryPaneMinWidthBreakpointDp
+                                ),
+                                tertiaryPaneBreakPoint = mutableStateOf(
+                                    TertiaryPaneMinWidthBreakpointDp
+                                ),
                                 windowWidthState = derivedStateOf {
                                     appState.splitLayoutState.size
                                 }
@@ -150,27 +137,10 @@ fun App(
                                 movableSharedElementHostState = movableSharedElementHostState
                             ),
                             paneModifierTransform {
-                                val modifier = Modifier.animateBounds(
-                                    lookaheadScope = this@SharedTransitionScope,
-                                    boundsTransform = { _, _ ->
-                                        when (paneState.pane) {
-                                            ThreePane.Primary,
-                                            ThreePane.TransientPrimary,
-                                            ThreePane.Secondary,
-                                            ThreePane.Tertiary,
-                                                -> if (canAnimatePanes) spring() else snap()
-
-                                            null,
-                                            ThreePane.Overlay,
-                                                -> snap()
-                                        }
-                                    }
-                                )
-                                if (paneState.pane == ThreePane.TransientPrimary) modifier
+                                if (paneState.pane == ThreePane.TransientPrimary) Modifier
                                     .fillMaxSize()
                                     .backPreview(appState.backPreviewState)
-                                    .background(backPreviewSurfaceColor, RoundedCornerShape(16.dp))
-                                else modifier
+                                else Modifier
                                     .fillMaxSize()
                             }
                         )
@@ -182,8 +152,7 @@ fun App(
                 SplitLayout(
                     state = appState.splitLayoutState,
                     modifier = Modifier
-                        .fillMaxSize()
-                            then sharedTransitionModifier,
+                        .fillMaxSize(),
                     itemSeparators = { paneIndex, offset ->
                         PaneSeparator(
                             splitLayoutState = appState.splitLayoutState,
@@ -297,6 +266,8 @@ class AppState(
     internal val isPreviewingBack
         get() = !backPreviewState.progress.isNaN()
 
+    internal val isMediumScreenWidthOrWider get() = splitLayoutState.size >= SecondaryPaneMinWidthBreakpointDp
+
     internal var displayScope by mutableStateOf<MultiPaneDisplayScope<ThreePane, SampleDestination>?>(
         null
     )
@@ -375,5 +346,11 @@ class AppState(
     }
 }
 
+internal val LocalAppState = staticCompositionLocalOf<AppState> {
+    TODO()
+}
+
 private val PaneSeparatorActiveWidthDp = 56.dp
 private val PaneSeparatorTouchTargetWidthDp = 16.dp
+internal val SecondaryPaneMinWidthBreakpointDp = 600.dp
+internal val TertiaryPaneMinWidthBreakpointDp = 1200.dp

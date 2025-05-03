@@ -23,10 +23,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tunjid.demo.common.ui.PaneBottomAppBar
+import com.tunjid.demo.common.ui.PaneNavigationRail
+import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
+import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
 fun chatPaneEntry() = threePaneEntry<SampleDestination>(
@@ -45,18 +48,30 @@ fun chatPaneEntry() = threePaneEntry<SampleDestination>(
                 chat = destination,
             )
         }
-        ChatScreen(
-            movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
-            state = viewModel.state.collectAsStateWithLifecycle().value,
-            onAction = viewModel.accept,
-            modifier = Modifier.fillMaxSize(),
-        )
-        LaunchedEffect(paneState.pane) {
-            viewModel.accept(
-                Action.UpdateInPrimaryPane(
-                    isInPrimaryPane = paneState.pane == ThreePane.Primary
+        PaneScaffold(
+            modifier = Modifier
+                .predictiveBackBackgroundModifier(this)
+                .fillMaxSize(),
+            content = {
+                ChatScreen(
+                    movableSharedElementScope = this,
+                    state = viewModel.state.collectAsStateWithLifecycle().value,
+                    onAction = viewModel.accept,
                 )
-            )
-        }
+                LaunchedEffect(paneState.pane) {
+                    viewModel.accept(
+                        Action.UpdateInPrimaryPane(
+                            isInPrimaryPane = paneState.pane == ThreePane.Primary
+                        )
+                    )
+                }
+            },
+            navigationBar = {
+                PaneBottomAppBar()
+            },
+            navigationRail = {
+                PaneNavigationRail()
+            },
+        )
     },
 )

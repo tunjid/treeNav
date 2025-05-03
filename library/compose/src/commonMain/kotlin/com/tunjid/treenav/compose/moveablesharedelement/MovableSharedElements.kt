@@ -26,7 +26,12 @@ import com.tunjid.treenav.compose.PaneScope
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-interface MovableSharedElementScope : SharedTransitionScope {
+interface MovableSharedElementScope {
+
+    /**
+     * The backing [SharedTransitionScope] for movable shared elements.
+     */
+    val sharedTransitionScope: SharedTransitionScope
 
     /**
      * Creates a movable shared element that accepts a single argument [T] and a [Modifier].
@@ -130,7 +135,7 @@ fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 class MovableSharedElementHostState<Pane, Destination : Node>(
-    private val sharedTransitionScope: SharedTransitionScope,
+    val sharedTransitionScope: SharedTransitionScope,
 ) : SharedTransitionScope by sharedTransitionScope {
 
     private val keysToMovableSharedElements =
@@ -186,7 +191,10 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
 class PanedMovableSharedElementScope<T, R : Node>(
     paneScope: PaneScope<T, R>,
     private val movableSharedElementHostState: MovableSharedElementHostState<T, R>,
-) : MovableSharedElementScope, SharedTransitionScope by movableSharedElementHostState {
+) : MovableSharedElementScope {
+
+    override val sharedTransitionScope: SharedTransitionScope
+        get() = movableSharedElementHostState
 
     var paneScope by mutableStateOf(paneScope)
 

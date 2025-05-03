@@ -22,9 +22,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tunjid.demo.common.ui.PaneBottomAppBar
+import com.tunjid.demo.common.ui.PaneNavigationRail
+import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
+import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
 fun chatRoomPaneEntry(
@@ -37,11 +40,23 @@ fun chatRoomPaneEntry(
                 chatsRepository = ChatsRepository
             )
         }
-        ChatRoomsScreen(
-            movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
-            state = viewModel.state.collectAsStateWithLifecycle().value,
-            onAction = viewModel.accept,
-            modifier = Modifier.fillMaxSize(),
+        PaneScaffold(
+            modifier = Modifier
+                .predictiveBackBackgroundModifier(this)
+                .fillMaxSize(),
+            content = {
+                ChatRoomsScreen(
+                    movableSharedElementScope = this,
+                    state = viewModel.state.collectAsStateWithLifecycle().value,
+                    onAction = viewModel.accept,
+                )
+            },
+            navigationBar = {
+                PaneBottomAppBar()
+            },
+            navigationRail = {
+                PaneNavigationRail()
+            },
         )
     }
 )

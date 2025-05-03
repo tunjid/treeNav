@@ -31,19 +31,20 @@ import com.tunjid.treenav.Node
  * its [MultiPaneDisplay]. This allows for defining the semantics of
  * shared element behavior when shared elements move in between [Pane]s during the
  * transition.
- *
- * The API is largely analogous to [SharedTransitionScope.sharedElement], with the exception
- * of a key being passed instead of [SharedTransitionScope.SharedContentState]. This is because
- * each [PaneState.pane] may need its own [SharedTransitionScope.SharedContentState] and
- * will need to be managed by the implementation of this method.
- *
- * @see [SharedTransitionScope.sharedElement].
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 interface PaneSharedTransitionScope<Pane, Destination : Node> :
-    SharedTransitionScope, PaneScope<Pane, Destination> {
+    PaneScope<Pane, Destination>, SharedTransitionScope {
 
+    /**
+     * Conceptual equivalent of [SharedTransitionScope.sharedElement], with the exception
+     * of a key being passed instead of [SharedTransitionScope.SharedContentState]. This is because
+     * each [PaneState.pane] may need its own [SharedTransitionScope.SharedContentState] and
+     * will need to be managed by the implementation of this method.
+     *
+     * @see [SharedTransitionScope.sharedElement].
+     */
     fun Modifier.panedSharedElement(
         key: Any,
         boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
