@@ -26,12 +26,11 @@ import com.tunjid.demo.common.ui.PaneBottomAppBar
 import com.tunjid.demo.common.ui.PaneNavigationRail
 import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.ChatsRepository
-import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
 fun chatRoomPaneEntry(
-) = threePaneEntry<SampleDestination>(
+) = threePaneEntry(
     render = {
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ChatRoomsViewModel> {
