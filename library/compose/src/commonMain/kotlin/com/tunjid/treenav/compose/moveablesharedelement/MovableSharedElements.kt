@@ -7,9 +7,6 @@ import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.VisibilityThreshold
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -18,11 +15,8 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.Defaults
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.PaneScope
 
@@ -32,7 +26,12 @@ import com.tunjid.treenav.compose.PaneScope
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-interface MovableSharedElementScope : SharedTransitionScope {
+interface MovableSharedElementScope {
+
+    /**
+     * The backing [SharedTransitionScope] for movable shared elements.
+     */
+    val sharedTransitionScope: SharedTransitionScope
 
     /**
      * Creates a movable shared element that accepts a single argument [T] and a [Modifier].
@@ -109,11 +108,11 @@ fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
     key: Any,
     state: T,
     modifier: Modifier = Modifier,
-    boundsTransform: BoundsTransform = DefaultBoundsTransform,
+    boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
     placeHolderSize: PlaceHolderSize = contentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
-    clipInOverlayDuringTransition: OverlayClip = ParentClip,
+    clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
     alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)? = null,
     sharedElement: @Composable (T, Modifier) -> Unit
 ) = movableSharedElementOf(
@@ -136,7 +135,7 @@ fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 class MovableSharedElementHostState<Pane, Destination : Node>(
-    private val sharedTransitionScope: SharedTransitionScope,
+    val sharedTransitionScope: SharedTransitionScope,
 ) : SharedTransitionScope by sharedTransitionScope {
 
     private val keysToMovableSharedElements =
@@ -189,10 +188,13 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-class PanedMovableSharedElementScope<T, R : Node>(
+class PaneMovableSharedElementScope<T, R : Node>(
     paneScope: PaneScope<T, R>,
     private val movableSharedElementHostState: MovableSharedElementHostState<T, R>,
-) : MovableSharedElementScope, SharedTransitionScope by movableSharedElementHostState {
+) : MovableSharedElementScope {
+
+    override val sharedTransitionScope: SharedTransitionScope
+        get() = movableSharedElementHostState
 
     var paneScope by mutableStateOf(paneScope)
 
@@ -235,7 +237,7 @@ class PanedMovableSharedElementScope<T, R : Node>(
                         // The element is being shared in its new destination, stop showing it
                         // in the in active one
                         movableSharedElementHostState.isCurrentlyShared(key)
-                                && movableSharedElementHostState.isMatchFound(key) -> EmptyElement(
+                                && movableSharedElementHostState.isMatchFound(key) -> Defaults.EmptyElement(
                             state,
                             Modifier.matchParentSize()
                         )
@@ -250,28 +252,4 @@ class PanedMovableSharedElementScope<T, R : Node>(
             }
         }
     }
-}
-
-private val EmptyElement: @Composable (Any?, Modifier) -> Unit = { _, _ -> }
-
-@ExperimentalSharedTransitionApi
-private val ParentClip: OverlayClip =
-    object : OverlayClip {
-        override fun getClipPath(
-            state: SharedContentState,
-            bounds: Rect,
-            layoutDirection: LayoutDirection,
-            density: Density
-        ): Path? {
-            return state.parentSharedContentState?.clipPathInOverlay
-        }
-    }
-
-@OptIn(ExperimentalSharedTransitionApi::class)
-private val DefaultBoundsTransform = BoundsTransform { _, _ ->
-    spring(
-        dampingRatio = Spring.DampingRatioNoBouncy,
-        stiffness = Spring.StiffnessMediumLow,
-        visibilityThreshold = Rect.VisibilityThreshold
-    )
 }

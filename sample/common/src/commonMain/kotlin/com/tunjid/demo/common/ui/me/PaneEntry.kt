@@ -16,18 +16,22 @@
 
 package com.tunjid.demo.common.ui.me
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tunjid.demo.common.ui.data.SampleDestination
+import com.tunjid.demo.common.ui.PaneBottomAppBar
+import com.tunjid.demo.common.ui.PaneNavigationRail
+import com.tunjid.demo.common.ui.PaneScaffold
+import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
 import com.tunjid.demo.common.ui.profile.ProfileScreen
 import com.tunjid.demo.common.ui.profile.ProfileViewModel
-import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
 fun mePaneEntry(
-) = threePaneEntry<SampleDestination>(
+) = threePaneEntry(
     render = {
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ProfileViewModel> {
@@ -37,10 +41,23 @@ fun mePaneEntry(
                 roomName = null,
             )
         }
-        ProfileScreen(
-            movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
-            state = viewModel.state.collectAsStateWithLifecycle().value,
-            onAction = viewModel.accept
+        PaneScaffold(
+            modifier = Modifier
+                .predictiveBackBackgroundModifier(this)
+                .fillMaxSize(),
+            content = {
+                ProfileScreen(
+                    movableSharedElementScope = this,
+                    state = viewModel.state.collectAsStateWithLifecycle().value,
+                    onAction = viewModel.accept,
+                )
+            },
+            navigationBar = {
+                PaneBottomAppBar()
+            },
+            navigationRail = {
+                PaneNavigationRail()
+            },
         )
     }
 )

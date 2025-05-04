@@ -14,49 +14,60 @@
  * limitations under the License.
  */
 
-package com.tunjid.demo.common.ui.chat
+package com.tunjid.demo.common.ui.profile
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tunjid.demo.common.ui.PaneBottomAppBar
+import com.tunjid.demo.common.ui.PaneNavigationRail
+import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
+import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
-fun chatPaneEntry() = threePaneEntry<SampleDestination>(
+fun profilePaneEntry() = threePaneEntry<SampleDestination>(
     paneMapping = { destination ->
+        check(destination is SampleDestination.Profile)
         mapOf(
             ThreePane.Primary to destination,
-            ThreePane.Secondary to NavTabs.ChatRooms,
+            ThreePane.Secondary to destination.roomName?.let(SampleDestination::Chat),
+            ThreePane.Tertiary to destination.roomName?.let { NavTabs.ChatRooms },
         )
     },
     render = { destination ->
-        check(destination is SampleDestination.Chat)
+        check(destination is SampleDestination.Profile)
         val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
-        val viewModel = viewModel<ChatViewModel> {
-            ChatViewModel(
+        val viewModel = viewModel<ProfileViewModel> {
+            ProfileViewModel(
                 coroutineScope = scope,
-                chat = destination,
+                profileName = destination.profileName,
+                roomName = destination.roomName,
             )
         }
-        ChatScreen(
-            movableSharedElementScope = requireThreePaneMovableSharedElementScope(),
-            state = viewModel.state.collectAsStateWithLifecycle().value,
-            onAction = viewModel.accept,
-            modifier = Modifier.fillMaxSize(),
-        )
-        LaunchedEffect(paneState.pane) {
-            viewModel.accept(
-                Action.UpdateInPrimaryPane(
-                    isInPrimaryPane = paneState.pane == ThreePane.Primary
+        PaneScaffold(
+            modifier = Modifier
+                .predictiveBackBackgroundModifier(this)
+                .fillMaxSize(),
+            content = {
+                ProfileScreen(
+                    movableSharedElementScope = this,
+                    state = viewModel.state.collectAsStateWithLifecycle().value,
+                    onAction = viewModel.accept,
+                    modifier = Modifier.fillMaxSize()
                 )
-            )
-        }
+            },
+            navigationBar = {
+                PaneBottomAppBar()
+            },
+            navigationRail = {
+                PaneNavigationRail()
+            },
+        )
     },
 )

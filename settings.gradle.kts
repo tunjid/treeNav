@@ -46,8 +46,8 @@ include(
     ":library:treenav",
     ":library:strings",
     ":library:compose",
+    ":library:compose-threepane",
     ":sample:android",
     ":sample:common",
     ":sample:desktop",
 )
-

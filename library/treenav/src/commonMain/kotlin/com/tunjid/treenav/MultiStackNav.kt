@@ -147,7 +147,7 @@ val MultiStackNav.current: Node? get() = stacks.getOrNull(currentIndex)?.childre
 inline fun <reified T: Node> MultiStackNav.current(): T? {
     val node = current ?: return null
     check(node is T) {
-        "Expected the current node to be of type ${T::class.qualifiedName} but was ${node::class.qualifiedName}."
+        "Expected the current node to be of type ${T::class} but was ${node::class}."
     }
     return node
 }

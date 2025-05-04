@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.tunjid.treenav.compose.threepane.transforms
 
 import androidx.compose.animation.BoundsTransform
@@ -17,7 +33,7 @@ import com.tunjid.treenav.compose.transforms.RenderTransform
 import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
-import com.tunjid.treenav.compose.moveablesharedelement.PanedMovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
@@ -33,7 +49,7 @@ fun <NavigationState : Node, Destination : Node>
 ): Transform<ThreePane, NavigationState, Destination> =
     RenderTransform { destination, previousTransform ->
         val delegate = remember {
-            PanedMovableSharedElementScope(
+            PaneMovableSharedElementScope(
                 paneScope = this,
                 movableSharedElementHostState = movableSharedElementHostState,
             )
@@ -50,16 +66,20 @@ fun <NavigationState : Node, Destination : Node>
         previousTransform(movableSharedElementScope, destination)
     }
 
+/**
+ * Requires that this [PaneScope] is a [MovableSharedElementScope], and returns it. In the
+ * case this [PaneScope] is not a [MovableSharedElementScope], an exception will be thrown.
+ */
+@Stable
 fun <Destination : Node> PaneScope<
         ThreePane,
         Destination
-        >.requireThreePaneMovableSharedElementScope(): MovableSharedElementScope {
+        >.requireMovableSharedElementScope(): MovableSharedElementScope {
     check(this is ThreePaneMovableSharedElementScope) {
         """
-            The current AdaptivePaneScope (${this::class.qualifiedName}) is not an instance of
-            a ThreePaneMovableSharedElementScope. You must configure your ThreePane AdaptiveNavHost with
-            AdaptiveNavHostConfiguration.movableSharedElementConfiguration(movableSharedElementHostState).
-           
+            The current PaneScope (${this::class.qualifiedName}) is not an instance of
+            a ThreePaneMovableSharedElementScope. You must configure your ThreePane MultiPaneDisplay with
+            threePanedMovableSharedElementTransform().
         """.trimIndent()
     }
     return this
@@ -69,9 +89,13 @@ fun <Destination : Node> PaneScope<
 @Stable
 private class ThreePaneMovableSharedElementScope<Destination : Node>(
     private val hostState: MovableSharedElementHostState<ThreePane, Destination>,
-    private val delegate: PanedMovableSharedElementScope<ThreePane, Destination>,
-) : MovableSharedElementScope, SharedTransitionScope by delegate,
+    private val delegate: PaneMovableSharedElementScope<ThreePane, Destination>,
+) : MovableSharedElementScope,
     PaneScope<ThreePane, Destination> by delegate.paneScope {
+
+    override val sharedTransitionScope: SharedTransitionScope
+        get() = delegate.sharedTransitionScope
+
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
         key: Any,

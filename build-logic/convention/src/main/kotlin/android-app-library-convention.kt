@@ -41,16 +41,13 @@ import org.gradle.api.artifacts.VersionCatalogsExtension
 fun org.gradle.api.Project.androidConfiguration(
     extension: CommonExtension<*, *, *, *, *, *>
 ) = extension.apply {
-    namespace = "com.tunjid.composables.${project.name}"
-    compileSdk = 35
+    namespace = "com.tunjid.treenav.${project.name.replace("-", ".")}"
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 23
     }
 
-    buildFeatures {
-        compose = true
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

@@ -57,12 +57,12 @@ publishing {
             artifact(javadocJar)
             pom {
                 name.set(project.name)
-                description.set("A collection of utility composable functions")
-                url.set("https://github.com/tunjid/composables")
+                description.set("A kotlin multiplatform experiment for representing app navigation with tree like data structures")
+                url.set("https://github.com/tunjid/treenav")
                 licenses {
                     license {
                         name.set("Apache License 2.0")
-                        url.set("https://github.com/tunjid/composables/blob/main/LICENSE")
+                        url.set("https://github.com/tunjid/treenav/blob/main/LICENSE.txt")
                     }
                 }
                 developers {
@@ -73,9 +73,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:github.com/tunjid/composables.git")
-                    developerConnection.set("scm:git:ssh://github.com/tunjid/composables.git")
-                    url.set("https://github.com/tunjid/composables/tree/main")
+                    connection.set("scm:git:github.com/tunjid/treenav.git")
+                    developerConnection.set("scm:git:ssh://github.com/tunjid/treenav.git")
+                    url.set("https://github.com/tunjid/treenav/tree/main")
                 }
             }
         }

@@ -22,22 +22,13 @@ plugins {
 }
 
 kotlin {
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "common"
-            isStatic = true
-        }
-    }
     sourceSets {
         named("commonMain") {
             dependencies {
                 implementation(project(":library:treenav"))
                 implementation(project(":library:strings"))
                 implementation(project(":library:compose"))
+                implementation(project(":library:compose-threepane"))
 
                 implementation(compose.components.resources)
 
@@ -69,17 +60,7 @@ kotlin {
         }
         named("androidMain") {
             dependencies {
-                implementation(libs.androidx.compose.foundation.layout)
             }
-        }
-        val iosX64Main by getting
-        val iosArm64Main by getting
-        val iosSimulatorArm64Main by getting
-        val iosMain by creating {
-            dependsOn(named("commonMain").get())
-            iosX64Main.dependsOn(this)
-            iosArm64Main.dependsOn(this)
-            iosSimulatorArm64Main.dependsOn(this)
         }
     }
 }
