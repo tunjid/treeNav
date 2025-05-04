@@ -42,7 +42,7 @@ import com.tunjid.treenav.compose.PaneSharedTransitionScope
 fun <Destination : Node> PaneScope<
         ThreePane,
         Destination
-        >.rememberPanedSharedTransitionScope(
+        >.rememberPaneSharedTransitionScope(
     sharedTransitionScope: SharedTransitionScope,
 ): PaneSharedTransitionScope<ThreePane, Destination> =
     remember {

@@ -69,7 +69,7 @@ fun <NavigationState : Node, Destination : Node>
 fun <Destination : Node> PaneScope<
         ThreePane,
         Destination
-        >.requireThreePaneMovableSharedElementScope(): MovableSharedElementScope {
+        >.requireMovableSharedElementScope(): MovableSharedElementScope {
     check(this is ThreePaneMovableSharedElementScope) {
         """
             The current PaneScope (${this::class.qualifiedName}) is not an instance of

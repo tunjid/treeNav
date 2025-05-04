@@ -50,7 +50,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.roundToIntSize
@@ -61,8 +60,8 @@ import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneSharedTransitionScope
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.rememberPanedSharedTransitionScope
-import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
+import com.tunjid.treenav.compose.threepane.rememberPaneSharedTransitionScope
+import com.tunjid.treenav.compose.threepane.transforms.requireMovableSharedElementScope
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
 import kotlin.math.abs
@@ -136,8 +135,8 @@ fun PaneScope<ThreePane, SampleDestination>.PaneScaffold(
 ) {
     val appState = LocalAppState.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val movableSharedElementScope = requireThreePaneMovableSharedElementScope()
-    val paneSharedTransitionScope = rememberPanedSharedTransitionScope(
+    val movableSharedElementScope = requireMovableSharedElementScope()
+    val paneSharedTransitionScope = rememberPaneSharedTransitionScope(
         sharedTransitionScope = movableSharedElementScope.sharedTransitionScope,
     )
     val paneScaffoldState =
