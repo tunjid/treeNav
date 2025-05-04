@@ -188,7 +188,7 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-class PanedMovableSharedElementScope<T, R : Node>(
+class PaneMovableSharedElementScope<T, R : Node>(
     paneScope: PaneScope<T, R>,
     private val movableSharedElementHostState: MovableSharedElementHostState<T, R>,
 ) : MovableSharedElementScope {
