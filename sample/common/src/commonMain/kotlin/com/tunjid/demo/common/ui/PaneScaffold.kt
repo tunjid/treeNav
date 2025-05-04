@@ -19,7 +19,6 @@ package com.tunjid.demo.common.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateBounds
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
@@ -57,11 +56,9 @@ import androidx.compose.ui.zIndex
 import com.tunjid.composables.ui.skipIf
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.treenav.compose.PaneScope
-import com.tunjid.treenav.compose.PaneSharedTransitionScope
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.threepane.PaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.rememberPaneSharedTransitionScope
-import com.tunjid.treenav.compose.threepane.transforms.requireMovableSharedElementScope
+import com.tunjid.treenav.compose.threepane.rememberPaneMovableElementSharedTransitionScope
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
 import kotlin.math.abs
@@ -69,11 +66,8 @@ import kotlin.math.abs
 @Stable
 class PaneScaffoldState internal constructor(
     private val appState: AppState,
-    private val movableSharedElementScope: MovableSharedElementScope,
-    paneSharedTransitionScope: PaneSharedTransitionScope<ThreePane, SampleDestination>,
-) :
-    MovableSharedElementScope by movableSharedElementScope,
-    PaneSharedTransitionScope<ThreePane, SampleDestination> by paneSharedTransitionScope {
+    paneMovableElementSharedTransitionScope: PaneMovableElementSharedTransitionScope<SampleDestination>,
+) : PaneMovableElementSharedTransitionScope<SampleDestination> by paneMovableElementSharedTransitionScope {
 
     internal val canShowBottomNavigation get() = !appState.isMediumScreenWidthOrWider
 
@@ -97,27 +91,6 @@ class PaneScaffoldState internal constructor(
     internal fun hasMatchedSize(): Boolean =
         abs(scaffoldCurrentSize.width - scaffoldTargetSize.width) <= 2
                 && abs(scaffoldCurrentSize.height - scaffoldTargetSize.height) <= 2
-
-    @OptIn(ExperimentalSharedTransitionApi::class)
-    override fun <T> movableSharedElementOf(
-        key: Any,
-        boundsTransform: BoundsTransform,
-        placeHolderSize: SharedTransitionScope.PlaceHolderSize,
-        renderInOverlayDuringTransition: Boolean,
-        zIndexInOverlay: Float,
-        clipInOverlayDuringTransition: SharedTransitionScope.OverlayClip,
-        alternateOutgoingSharedElement:@Composable ((T, Modifier) -> Unit)?,
-        sharedElement:@Composable (T, Modifier) -> Unit,
-    ):@Composable (T, Modifier) -> Unit = movableSharedElementScope.movableSharedElementOf(
-        key = key,
-        boundsTransform = boundsTransform,
-        placeHolderSize = placeHolderSize,
-        renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-        zIndexInOverlay = zIndexInOverlay,
-        clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-        alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-        sharedElement = sharedElement,
-    )
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -135,16 +108,12 @@ fun PaneScope<ThreePane, SampleDestination>.PaneScaffold(
 ) {
     val appState = LocalAppState.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val movableSharedElementScope = requireMovableSharedElementScope()
-    val paneSharedTransitionScope = rememberPaneSharedTransitionScope(
-        sharedTransitionScope = movableSharedElementScope.sharedTransitionScope,
-    )
+    val paneMovableElementSharedTransitionScope = rememberPaneMovableElementSharedTransitionScope()
     val paneScaffoldState =
-        remember(appState, movableSharedElementScope, paneSharedTransitionScope) {
+        remember(appState, paneMovableElementSharedTransitionScope) {
             PaneScaffoldState(
                 appState = appState,
-                movableSharedElementScope = movableSharedElementScope,
-                paneSharedTransitionScope = paneSharedTransitionScope,
+                paneMovableElementSharedTransitionScope = paneMovableElementSharedTransitionScope,
             )
         }
 
@@ -166,7 +135,7 @@ fun PaneScope<ThreePane, SampleDestination>.PaneScaffold(
             Scaffold(
                 modifier = Modifier
                     .animateBounds(
-                        lookaheadScope = movableSharedElementScope.sharedTransitionScope,
+                        lookaheadScope = paneMovableElementSharedTransitionScope,
                         boundsTransform = remember {
                             scaffoldBoundsTransform(
                                 paneScaffoldState = paneScaffoldState,

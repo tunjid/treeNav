@@ -66,6 +66,11 @@ fun <NavigationState : Node, Destination : Node>
         previousTransform(movableSharedElementScope, destination)
     }
 
+/**
+ * Requires that this [PaneScope] is a [MovableSharedElementScope], and returns it. In the
+ * case this [PaneScope] is not a [MovableSharedElementScope], an exception will be thrown.
+ */
+@Stable
 fun <Destination : Node> PaneScope<
         ThreePane,
         Destination
