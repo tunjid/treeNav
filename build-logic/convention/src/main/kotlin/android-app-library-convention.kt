@@ -41,7 +41,7 @@ import org.gradle.api.artifacts.VersionCatalogsExtension
 fun org.gradle.api.Project.androidConfiguration(
     extension: CommonExtension<*, *, *, *, *, *>
 ) = extension.apply {
-    namespace = "com.tunjid.treenav.${project.name}"
+    namespace = "com.tunjid.treenav.${project.name.replace("-", ".")}"
     compileSdk = 36
 
     defaultConfig {

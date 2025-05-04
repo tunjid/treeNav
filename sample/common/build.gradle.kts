@@ -28,6 +28,7 @@ kotlin {
                 implementation(project(":library:treenav"))
                 implementation(project(":library:strings"))
                 implementation(project(":library:compose"))
+                implementation(project(":library:compose-threepane"))
 
                 implementation(compose.components.resources)
 
