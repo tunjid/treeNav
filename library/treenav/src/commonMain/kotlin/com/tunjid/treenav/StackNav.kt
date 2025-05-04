@@ -118,7 +118,7 @@ val StackNav.current: Node? get() = children.lastOrNull()
 inline fun <reified T: Node> StackNav.current(): T? {
     val node = current ?: return null
     check(node is T) {
-        "Expected the current node to be of type ${T::class.qualifiedName} but was ${node::class.qualifiedName}."
+        "Expected the current node to be of type ${T::class.simpleName} but was ${node::class.simpleName}."
     }
     return node
 }

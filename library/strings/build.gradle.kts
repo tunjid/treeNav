@@ -17,33 +17,18 @@
 plugins {
     kotlin("multiplatform")
     id("publishing-library-convention")
+    id("android-library-convention")
     id("kotlin-jvm-convention")
+    id("kotlin-library-convention")
     id("maven-publish")
     signing
     id("org.jetbrains.dokka")
 }
 
 kotlin {
-    applyDefaultHierarchyTemplate()
     js(IR) {
         nodejs()
         browser()
-    }
-    jvm {
-        withJava()
-        testRuns["test"].executionTask.configure {
-            useJUnit()
-        }
-    }
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "treenav-strings"
-            isStatic = true
-        }
     }
     linuxX64()
     macosX64()
@@ -63,10 +48,5 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val jvmMain by getting
-        val jvmTest by getting
-
-        val jsMain by getting
-        val jsTest by getting
     }
 }

@@ -3,6 +3,7 @@ plugins {
     id("publishing-library-convention")
     id("android-library-convention")
     id("kotlin-jvm-convention")
+    id("kotlin-library-convention")
     id("maven-publish")
     signing
     id("org.jetbrains.dokka")
@@ -10,25 +11,13 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-kotlin {
-    applyDefaultHierarchyTemplate()
-    androidTarget()
-    jvm {
-        testRuns["test"].executionTask.configure {
-            useJUnit()
-        }
+android {
+    buildFeatures {
+        compose = true
     }
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "treenav-compose"
-            isStatic = true
-        }
-    }
+}
 
+kotlin {
     sourceSets {
         commonMain {
             dependencies {
@@ -62,8 +51,6 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val jvmMain by getting
-        val jvmTest by getting
 
         all {
             languageSettings.apply {

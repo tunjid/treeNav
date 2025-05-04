@@ -64,7 +64,7 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
     SharedTransitionScope by sharedTransitionScope {
 
     @OptIn(ExperimentalSharedTransitionApi::class)
-    override fun Modifier.panedSharedElement(
+    override fun Modifier.paneSharedElement(
         key: Any,
         boundsTransform: BoundsTransform,
         placeHolderSize: PlaceHolderSize,
