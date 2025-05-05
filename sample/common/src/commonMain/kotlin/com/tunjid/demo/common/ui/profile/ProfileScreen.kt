@@ -17,6 +17,7 @@
 package com.tunjid.demo.common.ui.profile
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -74,6 +75,11 @@ fun ProfileScreen(
                             x = 0,
                             y = -headerState.translation.roundToInt()
                         )
+                    }
+                    .clickable {
+                        state.profileName ?: return@clickable
+                        state.roomName ?: return@clickable
+                        onAction(Action.Navigation.ToAvatar(state.profileName, state.roomName))
                     }
             )
         },
