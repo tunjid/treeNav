@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package com.tunjid.demo.common.ui.profile
+package com.tunjid.demo.common.ui.avatar
 
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
-import com.tunjid.demo.common.ui.chatrooms.Action.Navigation
 import com.tunjid.demo.common.ui.data.NavigationAction
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.demo.common.ui.data.ProfileRepository
-import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.navigationAction
 import com.tunjid.demo.common.ui.data.navigationMutations
 import com.tunjid.mutator.ActionStateMutator
@@ -33,11 +31,10 @@ import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.pop
-import com.tunjid.treenav.push
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
-class ProfileViewModel(
+class AvatarViewModel(
     coroutineScope: LifecycleCoroutineScope,
     profileRepository: ProfileRepository = ProfileRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
@@ -83,13 +80,6 @@ sealed class Action(
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data object Pop : Navigation(), NavigationAction by navigationAction(
             MultiStackNav::pop
-        )
-
-        data class ToAvatar(
-            val profileName: String,
-            val roomName: String,
-        ) : Navigation(), NavigationAction by navigationAction(
-            { push(SampleDestination.Avatar(profileName = profileName, roomName = roomName)) }
         )
     }
 }

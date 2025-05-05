@@ -72,6 +72,21 @@ sealed interface SampleDestination : Node {
                 roomName?.let { NavTabs.ChatRooms }
             )
     }
+
+    data class Avatar(
+        val profileName: String,
+        val roomName: String?,
+    ) : SampleDestination {
+
+        override val id: String
+            get() = "avatar-$profileName-$roomName"
+
+        override val children: List<Node>
+            get() = listOfNotNull(
+                roomName?.let(::Chat),
+                roomName?.let { NavTabs.ChatRooms }
+            )
+    }
 }
 
 fun interface NavigationAction {

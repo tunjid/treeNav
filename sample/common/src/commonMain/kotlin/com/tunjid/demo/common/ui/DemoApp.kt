@@ -72,6 +72,7 @@ import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneEntry
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.me.mePaneEntry
+import com.tunjid.demo.common.ui.avatar.avatarPaneEntry
 import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.backStack
@@ -163,9 +164,10 @@ fun App(
                         )
                     },
                     itemContent = { index ->
-                        val pane = appState.filteredPaneOrder[index]
-                        Destination(pane)
-                        if (pane == ThreePane.Primary) Destination(ThreePane.TransientPrimary)
+                        DragToPopLayout(
+                            state = appState,
+                            pane = appState.filteredPaneOrder[index]
+                        )
                     }
                 )
             }
@@ -262,9 +264,11 @@ class AppState(
             paneRenderOrder[index + indexDiff]
         }
     )
+    internal val dragToPopState = DragToPopState()
 
     internal val isPreviewingBack
         get() = !backPreviewState.progress.isNaN()
+                || dragToPopState.isDraggingToPop
 
     internal val isMediumScreenWidthOrWider get() = splitLayoutState.size >= SecondaryPaneMinWidthBreakpointDp
 
@@ -322,12 +326,10 @@ class AppState(
                     entryProvider = { destination ->
                         when (destination) {
                             SampleDestination.NavTabs.ChatRooms -> chatRoomPaneEntry()
-
                             SampleDestination.NavTabs.Me -> mePaneEntry()
-
                             is SampleDestination.Chat -> chatPaneEntry()
-
                             is SampleDestination.Profile -> profilePaneEntry()
+                            is SampleDestination.Avatar -> avatarPaneEntry()
                         }
                     },
                     transforms = transforms,
