@@ -16,17 +16,20 @@
 
 package com.tunjid.treenav.compose.navigation3.decorators
 
+import androidx.collection.mutableScatterMapOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.ReusableContent
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.LocalSaveableStateRegistry
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.runtime.saveable.SaveableStateRegistry
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.tunjid.treenav.compose.navigation3.NavEntry
 import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
-import kotlin.collections.LinkedHashSet
 
 /**
  * Wraps the content of a [NavEntry] with a [SaveableStateHolder.SaveableStateProvider] to ensure
@@ -42,7 +45,7 @@ internal object SaveableStateNavEntryDecorator : NavEntryDecorator {
         val localInfo = remember { SaveableStateNavLocalInfo() }
         DisposableEffect(key1 = backStack) { onDispose { localInfo.refCount.clear() } }
 
-        localInfo.savedStateHolder = rememberSaveableStateHolder()
+        localInfo.savedStateHolder = rememberPanedSaveableStateHolder()
         backStack.forEachIndexed { index, key ->
             // We update here as part of composition to ensure the value is available to
             // DecorateEntry
@@ -143,4 +146,88 @@ internal class SaveableStateNavLocalInfo {
     internal val refCount: MutableMap<Any, LinkedHashSet<Int>> = mutableMapOf()
     @Suppress("PrimitiveInCollection") // The order of the element matters
     internal val idsInComposition: LinkedHashSet<Int> = LinkedHashSet<Int>()
+}
+
+@Composable
+internal fun rememberPanedSaveableStateHolder(): SaveableStateHolder =
+    rememberSaveable(
+        saver = PanedSavableStateHolder.Saver
+    ) {
+        PanedSavableStateHolder()
+    }.apply {
+        parentSaveableStateRegistry = LocalSaveableStateRegistry.current
+    }
+
+private class PanedSavableStateHolder(
+    private val savedStates: MutableMap<Any, Map<String, List<Any?>>> = mutableMapOf()
+) : SaveableStateHolder {
+    private val registries = mutableScatterMapOf<Any, SaveableStateRegistry>()
+    var parentSaveableStateRegistry: SaveableStateRegistry? = null
+    private val canBeSaved: (Any) -> Boolean = {
+        parentSaveableStateRegistry?.canBeSaved(it) ?: true
+    }
+
+    @Composable
+    override fun SaveableStateProvider(key: Any, content: @Composable () -> Unit) {
+        ReusableContent(key) {
+            val registry = remember {
+                require(canBeSaved(key)) {
+                    "Type of the key $key is not supported. On Android you can only use types " +
+                            "which can be stored inside the Bundle."
+                }
+                // With multiple panes co-existing, its possible for an existing destination
+                // to have a new registryHolder created in this remember block as it enters
+                // a new pane before onDispose is called in the DisposableEffect of the old pane,
+                // yet somehow before the DisposableEffect block that
+                // calls 'require(key !in registryHolders)' called.
+
+                // This makes sure that state is saved a little earlier so the incoming block
+                registries[key]?.saveTo(savedStates, key)
+                SaveableStateRegistry(savedStates[key], canBeSaved)
+            }
+            CompositionLocalProvider(
+                LocalSaveableStateRegistry provides registry,
+                content = content
+            )
+            DisposableEffect(Unit) {
+                require(key !in registries) { "Key $key was used multiple times " }
+                savedStates -= key
+                registries[key] = registry
+                onDispose {
+                    if (registries.remove(key) === registry) {
+                        registry.saveTo(savedStates, key)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun saveAll(): MutableMap<Any, Map<String, List<Any?>>>? {
+        val map = savedStates
+        registries.forEach { key, registry -> registry.saveTo(map, key) }
+        return map.ifEmpty { null }
+    }
+
+    override fun removeState(key: Any) {
+        if (registries.remove(key) == null) {
+            savedStates -= key
+        }
+    }
+
+    private fun SaveableStateRegistry.saveTo(
+        map: MutableMap<Any, Map<String, List<Any?>>>,
+        key: Any
+    ) {
+        val savedData = performSave()
+        if (savedData.isEmpty()) {
+            map -= key
+        } else {
+            map[key] = savedData
+        }
+    }
+
+    companion object {
+        val Saver: Saver<PanedSavableStateHolder, *> =
+            Saver(save = { it.saveAll() }, restore = { PanedSavableStateHolder(it) })
+    }
 }
