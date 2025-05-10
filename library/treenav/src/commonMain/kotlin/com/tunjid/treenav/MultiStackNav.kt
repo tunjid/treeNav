@@ -31,7 +31,7 @@ data class MultiStackNav(
 }
 
 /**
- * Switches out the [current] for [Node]
+ * Switches out the [requireCurrent] for [Node]
  */
 fun MultiStackNav.swap(node: Node): MultiStackNav = atCurrentIndex { swap(node) }
 
@@ -151,8 +151,8 @@ private inline fun MultiStackNav.atCurrentIndex(operation: StackNav.() -> StackN
 
 val MultiStackNav.current: Node? get() = stacks.getOrNull(currentIndex)?.children?.lastOrNull()
 
-inline fun <reified T : Node> MultiStackNav.current(): T? {
-    val node = current ?: return null
+inline fun <reified T : Node> MultiStackNav.requireCurrent(): T {
+    val node = current ?: throw IllegalArgumentException("The current node is null")
     check(node is T) {
         "Expected the current node to be of type ${T::class} but was ${node::class}."
     }

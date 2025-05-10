@@ -19,7 +19,7 @@ package com.tunjid.treenav.compose
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.backStack
-import com.tunjid.treenav.current
+import com.tunjid.treenav.requireCurrent
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
 import kotlin.test.BeforeTest
@@ -559,7 +559,7 @@ class SlotBasedAdaptiveNavigationStateTest {
                     .testAdaptTo(
                         navState = navStates[index],
                         panesToDestinations = mapOf(
-                            TestPane.One to navStates[index].current(),
+                            TestPane.One to navStates[index].requireCurrent(),
                         )
                     )
                     .apply {
@@ -576,7 +576,7 @@ class SlotBasedAdaptiveNavigationStateTest {
                     .testAdaptTo(
                         navState = poppedNavStates[index],
                         panesToDestinations = mapOf(
-                            TestPane.One to navStates[index].current(),
+                            TestPane.One to navStates[index].requireCurrent(),
                         )
                     )
                     .apply {

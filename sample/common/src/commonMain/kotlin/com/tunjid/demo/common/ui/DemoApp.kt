@@ -86,7 +86,7 @@ import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransfo
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
 import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.compose.transforms.paneModifierTransform
-import com.tunjid.treenav.current
+import com.tunjid.treenav.requireCurrent
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
 import kotlinx.coroutines.CoroutineScope
@@ -311,14 +311,8 @@ class AppState(
                 MultiPaneDisplayState(
                     panes = ThreePane.entries.toList(),
                     navigationState = navigationState,
-                    backStackTransform = { multiStackNav ->
-                        multiStackNav.multiPaneDisplayBackstack<SampleDestination>()
-                    },
-                    destinationTransform = {
-                        it.current as? SampleDestination ?: throw IllegalArgumentException(
-                            "MultiStackNav leaf node ${it.current} must be an AppDestination"
-                        )
-                    },
+                    backStackTransform = MultiStackNav::multiPaneDisplayBackstack,
+                    destinationTransform = MultiStackNav::requireCurrent,
                     entryProvider = { destination ->
                         when (destination) {
                             SampleDestination.NavTabs.ChatRooms -> chatRoomPaneEntry()
