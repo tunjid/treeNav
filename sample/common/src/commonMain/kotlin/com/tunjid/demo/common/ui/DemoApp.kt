@@ -75,12 +75,12 @@ import com.tunjid.demo.common.ui.me.mePaneEntry
 import com.tunjid.demo.common.ui.avatar.avatarPaneEntry
 import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.backStack
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.multiPaneDisplayBackstack
 import com.tunjid.treenav.compose.threepane.transforms.backPreviewTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
@@ -312,11 +312,7 @@ class AppState(
                     panes = ThreePane.entries.toList(),
                     navigationState = navigationState,
                     backStackTransform = { multiStackNav ->
-                        multiStackNav.backStack(
-                            includeCurrentDestinationChildren = true,
-                            placeChildrenBeforeParent = true,
-                        )
-                            .filterIsInstance<SampleDestination>()
+                        multiStackNav.multiPaneDisplayBackstack<SampleDestination>()
                     },
                     destinationTransform = {
                         it.current as? SampleDestination ?: throw IllegalArgumentException(

@@ -121,16 +121,23 @@ fun MultiStackNav.reversedBackStackSequence(
  * [Node] is included in the back stack.
  * @param placeChildrenBeforeParent when true, the result of [Node.children] are paced before
  * the parent [Node] in the back stack.
+ * @param distinctDestinations when true, only the first instance of a destination will be present
+ * in the backstack. This is the default, otherwise, all destinations will be returned.
  */
 fun MultiStackNav.backStack(
     includeCurrentDestinationChildren: Boolean,
     placeChildrenBeforeParent: Boolean = false,
+    distinctDestinations: Boolean = false,
 ): List<Node> = reversedBackStackSequence(
     includeCurrentDestinationChildren = includeCurrentDestinationChildren,
     placeChildrenBeforeParent = !placeChildrenBeforeParent
 )
     .toList()
     .asReversed()
+    .let {
+        if (distinctDestinations) it.distinct()
+        else it
+    }
 
 /**
  * Performs the given [operation] with the [StackNav] at [MultiStackNav.currentIndex]
@@ -144,7 +151,7 @@ private inline fun MultiStackNav.atCurrentIndex(operation: StackNav.() -> StackN
 
 val MultiStackNav.current: Node? get() = stacks.getOrNull(currentIndex)?.children?.lastOrNull()
 
-inline fun <reified T: Node> MultiStackNav.current(): T? {
+inline fun <reified T : Node> MultiStackNav.current(): T? {
     val node = current ?: return null
     check(node is T) {
         "Expected the current node to be of type ${T::class} but was ${node::class}."

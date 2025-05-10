@@ -39,8 +39,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.navigation3.DecoratedNavEntryProvider
 import com.tunjid.treenav.compose.navigation3.NavEntry
-import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.decorators.DefaultViewModelStoreNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.decorators.MovableContentNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.decorators.SaveableStateNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.decorators.SavedStateNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.decorators.TransitionAwareLifecycleNavEntryDecorator
@@ -79,6 +78,7 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
             )
         },
         entryDecorators = listOf(
+            MovableContentNavEntryDecorator,
             SaveableStateNavEntryDecorator,
             SavedStateNavEntryDecorator,
             transitionAwareLifecycleNavEntryDecorator,
