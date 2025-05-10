@@ -17,10 +17,12 @@
 package com.tunjid.treenav.compose.threepane.transforms
 
 import androidx.compose.animation.BoundsTransform
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
+import androidx.compose.animation.core.Transition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -29,12 +31,13 @@ import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.PaneScope
-import com.tunjid.treenav.compose.transforms.RenderTransform
-import com.tunjid.treenav.compose.transforms.Transform
+import com.tunjid.treenav.compose.PaneState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.transforms.RenderTransform
+import com.tunjid.treenav.compose.transforms.Transform
 
 /**
  * A [Transform] that applies semantics of movable shared elements to
@@ -91,10 +94,19 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
     private val hostState: MovableSharedElementHostState<ThreePane, Destination>,
     private val delegate: PaneMovableSharedElementScope<ThreePane, Destination>,
 ) : MovableSharedElementScope,
-    PaneScope<ThreePane, Destination> by delegate.paneScope {
+    PaneScope<ThreePane, Destination> {
 
     override val sharedTransitionScope: SharedTransitionScope
         get() = delegate.sharedTransitionScope
+
+    override val transition: Transition<EnterExitState>
+        get() = delegate.paneScope.transition
+
+    override val paneState: PaneState<ThreePane, Destination>
+        get() = delegate.paneScope.paneState
+
+    override val isActive: Boolean
+        get() = delegate.paneScope.isActive
 
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(

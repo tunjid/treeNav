@@ -75,18 +75,18 @@ import com.tunjid.demo.common.ui.me.mePaneEntry
 import com.tunjid.demo.common.ui.avatar.avatarPaneEntry
 import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.backStack
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.multiPaneDisplayBackstack
 import com.tunjid.treenav.compose.threepane.transforms.backPreviewTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
 import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.compose.transforms.paneModifierTransform
-import com.tunjid.treenav.current
+import com.tunjid.treenav.requireCurrent
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
 import kotlinx.coroutines.CoroutineScope
@@ -311,18 +311,8 @@ class AppState(
                 MultiPaneDisplayState(
                     panes = ThreePane.entries.toList(),
                     navigationState = navigationState,
-                    backStackTransform = { multiStackNav ->
-                        multiStackNav.backStack(
-                            includeCurrentDestinationChildren = true,
-                            placeChildrenBeforeParent = true,
-                        )
-                            .filterIsInstance<SampleDestination>()
-                    },
-                    destinationTransform = {
-                        it.current as? SampleDestination ?: throw IllegalArgumentException(
-                            "MultiStackNav leaf node ${it.current} must be an AppDestination"
-                        )
-                    },
+                    backStackTransform = MultiStackNav::multiPaneDisplayBackstack,
+                    destinationTransform = MultiStackNav::requireCurrent,
                     entryProvider = { destination ->
                         when (destination) {
                             SampleDestination.NavTabs.ChatRooms -> chatRoomPaneEntry()

@@ -19,7 +19,7 @@ package com.tunjid.treenav.compose
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.backStack
-import com.tunjid.treenav.current
+import com.tunjid.treenav.requireCurrent
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
 import kotlin.test.BeforeTest
@@ -27,22 +27,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-
-/*
- * Copyright 2021 Google LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 data class TestNode(
     val name: String,
@@ -575,7 +559,7 @@ class SlotBasedAdaptiveNavigationStateTest {
                     .testAdaptTo(
                         navState = navStates[index],
                         panesToDestinations = mapOf(
-                            TestPane.One to navStates[index].current(),
+                            TestPane.One to navStates[index].requireCurrent(),
                         )
                     )
                     .apply {
@@ -592,7 +576,7 @@ class SlotBasedAdaptiveNavigationStateTest {
                     .testAdaptTo(
                         navState = poppedNavStates[index],
                         panesToDestinations = mapOf(
-                            TestPane.One to navStates[index].current(),
+                            TestPane.One to navStates[index].requireCurrent(),
                         )
                     )
                     .apply {

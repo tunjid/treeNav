@@ -18,6 +18,7 @@ package com.tunjid.demo.common.ui.avatar
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
@@ -50,6 +51,7 @@ fun avatarPaneEntry() = threePaneEntry<SampleDestination>(
         PaneScaffold(
             modifier = Modifier
                 .fillMaxSize(),
+            containerColor = Color.Transparent,
             content = {
                 AvatarScreen(
                     movableSharedElementScope = this,

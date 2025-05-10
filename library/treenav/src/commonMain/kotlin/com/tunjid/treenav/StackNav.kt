@@ -34,7 +34,7 @@ fun StackNav.swap(node: Node): StackNav =
     else copy(children = children.dropLast(1) + node)
 
 /**
- * Pushes the [node] unto the top of the navigation stack if [current] is not equal to [node]
+ * Pushes the [node] unto the top of the navigation stack if [requireCurrent] is not equal to [node]
  */
 fun StackNav.push(node: Node): StackNav =
     if (children.lastOrNull() == node) this
@@ -97,16 +97,23 @@ fun StackNav.reversedBackStackSequence(
  * [Node] is included in the back stack.
  * @param placeChildrenBeforeParent when true, the result of [Node.children] are paced before
  * the parent [Node] in the back stack.
+ * @param distinctDestinations when true, only the first instance of a destination will be present
+ * in the backstack. This is the default, otherwise, all destinations will be returned.
  */
 fun StackNav.backStack(
     includeCurrentDestinationChildren: Boolean,
     placeChildrenBeforeParent: Boolean = false,
+    distinctDestinations: Boolean = false,
 ): List<Node> = reversedBackStackSequence(
     includeCurrentDestinationChildren = includeCurrentDestinationChildren,
     placeChildrenBeforeParent = !placeChildrenBeforeParent
 )
     .toList()
     .asReversed()
+    .let {
+        if (distinctDestinations) it.distinct()
+        else it
+    }
 
 /**
  * Indicates if there's a [Node] available to pop up to
@@ -115,8 +122,8 @@ val StackNav.canPop: Boolean get() = children.size > 1
 
 val StackNav.current: Node? get() = children.lastOrNull()
 
-inline fun <reified T: Node> StackNav.current(): T? {
-    val node = current ?: return null
+inline fun <reified T : Node> StackNav.requireCurrent(): T  {
+    val node = current ?: throw IllegalArgumentException("The current node is null")
     check(node is T) {
         "Expected the current node to be of type ${T::class.simpleName} but was ${node::class.simpleName}."
     }
