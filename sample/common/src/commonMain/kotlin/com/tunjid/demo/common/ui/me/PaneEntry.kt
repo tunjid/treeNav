@@ -22,7 +22,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tunjid.demo.common.ui.PaneBottomAppBar
+import com.tunjid.demo.common.ui.PaneNavigationBar
 import com.tunjid.demo.common.ui.PaneNavigationRail
 import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
@@ -54,7 +54,7 @@ fun mePaneEntry(
                 )
             },
             navigationBar = {
-                PaneBottomAppBar()
+                PaneNavigationBar()
             },
             navigationRail = {
                 PaneNavigationRail()

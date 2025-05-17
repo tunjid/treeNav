@@ -14,12 +14,15 @@
  *    limitations under the License.
  */
 
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -38,59 +41,59 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
-import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import com.tunjid.treenav.compose.rememberPaneMovableElementSharedTransitionScope
+import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.ThreePaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.current
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun PaneScaffoldState.PaneBottomAppBar(
+fun PaneScaffoldState.PaneNavigationBar(
     modifier: Modifier = Modifier,
     enterTransition: EnterTransition = slideInVertically(initialOffsetY = { it }),
     exitTransition: ExitTransition = slideOutVertically(targetOffsetY = { it }),
-) {
-    val paneScaffoldNavigationState = rememberUpdatedPaneScaffoldNavigationState(
-        enterTransition = enterTransition,
-        exitTransition = exitTransition,
-        canShow = canShowBottomNavigation
-    )
-    paneScaffoldNavigationState.updatedMovableSharedElementOf(
-        key = BottomNavSharedElementKey,
-        modifier = modifier,
-        zIndexInOverlay = NavigationSharedElementZIndex,
-        state = paneScaffoldNavigationState,
-        sharedElement = { state, innerModifier ->
-            state.PaneBottomAppBar(innerModifier)
-        }
-    )
-}
+) = withUpdatedPaneScaffoldNavigationState(
+    enterTransition = enterTransition,
+    exitTransition = exitTransition,
+    canShow = canShowBottomNavigation,
+    content = {
+        val finalModifier = modifier
+            .navigationSharedElement(
+                sharedContentState = rememberSharedContentState(BottomNavSharedElementKey),
+            )
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+        if (canUseMovableContent)  LocalAppState.current.movableNavigationBar(
+            this,
+            finalModifier
+        )
+        else PaneNavigationBar(finalModifier)
+    }
+)
+
 @Composable
 fun PaneScaffoldState.PaneNavigationRail(
     modifier: Modifier = Modifier,
     enterTransition: EnterTransition = slideInHorizontally(initialOffsetX = { -it }),
     exitTransition: ExitTransition = slideOutHorizontally(targetOffsetX = { -it }),
-) {
-    val paneScaffoldNavigationState = rememberUpdatedPaneScaffoldNavigationState(
-        enterTransition = enterTransition,
-        exitTransition = exitTransition,
-        canShow = canShowNavRail
-    )
-    paneScaffoldNavigationState.updatedMovableSharedElementOf(
-        key = NavRailSharedElementKey,
-        modifier = modifier,
-        zIndexInOverlay = NavigationSharedElementZIndex,
-        state = paneScaffoldNavigationState,
-        sharedElement = { state, innerModifier ->
-            state.PaneNavigationRail(innerModifier)
-        }
-    )
-}
+) = withUpdatedPaneScaffoldNavigationState(
+    enterTransition = enterTransition,
+    exitTransition = exitTransition,
+    canShow = canShowNavRail,
+    content = {
+        val finalModifier = modifier
+            .navigationSharedElement(
+                sharedContentState = rememberSharedContentState(NavRailSharedElementKey),
+            )
+
+        if (canUseMovableContent) LocalAppState.current.movableNavigationRail(
+            this,
+            finalModifier
+        )
+        else PaneNavigationRail(finalModifier)
+    }
+)
 
 @Composable
-private fun NavigationBarState.PaneBottomAppBar(
+internal fun NavigationBarState.PaneNavigationBar(
     modifier: Modifier = Modifier,
 ) {
     val appState = LocalAppState.current
@@ -119,7 +122,7 @@ private fun NavigationBarState.PaneBottomAppBar(
 }
 
 @Composable
-private fun NavigationBarState.PaneNavigationRail(
+internal fun NavigationBarState.PaneNavigationRail(
     modifier: Modifier = Modifier,
 ) {
     val appState = LocalAppState.current
@@ -148,12 +151,12 @@ private fun NavigationBarState.PaneNavigationRail(
 }
 
 @Composable
-private fun PaneScaffoldState.rememberUpdatedPaneScaffoldNavigationState(
+private fun PaneScaffoldState.withUpdatedPaneScaffoldNavigationState(
     enterTransition: EnterTransition,
     exitTransition: ExitTransition,
     canShow: Boolean,
-): NavigationBarState {
-
+    content: @Composable NavigationBarState.() -> Unit
+) {
     val appState = LocalAppState.current
 
     val paneMovableElementSharedTransitionScope =
@@ -164,7 +167,7 @@ private fun PaneScaffoldState.rememberUpdatedPaneScaffoldNavigationState(
             ),
         )
 
-    return remember {
+    val state = remember {
         NavigationBarState(
             delegate = paneMovableElementSharedTransitionScope,
             enterTransition = enterTransition,
@@ -176,11 +179,13 @@ private fun PaneScaffoldState.rememberUpdatedPaneScaffoldNavigationState(
         it.exitTransition = exitTransition
         it.canShow = canShow
     }
+
+    state.content()
 }
 
 @Stable
-private class NavigationBarState(
-    delegate: ThreePaneMovableElementSharedTransitionScope<SampleDestination>,
+internal class NavigationBarState(
+    private val delegate: ThreePaneMovableElementSharedTransitionScope<SampleDestination>,
     enterTransition: EnterTransition,
     exitTransition: ExitTransition,
     canShow: Boolean,
@@ -188,6 +193,26 @@ private class NavigationBarState(
     var enterTransition by mutableStateOf(enterTransition)
     var exitTransition by mutableStateOf(exitTransition)
     var canShow by mutableStateOf(canShow)
+
+    val canUseMovableContent
+        get() = when {
+            isActive && isPreviewingBack && paneState.pane == ThreePane.TransientPrimary -> true
+            isActive && !isPreviewingBack && paneState.pane == ThreePane.Primary -> true
+            else -> false
+        }
+
+    private val isPreviewingBack: Boolean
+        get() = paneState.adaptations.contains(ThreePane.PrimaryToTransient)
+
+
+    @OptIn(ExperimentalSharedTransitionApi::class)
+    fun Modifier.navigationSharedElement(
+        sharedContentState: SharedTransitionScope.SharedContentState,
+    ) = sharedElement(
+        sharedContentState = sharedContentState,
+        animatedVisibilityScope = delegate,
+        zIndexInOverlay = NavigationSharedElementZIndex,
+    )
 }
 
 private data object BottomNavSharedElementKey

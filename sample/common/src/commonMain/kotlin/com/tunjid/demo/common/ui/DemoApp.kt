@@ -48,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentWithReceiverOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -240,7 +241,7 @@ class AppState(
     private val navigationRepository: NavigationRepository = NavigationRepository,
 ) {
 
-    internal lateinit var movableSharedElementHostState : MovableSharedElementHostState<ThreePane, SampleDestination>
+    internal lateinit var movableSharedElementHostState: MovableSharedElementHostState<ThreePane, SampleDestination>
 
     private val navigationState = mutableStateOf(
         navigationRepository.navigationStateFlow.value
@@ -275,6 +276,16 @@ class AppState(
     internal var displayScope by mutableStateOf<MultiPaneDisplayScope<ThreePane, SampleDestination>?>(
         null
     )
+
+    internal val movableNavigationBar =
+        movableContentWithReceiverOf<NavigationBarState, Modifier> { modifier ->
+            PaneNavigationBar(modifier)
+        }
+
+    internal val movableNavigationRail =
+        movableContentWithReceiverOf<NavigationBarState, Modifier> { modifier ->
+            PaneNavigationRail(modifier)
+        }
 
     val filteredPaneOrder: List<ThreePane> by derivedStateOf {
         paneRenderOrder.filter { displayScope?.destinationIn(it) != null }
