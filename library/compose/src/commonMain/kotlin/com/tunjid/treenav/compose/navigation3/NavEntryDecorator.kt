@@ -17,30 +17,50 @@
 package com.tunjid.treenav.compose.navigation3
 
 import androidx.compose.runtime.Composable
+import kotlin.jvm.JvmSuppressWildcards
+
+/** Marker class to hold the onPop and decorator functions that will be invoked at runtime. */
+internal class NavEntryDecorator<T : Any>
+internal constructor(
+    internal val onPop: (key: Any) -> Unit,
+    internal val navEntryDecorator: @Composable (entry: NavEntry<T>) -> Unit
+)
 
 /**
- * Interface that offers the ability to provide information to some Composable content that is
- * integrated with a [NavDisplay](reference/androidx/navigation/NavDisplay).
+ * Function to provide information to all the [NavEntry] that are integrated with a
+ * [DecoratedNavEntryProvider].
  *
- * Information can be provided to the entire back stack via [NavEntryDecorator.DecorateBackStack] or
- * to a single entry via [NavEntryDecorator.DecorateEntry].
+ * @param onPop a callback that provides the key of a [NavEntry] that has been popped from the
+ *   backStack and is leaving composition. This optional callback should to be used to clean up
+ *   states that were used to decorate the NavEntry3
+ * @param decorator the composable function to provide information to a [NavEntry] [decorator]. Note
+ *   that this function only gets invoked for NavEntries that are actually getting rendered (i.e. by
+ *   invoking the [NavEntry.content].)
  */
-internal interface NavEntryDecorator {
+internal fun <T : Any> navEntryDecorator(
+    onPop: (key: Any) -> Unit = {},
+    decorator: @Composable (entry: NavEntry<T>) -> Unit
+): NavEntryDecorator<T> = NavEntryDecorator(onPop, decorator)
 
-    /**
-     * Allows a [NavEntryDecorator] to provide to the entire backstack.
-     *
-     * This function is called by the [DecoratedNavEntryProvider] and should not be called directly.
-     */
-    @Composable
-    public fun DecorateBackStack(backStack: List<Any>, content: @Composable () -> Unit): Unit =
-        content.invoke()
-
-    /**
-     * Allows a [NavEntryDecorator] to provide information to a single entry.
-     *
-     * This function is called by the [NavDisplay](reference/androidx/navigation/NavDisplay) and
-     * should not be called directly.
-     */
-    @Composable public fun <T : Any> DecorateEntry(entry: NavEntry<T>)
+/**
+ * Wraps a [NavEntry] with the list of [NavEntryDecorator] in the order that the decorators were
+ * added to the list and invokes the content of the wrapped entry.
+ */
+@Composable
+internal fun <T : Any> DecorateNavEntry(
+    entry: NavEntry<T>,
+    entryDecorators: List<@JvmSuppressWildcards NavEntryDecorator<*>>
+) {
+    @Suppress("UNCHECKED_CAST")
+    (entryDecorators as List<@JvmSuppressWildcards NavEntryDecorator<T>>)
+        .distinct()
+        .foldRight(initial = entry) { decorator, wrappedEntry ->
+            object : NavEntryWrapper<T>(wrappedEntry) {
+                override val content: @Composable ((T) -> Unit) = {
+                    decorator.navEntryDecorator(wrappedEntry)
+                }
+            }
+        }
+        .content
+        .invoke(entry.key)
 }

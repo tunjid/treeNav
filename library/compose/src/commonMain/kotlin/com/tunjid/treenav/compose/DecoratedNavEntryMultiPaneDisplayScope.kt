@@ -39,11 +39,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.navigation3.DecoratedNavEntryProvider
 import com.tunjid.treenav.compose.navigation3.NavEntry
-import com.tunjid.treenav.compose.navigation3.decorators.MovableContentNavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.decorators.SaveableStateNavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.decorators.SavedStateNavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.decorators.TransitionAwareLifecycleNavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.decorators.ViewModelStoreNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.decorators.rememberMovableContentNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.decorators.rememberSavedStateNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.decorators.rememberViewModelStoreNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.decorators.transitionAwareLifecycleNavEntryDecorator
 
 @Composable
 internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntryMultiPaneDisplayScope(
@@ -61,10 +60,6 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
         state.destinationTransform(navigationState)
     )
 
-    val transitionAwareLifecycleNavEntryDecorator = remember {
-        TransitionAwareLifecycleNavEntryDecorator()
-    }
-
     DecoratedNavEntryProvider(
         backStack = backStack,
         entryProvider = { node ->
@@ -78,11 +73,16 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
             )
         },
         entryDecorators = listOf(
-            MovableContentNavEntryDecorator,
-            SaveableStateNavEntryDecorator,
-            SavedStateNavEntryDecorator,
-            transitionAwareLifecycleNavEntryDecorator,
-            ViewModelStoreNavEntryDecorator,
+            rememberMovableContentNavEntryDecorator(),
+            rememberSavedStateNavEntryDecorator(),
+            transitionAwareLifecycleNavEntryDecorator(
+                backStack = backStack,
+                isSettled = {
+                    val scope = LocalPaneScope.current
+                    scope.transition.currentState == scope.transition.targetState
+                }
+            ),
+            rememberViewModelStoreNavEntryDecorator(),
         ),
         content = { entries ->
             val updatedEntries by rememberUpdatedState(entries)

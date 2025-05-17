@@ -18,11 +18,7 @@ package com.tunjid.treenav.compose.navigation3.decorators
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.SAVED_STATE_REGISTRY_OWNER_KEY
@@ -36,127 +32,67 @@ import androidx.lifecycle.enableSavedStateHandles
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
-import com.tunjid.treenav.compose.navigation3.NavEntry
 import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.navEntryDecorator
 
-@Stable
-internal expect val ViewModelStoreNavEntryDecorator: NavEntryDecorator
+@Composable internal expect fun shouldRemoveViewModelStoreCallback(): () -> Boolean
+
+internal expect fun SavedStateViewModelFactory(
+    savedStateRegistryOwner: SavedStateRegistryOwner
+): SavedStateViewModelFactory
+
+/**
+ * Returns a [ViewModelStoreNavEntryDecorator] that is remembered across recompositions.
+ *
+ * @param [viewModelStoreOwner] The [ViewModelStoreOwner] that provides the [ViewModelStore] to
+ *   NavEntries
+ * @param [shouldRemoveStoreOwner] A lambda that returns a Boolean for whether the store owner for a
+ *   [NavEntry] should be cleared when the [NavEntry] is popped from the backStack. If true, the
+ *   entry's ViewModelStoreOwner will be removed.
+ */
+@Composable
+internal fun rememberViewModelStoreNavEntryDecorator(
+    viewModelStoreOwner: ViewModelStoreOwner =
+        checkNotNull(LocalViewModelStoreOwner.current) {
+            "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
+        },
+    shouldRemoveStoreOwner: () -> Boolean = shouldRemoveViewModelStoreCallback()
+): NavEntryDecorator<Any> = remember {
+    ViewModelStoreNavEntryDecorator(viewModelStoreOwner.viewModelStore, shouldRemoveStoreOwner)
+}
 
 /**
  * Provides the content of a [NavEntry] with a [ViewModelStoreOwner] and provides that
  * [ViewModelStoreOwner] as a [LocalViewModelStoreOwner] so that it is available within the content.
  *
- * This requires that usage of the [SavedStateNavEntryDecorator] to ensure that the [NavEntry]
- * scoped [ViewModel]s can properly provide access to [SavedStateHandle]s
+ * This requires the usage of [androidx.navigation3.runtime.SavedStateNavEntryDecorator] to ensure
+ * that the [NavEntry] scoped [ViewModel]s can properly provide access to
+ * [androidx.lifecycle.SavedStateHandle]s
+ *
+ * @param [viewModelStore] The [ViewModelStore] that provides to NavEntries
+ * @param [shouldRemoveStoreOwner] A lambda that returns a Boolean for whether the store owner for a
+ *   [NavEntry] should be cleared when the [NavEntry] is popped from the backStack. If true, the
+ *   entry's ViewModelStoreOwner will be removed.
  */
-internal object DefaultViewModelStoreNavEntryDecorator : NavEntryDecorator {
-
-    @Composable
-    override fun DecorateBackStack(backStack: List<Any>, content: @Composable () -> Unit) {
-        val entryViewModelStoreProvider = viewModel { EntryViewModel() }
-        entryViewModelStoreProvider.ownerInBackStack.clear()
-        entryViewModelStoreProvider.ownerInBackStack.addAll(backStack)
-        val localInfo = remember { ViewModelStoreNavLocalInfo() }
-        DisposableEffect(key1 = backStack) { onDispose { localInfo.refCount.clear() } }
-
-//        val activity = LocalActivity.current
-        backStack.forEachIndexed { index, key ->
-            // We update here as part of composition to ensure the value is available to
-            // DecorateEntry
-            localInfo.refCount.getOrPut(key) { LinkedHashSet<Int>() }.add(getIdForKey(key, index))
-            DisposableEffect(key1 = key) {
-                localInfo.refCount
-                    .getOrPut(key) { LinkedHashSet<Int>() }
-                    .add(getIdForKey(key, index))
-                onDispose {
-                    // If the backStack count is less than the refCount for the key, remove the
-                    // state since that means we removed a key from the backstack, and set the
-                    // refCount to the backstack count.
-                    val backstackCount = backStack.count { it == key }
-                    val lastKeyCount = localInfo.refCount[key]?.size ?: 0
-                    if (backstackCount < lastKeyCount) {
-                        // The set of the ids associated with this key
-                        @Suppress("PrimitiveInCollection") // The order of the element matters
-                        val idsSet = localInfo.refCount[key]!!
-                        val id = idsSet.last()
-                        idsSet.remove(id)
-                        if (!localInfo.idsInComposition.contains(id)) {
-//                            if (activity?.isChangingConfigurations != true) {
-                            entryViewModelStoreProvider
-                                .removeViewModelStoreOwnerForKey(id)
-                                ?.clear()
-//                            }
-                        }
-                    }
-
-                    // If the refCount is 0, remove the key from the refCount.
-                    if (localInfo.refCount[key]?.isEmpty() == true) {
-                        localInfo.refCount.remove(key)
-                    }
-                }
-            }
-        }
-
-        CompositionLocalProvider(LocalViewModelStoreNavLocalInfo provides localInfo) {
-            content.invoke()
+internal fun ViewModelStoreNavEntryDecorator(
+    viewModelStore: ViewModelStore,
+    shouldRemoveStoreOwner: () -> Boolean,
+): NavEntryDecorator<Any> {
+    val storeOwnerProvider: EntryViewModel = viewModelStore.getEntryViewModel()
+    val onPop: (Any) -> Unit = { key ->
+        if (shouldRemoveStoreOwner()) {
+            storeOwnerProvider.clearViewModelStoreOwnerForKey(key)
         }
     }
-
-    @Composable
-    override fun <T : Any> DecorateEntry(entry: NavEntry<T>) {
-        val key = entry.key
-        val entryViewModelStoreProvider = viewModel { EntryViewModel() }
-
-//        val activity = LocalActivity.current
-        val localInfo = LocalViewModelStoreNavLocalInfo.current
-        // Tracks whether the key is changed
-        var keyChanged = false
-        var id: Int =
-            rememberSaveable(key) {
-                keyChanged = true
-                localInfo.refCount[key]!!.last()
-            }
-        id =
-            rememberSaveable(localInfo.refCount[key]?.size) {
-                // if the key changed, use the current id
-                // If the key was not changed, and the current id is not in composition or on the
-                // back stack then update the id with the last item from the backstack with the
-                // associated key. This ensures that we can handle duplicates, both consecutive and
-                // non-consecutive
-                if (
-                    !keyChanged &&
-                    (!localInfo.idsInComposition.contains(id) ||
-                            localInfo.refCount[key]?.contains(id) == true)
-                ) {
-                    localInfo.refCount[key]!!.last()
-                } else {
-                    id
-                }
-            }
-        keyChanged = false
-
-        val viewModelStore = entryViewModelStoreProvider.viewModelStoreForKey(id)
-
-        DisposableEffect(key1 = key) {
-            localInfo.idsInComposition.add(id)
-            onDispose {
-                if (localInfo.idsInComposition.remove(id) && !localInfo.refCount.contains(key)) {
-//                    if (activity?.isChangingConfigurations != true) {
-                    entryViewModelStoreProvider.removeViewModelStoreOwnerForKey(id)?.clear()
-//                    }
-                    // If the refCount is 0, remove the key from the refCount.
-                    if (localInfo.refCount[key]?.isEmpty() == true) {
-                        localInfo.refCount.remove(key)
-                    }
-                }
-            }
-        }
+    return navEntryDecorator(onPop) { entry ->
+        val viewModelStore = storeOwnerProvider.viewModelStoreForKey(entry.key)
 
         val savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
-        val childViewModelOwner = remember {
+        val childViewModelStoreOwner = remember {
             object :
                 ViewModelStoreOwner,
                 SavedStateRegistryOwner by savedStateRegistryOwner,
@@ -165,7 +101,7 @@ internal object DefaultViewModelStoreNavEntryDecorator : NavEntryDecorator {
                     get() = viewModelStore
 
                 override val defaultViewModelProviderFactory: ViewModelProvider.Factory
-                    get() = SavedStateViewModelFactory()
+                    get() = SavedStateViewModelFactory(savedStateRegistryOwner)
 
                 override val defaultViewModelCreationExtras: CreationExtras
                     get() =
@@ -185,35 +121,31 @@ internal object DefaultViewModelStoreNavEntryDecorator : NavEntryDecorator {
                 }
             }
         }
-        CompositionLocalProvider(LocalViewModelStoreOwner provides childViewModelOwner) {
-            entry.content.invoke(key)
+        CompositionLocalProvider(LocalViewModelStoreOwner provides childViewModelStoreOwner) {
+            entry.content.invoke(entry.key)
         }
     }
 }
 
-internal class EntryViewModel : ViewModel() {
+private class EntryViewModel : ViewModel() {
     private val owners = mutableMapOf<Any, ViewModelStore>()
-    val ownerInBackStack = mutableListOf<Any>()
 
     fun viewModelStoreForKey(key: Any): ViewModelStore = owners.getOrPut(key) { ViewModelStore() }
 
-    fun removeViewModelStoreOwnerForKey(key: Any): ViewModelStore? = owners.remove(key)
+    fun clearViewModelStoreOwnerForKey(key: Any) {
+        owners.remove(key)?.clear()
+    }
 
     override fun onCleared() {
         owners.forEach { (_, store) -> store.clear() }
     }
 }
 
-internal val LocalViewModelStoreNavLocalInfo =
-    staticCompositionLocalOf<ViewModelStoreNavLocalInfo> {
-        error(
-            "CompositionLocal LocalViewModelStoreNavLocalInfo not present. You must call " +
-                    "DecorateBackStack before calling DecorateEntry."
+private fun ViewModelStore.getEntryViewModel(): EntryViewModel {
+    val provider =
+        ViewModelProvider.create(
+            store = this,
+            factory = viewModelFactory { initializer { EntryViewModel() } },
         )
-    }
-
-internal class ViewModelStoreNavLocalInfo {
-    internal val refCount: MutableMap<Any, LinkedHashSet<Int>> = mutableMapOf()
-    @Suppress("PrimitiveInCollection") // The order of the element matters
-    internal val idsInComposition: LinkedHashSet<Int> = LinkedHashSet<Int>()
+    return provider[EntryViewModel::class]
 }
