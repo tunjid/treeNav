@@ -22,12 +22,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.tunjid.demo.common.ui.PaneBottomAppBar
+import com.tunjid.demo.common.ui.PaneNavigationBar
 import com.tunjid.demo.common.ui.PaneNavigationRail
 import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
 import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
+import com.tunjid.demo.common.ui.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
@@ -50,7 +51,7 @@ fun profilePaneEntry() = threePaneEntry<SampleDestination>(
                 roomName = destination.roomName,
             )
         }
-        PaneScaffold(
+        rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
                 .predictiveBackBackgroundModifier(this)
                 .fillMaxSize(),
@@ -63,7 +64,7 @@ fun profilePaneEntry() = threePaneEntry<SampleDestination>(
                 )
             },
             navigationBar = {
-                PaneBottomAppBar()
+                PaneNavigationBar()
             },
             navigationRail = {
                 PaneNavigationRail()

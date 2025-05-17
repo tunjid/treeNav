@@ -41,7 +41,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -49,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentWithReceiverOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -89,6 +89,7 @@ import com.tunjid.treenav.compose.transforms.paneModifierTransform
 import com.tunjid.treenav.requireCurrent
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
+import com.tunjid.treenav.switch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -102,15 +103,13 @@ fun App(
         LocalAppState provides appState,
     ) {
         SharedTransitionLayout(Modifier.fillMaxSize()) {
-            val backPreviewSurfaceColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                animateDpAsState(if (appState.isPreviewingBack) 16.dp else 0.dp).value
-            )
             val density = LocalDensity.current
             val movableSharedElementHostState = remember {
                 MovableSharedElementHostState<ThreePane, SampleDestination>(
                     sharedTransitionScope = this
                 )
             }
+            appState.movableSharedElementHostState = movableSharedElementHostState
             MultiPaneDisplay(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -242,6 +241,8 @@ class AppState(
     private val navigationRepository: NavigationRepository = NavigationRepository,
 ) {
 
+    internal lateinit var movableSharedElementHostState: MovableSharedElementHostState<ThreePane, SampleDestination>
+
     private val navigationState = mutableStateOf(
         navigationRepository.navigationStateFlow.value
     )
@@ -276,6 +277,16 @@ class AppState(
         null
     )
 
+    internal val movableNavigationBar =
+        movableContentWithReceiverOf<NavigationBarState, Modifier> { modifier ->
+            PaneNavigationBar(modifier)
+        }
+
+    internal val movableNavigationRail =
+        movableContentWithReceiverOf<NavigationBarState, Modifier> { modifier ->
+            PaneNavigationRail(modifier)
+        }
+
     val filteredPaneOrder: List<ThreePane> by derivedStateOf {
         paneRenderOrder.filter { displayScope?.destinationIn(it) != null }
     }
@@ -283,7 +294,7 @@ class AppState(
     fun setTab(destination: SampleDestination.NavTabs) {
         navigationRepository.navigate {
             if (it.currentIndex == destination.ordinal) it.popToRoot()
-            else it.copy(currentIndex = destination.ordinal)
+            else it.switch(toIndex = destination.ordinal)
         }
     }
 

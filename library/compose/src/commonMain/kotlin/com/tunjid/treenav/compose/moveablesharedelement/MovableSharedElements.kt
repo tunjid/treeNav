@@ -13,8 +13,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Defaults
 import com.tunjid.treenav.compose.MultiPaneDisplay
@@ -179,6 +181,16 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
     }
 }
 
+@Composable
+fun <Pane, Destination : Node> PaneScope<Pane, Destination>.rememberPaneMovableSharedElementScope(
+    movableSharedElementHostState: MovableSharedElementHostState<Pane, Destination>
+) = remember {
+    PaneMovableSharedElementScope(
+        paneScope = this,
+        movableSharedElementHostState = movableSharedElementHostState
+    )
+}
+
 /**
  * An implementation of [MovableSharedElementScope] that ensures shared elements are only rendered
  * in an [PaneScope] when it is active.
@@ -188,9 +200,9 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-class PaneMovableSharedElementScope<T, R : Node>(
-    paneScope: PaneScope<T, R>,
-    private val movableSharedElementHostState: MovableSharedElementHostState<T, R>,
+class PaneMovableSharedElementScope<Pane, Destination : Node> internal constructor(
+    paneScope: PaneScope<Pane, Destination>,
+    private val movableSharedElementHostState: MovableSharedElementHostState<Pane, Destination>,
 ) : MovableSharedElementScope {
 
     override val sharedTransitionScope: SharedTransitionScope
@@ -229,7 +241,7 @@ class PaneMovableSharedElementScope<T, R : Node>(
                             key = key,
                             sharedContentState = sharedContentState,
                             sharedElement = sharedElement
-                        )(state, Modifier.matchParentSize())
+                        )(state, Modifier.fillMaxConstraints())
 
                     // This pane state is be transitioning out. Check if it should be displayed without
                     // shared element semantics.
@@ -239,13 +251,13 @@ class PaneMovableSharedElementScope<T, R : Node>(
                         movableSharedElementHostState.isCurrentlyShared(key)
                                 && movableSharedElementHostState.isMatchFound(key) -> Defaults.EmptyElement(
                             state,
-                            Modifier.matchParentSize()
+                            Modifier.fillMaxConstraints()
                         )
                         // The element is not being shared in its new destination, allow it run its exit
                         // transition
                         else -> (alternateOutgoingSharedElement ?: sharedElement)(
                             state,
-                            Modifier.matchParentSize()
+                            Modifier.fillMaxConstraints()
                         )
                     }
                 }
@@ -253,3 +265,19 @@ class PaneMovableSharedElementScope<T, R : Node>(
         }
     }
 }
+
+private fun Modifier.fillMaxConstraints() =
+    layout { measurable, constraints ->
+        val placeable = measurable.measure(
+            constraints.copy(
+                minWidth = constraints.maxWidth,
+                maxHeight = constraints.maxHeight
+            )
+        )
+        layout(
+            width = placeable.width,
+            height = placeable.height
+        ) {
+            placeable.place(0, 0)
+        }
+    }
