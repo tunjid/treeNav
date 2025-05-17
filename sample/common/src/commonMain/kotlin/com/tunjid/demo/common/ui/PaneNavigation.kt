@@ -166,7 +166,7 @@ private fun PaneScaffoldState.rememberUpdatedPaneScaffoldNavigationState(
 
     return remember {
         NavigationBarState(
-            movableElementSharedTransitionScope = paneMovableElementSharedTransitionScope,
+            delegate = paneMovableElementSharedTransitionScope,
             enterTransition = enterTransition,
             exitTransition = exitTransition,
             canShow = canShow,
@@ -180,11 +180,11 @@ private fun PaneScaffoldState.rememberUpdatedPaneScaffoldNavigationState(
 
 @Stable
 private class NavigationBarState(
-    movableElementSharedTransitionScope: ThreePaneMovableElementSharedTransitionScope<SampleDestination>,
+    delegate: ThreePaneMovableElementSharedTransitionScope<SampleDestination>,
     enterTransition: EnterTransition,
     exitTransition: ExitTransition,
     canShow: Boolean,
-) : ThreePaneMovableElementSharedTransitionScope<SampleDestination> by movableElementSharedTransitionScope {
+) : ThreePaneMovableElementSharedTransitionScope<SampleDestination> by delegate {
     var enterTransition by mutableStateOf(enterTransition)
     var exitTransition by mutableStateOf(exitTransition)
     var canShow by mutableStateOf(canShow)
