@@ -36,6 +36,7 @@ import com.tunjid.treenav.compose.PaneState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
+import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.transforms.RenderTransform
 import com.tunjid.treenav.compose.transforms.Transform
@@ -69,12 +70,9 @@ fun <NavigationState : Node, Destination : Node>
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
 ): Transform<ThreePane, NavigationState, Destination> =
     RenderTransform { destination, previousTransform ->
-        val delegate = remember {
-            PaneMovableSharedElementScope(
-                paneScope = this,
-                movableSharedElementHostState = movableSharedElementHostState,
-            )
-        }
+        val delegate = rememberPaneMovableSharedElementScope(
+            movableSharedElementHostState = movableSharedElementHostState
+        )
         delegate.paneScope = this
 
         val movableSharedElementScope = remember {

@@ -13,6 +13,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
@@ -179,6 +180,16 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
     }
 }
 
+@Composable
+fun <Pane, Destination : Node> PaneScope<Pane, Destination>.rememberPaneMovableSharedElementScope(
+    movableSharedElementHostState: MovableSharedElementHostState<Pane, Destination>
+) = remember {
+    PaneMovableSharedElementScope(
+        paneScope = this,
+        movableSharedElementHostState = movableSharedElementHostState
+    )
+}
+
 /**
  * An implementation of [MovableSharedElementScope] that ensures shared elements are only rendered
  * in an [PaneScope] when it is active.
@@ -188,9 +199,9 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-class PaneMovableSharedElementScope<T, R : Node>(
-    paneScope: PaneScope<T, R>,
-    private val movableSharedElementHostState: MovableSharedElementHostState<T, R>,
+class PaneMovableSharedElementScope<Pane, Destination : Node> internal constructor(
+    paneScope: PaneScope<Pane, Destination>,
+    private val movableSharedElementHostState: MovableSharedElementHostState<Pane, Destination>,
 ) : MovableSharedElementScope {
 
     override val sharedTransitionScope: SharedTransitionScope
