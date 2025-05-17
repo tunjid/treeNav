@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Defaults
 import com.tunjid.treenav.compose.MultiPaneDisplay
@@ -240,7 +241,7 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
                             key = key,
                             sharedContentState = sharedContentState,
                             sharedElement = sharedElement
-                        )(state, Modifier.matchParentSize())
+                        )(state, Modifier.fillMaxConstraints())
 
                     // This pane state is be transitioning out. Check if it should be displayed without
                     // shared element semantics.
@@ -250,13 +251,13 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
                         movableSharedElementHostState.isCurrentlyShared(key)
                                 && movableSharedElementHostState.isMatchFound(key) -> Defaults.EmptyElement(
                             state,
-                            Modifier.matchParentSize()
+                            Modifier.fillMaxConstraints()
                         )
                         // The element is not being shared in its new destination, allow it run its exit
                         // transition
                         else -> (alternateOutgoingSharedElement ?: sharedElement)(
                             state,
-                            Modifier.matchParentSize()
+                            Modifier.fillMaxConstraints()
                         )
                     }
                 }
@@ -264,3 +265,19 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
         }
     }
 }
+
+private fun Modifier.fillMaxConstraints() =
+    layout { measurable, constraints ->
+        val placeable = measurable.measure(
+            constraints.copy(
+                minWidth = constraints.maxWidth,
+                maxHeight = constraints.maxHeight
+            )
+        )
+        layout(
+            width = placeable.width,
+            height = placeable.height
+        ) {
+            placeable.place(0, 0)
+        }
+    }
