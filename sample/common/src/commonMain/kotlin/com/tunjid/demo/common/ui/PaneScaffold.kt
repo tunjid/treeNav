@@ -51,9 +51,9 @@ import androidx.compose.ui.zIndex
 import com.tunjid.composables.ui.skipIf
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.treenav.compose.PaneScope
-import com.tunjid.treenav.compose.threepane.PaneMovableElementSharedTransitionScope
+import com.tunjid.treenav.compose.threepane.ThreePaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.rememberPaneMovableElementSharedTransitionScope
+import com.tunjid.treenav.compose.threepane.rememberThreePaneMovableElementSharedTransitionScope
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
 import kotlin.math.abs
@@ -61,8 +61,8 @@ import kotlin.math.abs
 @Stable
 class PaneScaffoldState internal constructor(
     private val appState: AppState,
-    paneMovableElementSharedTransitionScope: PaneMovableElementSharedTransitionScope<SampleDestination>,
-) : PaneMovableElementSharedTransitionScope<SampleDestination> by paneMovableElementSharedTransitionScope {
+    threePaneMovableElementSharedTransitionScope: ThreePaneMovableElementSharedTransitionScope<SampleDestination>,
+) : ThreePaneMovableElementSharedTransitionScope<SampleDestination> by threePaneMovableElementSharedTransitionScope {
 
     internal val canShowBottomNavigation get() = !appState.isMediumScreenWidthOrWider
 
@@ -91,11 +91,11 @@ class PaneScaffoldState internal constructor(
 @Composable
 fun PaneScope<ThreePane, SampleDestination>.rememberPaneScaffoldState(): PaneScaffoldState {
     val appState = LocalAppState.current
-    val paneMovableElementSharedTransitionScope = rememberPaneMovableElementSharedTransitionScope()
+    val paneMovableElementSharedTransitionScope = rememberThreePaneMovableElementSharedTransitionScope()
     return remember(appState) {
         PaneScaffoldState(
             appState = appState,
-            paneMovableElementSharedTransitionScope = paneMovableElementSharedTransitionScope,
+            threePaneMovableElementSharedTransitionScope = paneMovableElementSharedTransitionScope,
         )
     }
 }

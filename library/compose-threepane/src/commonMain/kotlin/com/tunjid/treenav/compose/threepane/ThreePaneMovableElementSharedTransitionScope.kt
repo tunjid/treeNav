@@ -18,24 +18,23 @@ package com.tunjid.treenav.compose.threepane
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.PaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneSharedTransitionScope
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
+import com.tunjid.treenav.compose.rememberPaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
 
 /**
  * An interface providing both [MovableSharedElementScope] and [PaneSharedTransitionScope] for
  * a [ThreePane] layout.
  */
-@Stable
-interface PaneMovableElementSharedTransitionScope<Destination : Node> :
-    PaneSharedTransitionScope<ThreePane, Destination>, MovableSharedElementScope
+typealias ThreePaneMovableElementSharedTransitionScope<Destination> =
+        PaneMovableElementSharedTransitionScope<ThreePane, Destination>
 
 /**
- * Remembers a [PaneMovableElementSharedTransitionScope] in the composition.
+ * Remembers a [ThreePaneMovableElementSharedTransitionScope] in the composition.
  *
  * @param movableSharedElementScope The [MovableSharedElementScope] used create a
  * [PaneSharedTransitionScope] for this [PaneScope].
@@ -48,25 +47,14 @@ interface PaneMovableElementSharedTransitionScope<Destination : Node> :
 fun <Destination : Node> PaneScope<
         ThreePane,
         Destination
-        >.rememberPaneMovableElementSharedTransitionScope(
+        >.rememberThreePaneMovableElementSharedTransitionScope(
     movableSharedElementScope: MovableSharedElementScope = requireThreePaneMovableSharedElementScope()
-): PaneMovableElementSharedTransitionScope<Destination> {
+): ThreePaneMovableElementSharedTransitionScope<Destination> {
     val paneSharedTransitionScope = rememberPaneSharedTransitionScope(
         movableSharedElementScope.sharedTransitionScope
     )
-    return remember {
-        DelegatingPaneMovableElementSharedTransitionScope(
-            paneSharedTransitionScope = paneSharedTransitionScope,
-            movableSharedElementScope = movableSharedElementScope,
-        )
-    }
+    return rememberPaneMovableElementSharedTransitionScope(
+        paneSharedTransitionScope = paneSharedTransitionScope,
+        movableSharedElementScope = movableSharedElementScope,
+    )
 }
-
-@Stable
-private class DelegatingPaneMovableElementSharedTransitionScope<Destination : Node>(
-    val paneSharedTransitionScope: PaneSharedTransitionScope<ThreePane, Destination>,
-    val movableSharedElementScope: MovableSharedElementScope,
-) : PaneMovableElementSharedTransitionScope<Destination>,
-    PaneSharedTransitionScope<ThreePane, Destination> by paneSharedTransitionScope,
-    MovableSharedElementScope by movableSharedElementScope
-
