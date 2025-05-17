@@ -30,17 +30,20 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.tunjid.treenav.compose.navigation3.navEntryDecorator
 
 @Composable
-internal fun transitionAwareLifecycleNavEntryDecorator(backStack: List<Any>, isSettled: Boolean) =
-    navEntryDecorator { entry ->
-        val isInBackStack = entry.key in backStack
-        val maxLifecycle =
-            when {
-                isInBackStack && isSettled -> Lifecycle.State.RESUMED
-                isInBackStack && !isSettled -> Lifecycle.State.STARTED
-                else /* !isInBackStack */ -> Lifecycle.State.CREATED
-            }
-        LifecycleOwner(maxLifecycle = maxLifecycle) { entry.content.invoke(entry.key) }
-    }
+internal fun transitionAwareLifecycleNavEntryDecorator(
+    backStack: List<Any>,
+    isSettled: @Composable () -> Boolean
+) = navEntryDecorator { entry ->
+    val isInBackStack = entry.key in backStack
+    val settled = isSettled()
+    val maxLifecycle =
+        when {
+            isInBackStack && settled -> Lifecycle.State.RESUMED
+            isInBackStack && !settled -> Lifecycle.State.STARTED
+            else /* !isInBackStack */ -> Lifecycle.State.CREATED
+        }
+    LifecycleOwner(maxLifecycle = maxLifecycle) { entry.content.invoke(entry.key) }
+}
 
 @Composable
 private fun LifecycleOwner(
@@ -64,7 +67,9 @@ private fun LifecycleOwner(
         childLifecycleOwner.maxLifecycle = maxLifecycle
     }
     // Now install the LifecycleOwner as a composition local
-    CompositionLocalProvider(LocalLifecycleOwner provides childLifecycleOwner) { content.invoke() }
+    CompositionLocalProvider(LocalLifecycleOwner provides childLifecycleOwner) {
+        content.invoke()
+    }
 }
 
 private class ChildLifecycleOwner : LifecycleOwner {

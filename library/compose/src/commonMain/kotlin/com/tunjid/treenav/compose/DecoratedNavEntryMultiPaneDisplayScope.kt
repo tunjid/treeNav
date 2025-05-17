@@ -60,9 +60,6 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
         state.destinationTransform(navigationState)
     )
 
-    val transitionAwareLifecycleNavEntryDecorator =
-        transitionAwareLifecycleNavEntryDecorator(backStack, true)
-
     DecoratedNavEntryProvider(
         backStack = backStack,
         entryProvider = { node ->
@@ -78,7 +75,13 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
         entryDecorators = listOf(
             rememberMovableContentNavEntryDecorator(),
             rememberSavedStateNavEntryDecorator(),
-            transitionAwareLifecycleNavEntryDecorator,
+            transitionAwareLifecycleNavEntryDecorator(
+                backStack = backStack,
+                isSettled = {
+                    val scope = LocalPaneScope.current
+                    scope.transition.currentState == scope.transition.targetState
+                }
+            ),
             rememberViewModelStoreNavEntryDecorator(),
         ),
         content = { entries ->
