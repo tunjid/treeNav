@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.MultiPaneDisplay
+import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
@@ -42,6 +43,23 @@ import com.tunjid.treenav.compose.transforms.Transform
 /**
  * A [Transform] that applies semantics of movable shared elements to
  * [ThreePane] layouts.
+ *
+ * It is an opinionated implementation that always shows the movable shared element in
+ * the [ThreePane.Primary] pane unless:
+ *
+ * - The [ThreePane.PrimaryToTransient] adaptation is present and a shared element match is
+ * found. During this, the movable shared element will be shown in
+ * the [ThreePane.TransientPrimary] pane. During this, an empty box will be rendered
+ * in the [ThreePane.Primary] pane.
+ *
+ * - The [ThreePane.PrimaryToTransient] adaptation is present and a shared element match is NOT
+ * found. During this, the element will simply be rendered as is in [ThreePane.Primary], but
+ * without movable content semantics.
+ *
+ * Note: The movable shared element is never rendered in the following panes:
+ * - [ThreePane.Secondary]
+ * - [ThreePane.Tertiary]
+ * - [ThreePane.Overlay]
  *
  * @param movableSharedElementHostState the host state for coordinating movable shared elements.
  * There should be one instance of this per [MultiPaneDisplay].
@@ -70,14 +88,18 @@ fun <NavigationState : Node, Destination : Node>
     }
 
 /**
- * Requires that this [PaneScope] is a [MovableSharedElementScope], and returns it. In the
- * case this [PaneScope] is not a [MovableSharedElementScope], an exception will be thrown.
+ * Requires that this [PaneScope] is a [MovableSharedElementScope] specifically configured for
+ * [ThreePane] layouts and returns it. This only succeeds if the [MultiPaneDisplayState] has the
+ * [threePanedMovableSharedElementTransform] applied to it.
+ *
+ * In the case this [PaneScope] is not the [MovableSharedElementScope] requested, an exception
+ * will be thrown.
  */
 @Stable
 fun <Destination : Node> PaneScope<
         ThreePane,
         Destination
-        >.requireMovableSharedElementScope(): MovableSharedElementScope {
+        >.requireThreePaneMovableSharedElementScope(): MovableSharedElementScope {
     check(this is ThreePaneMovableSharedElementScope) {
         """
             The current PaneScope (${this::class.qualifiedName}) is not an instance of

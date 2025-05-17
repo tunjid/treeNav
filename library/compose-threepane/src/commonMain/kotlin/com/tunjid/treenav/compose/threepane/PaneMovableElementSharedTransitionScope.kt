@@ -24,7 +24,7 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneSharedTransitionScope
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
-import com.tunjid.treenav.compose.threepane.transforms.requireMovableSharedElementScope
+import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
 
 /**
  * An interface providing both [MovableSharedElementScope] and [PaneSharedTransitionScope] for
@@ -41,7 +41,7 @@ interface PaneMovableElementSharedTransitionScope<Destination : Node> :
  * [PaneSharedTransitionScope] for this [PaneScope].
  *
  * If one is not provided, one is retrieved from this [PaneScope] using
- * [requireMovableSharedElementScope].
+ * [requireThreePaneMovableSharedElementScope].
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -49,7 +49,7 @@ fun <Destination : Node> PaneScope<
         ThreePane,
         Destination
         >.rememberPaneMovableElementSharedTransitionScope(
-    movableSharedElementScope: MovableSharedElementScope = requireMovableSharedElementScope()
+    movableSharedElementScope: MovableSharedElementScope = requireThreePaneMovableSharedElementScope()
 ): PaneMovableElementSharedTransitionScope<Destination> {
     val paneSharedTransitionScope = rememberPaneSharedTransitionScope(
         movableSharedElementScope.sharedTransitionScope
