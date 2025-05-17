@@ -28,6 +28,7 @@ import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
 import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
+import com.tunjid.demo.common.ui.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
@@ -50,7 +51,7 @@ fun profilePaneEntry() = threePaneEntry<SampleDestination>(
                 roomName = destination.roomName,
             )
         }
-        PaneScaffold(
+        rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
                 .predictiveBackBackgroundModifier(this)
                 .fillMaxSize(),

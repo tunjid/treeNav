@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
+import com.tunjid.demo.common.ui.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
@@ -48,7 +49,7 @@ fun avatarPaneEntry() = threePaneEntry<SampleDestination>(
                 roomName = destination.roomName,
             )
         }
-        PaneScaffold(
+        rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
                 .fillMaxSize(),
             containerColor = Color.Transparent,

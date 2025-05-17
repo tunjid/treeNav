@@ -16,7 +16,14 @@
 
 package com.tunjid.demo.common.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -32,56 +39,77 @@ import com.tunjid.treenav.current
 @Composable
 fun PaneScaffoldState.PaneBottomAppBar(
     modifier: Modifier = Modifier,
+    enterTransition: EnterTransition = slideInVertically(initialOffsetY = { it }),
+    exitTransition: ExitTransition = slideOutVertically(targetOffsetY = { it }),
 ) {
     val appState = LocalAppState.current
-    val sharedContentState = rememberSharedContentState(BottomNavSharedElementKey)
-    NavigationBar(
+    AnimatedVisibility(
         modifier = modifier
             .sharedElement(
-                sharedContentState = sharedContentState,
+                sharedContentState = rememberSharedContentState(BottomNavSharedElementKey),
                 animatedVisibilityScope = this,
-                zIndexInOverlay = BottomNavSharedElementZIndex,
+                zIndexInOverlay = NavigationSharedElementZIndex,
             ),
-    ) {
-        SampleDestination.NavTabs.entries.forEach { item ->
-            NavigationBarItem(
-                icon = {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.title,
+        visible = canShowBottomNavigation,
+        enter = enterTransition,
+        exit = exitTransition,
+        content = {
+            NavigationBar {
+                SampleDestination.NavTabs.entries.forEach { item ->
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.title,
+                            )
+                        },
+                        selected = item == appState.currentNavigation.current,
+                        onClick = { appState.setTab(item) }
                     )
-                },
-                selected = item == appState.currentNavigation.current,
-                onClick = { appState.setTab(item) }
-            )
-        }
-    }
+                }
+            }
+        },
+    )
 }
 
-@Suppress("UnusedReceiverParameter")
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PaneScaffoldState.PaneNavigationRail(
     modifier: Modifier = Modifier,
+    enterTransition: EnterTransition = slideInHorizontally(initialOffsetX = { -it }),
+    exitTransition: ExitTransition = slideOutHorizontally(targetOffsetX = { -it }),
 ) {
     val appState = LocalAppState.current
-    NavigationRail(
-        modifier = modifier,
-    ) {
-        SampleDestination.NavTabs.entries.forEach { item ->
-            NavigationRailItem(
-                selected = item == appState.currentNavigation.current,
-                icon = {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.title,
+    AnimatedVisibility(
+        modifier = modifier
+            .sharedElement(
+                sharedContentState = rememberSharedContentState(NavRailSharedElementKey),
+                animatedVisibilityScope = this,
+                zIndexInOverlay = NavigationSharedElementZIndex,
+            ),
+        visible = canShowNavRail,
+        enter = enterTransition,
+        exit = exitTransition,
+        content = {
+            NavigationRail {
+                SampleDestination.NavTabs.entries.forEach { item ->
+                    NavigationRailItem(
+                        selected = item == appState.currentNavigation.current,
+                        icon = {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = item.title,
+                            )
+                        },
+                        onClick = { appState.setTab(item) }
                     )
-                },
-                onClick = { appState.setTab(item) }
-            )
+                }
+            }
         }
-    }
+    )
 }
 
 private data object BottomNavSharedElementKey
+private data object NavRailSharedElementKey
 
-private const val BottomNavSharedElementZIndex = 2f
+private const val NavigationSharedElementZIndex = 2f

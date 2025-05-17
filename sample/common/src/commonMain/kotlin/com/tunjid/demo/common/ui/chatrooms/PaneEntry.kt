@@ -27,6 +27,7 @@ import com.tunjid.demo.common.ui.PaneNavigationRail
 import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
+import com.tunjid.demo.common.ui.rememberPaneScaffoldState
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
 fun chatRoomPaneEntry(
@@ -39,7 +40,7 @@ fun chatRoomPaneEntry(
                 chatsRepository = ChatsRepository
             )
         }
-        PaneScaffold(
+        rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
                 .predictiveBackBackgroundModifier(this)
                 .fillMaxSize(),
