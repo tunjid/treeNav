@@ -16,9 +16,15 @@
 
 package com.tunjid.treenav.compose.navigation3.decorators
 
-import androidx.compose.runtime.Stable
-import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.SavedStateViewModelFactory
+import androidx.savedstate.SavedStateRegistryOwner
 
-@Stable
-internal actual val ViewModelStoreNavEntryDecorator: NavEntryDecorator
-    get() = DefaultViewModelStoreNavEntryDecorator
+@Composable
+internal actual fun shouldRemoveViewModelStoreCallback(): () -> Boolean {
+    return { true }
+}
+
+internal actual fun SavedStateViewModelFactory(
+    savedStateRegistryOwner: SavedStateRegistryOwner
+): SavedStateViewModelFactory = SavedStateViewModelFactory()
