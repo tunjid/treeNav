@@ -170,11 +170,11 @@ private fun PaneScaffoldState.rememberUpdatedPaneScaffoldNavigationState(
             enterTransition = enterTransition,
             exitTransition = exitTransition,
             canShow = canShow,
-        ).also {
-            it.enterTransition = enterTransition
-            it.exitTransition = exitTransition
-            it.canShow = canShow
-        }
+        )
+    }.also {
+        it.enterTransition = enterTransition
+        it.exitTransition = exitTransition
+        it.canShow = canShow
     }
 }
 
