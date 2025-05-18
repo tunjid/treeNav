@@ -77,8 +77,8 @@ fun PaneScaffoldState.PaneNavigationRail(
     enterTransition: EnterTransition = slideInHorizontally(initialOffsetX = { -it }),
     exitTransition: ExitTransition = slideOutHorizontally(targetOffsetX = { -it }),
 ) = withUpdatedPaneScaffoldNavigationState(
-    enterTransition = enterTransition,
-    exitTransition = exitTransition,
+    enterTransition = if (canShowNavRail) enterTransition else EnterTransition.None,
+    exitTransition = if (canShowNavRail) exitTransition else ExitTransition.None,
     canShow = canShowNavRail,
     content = content@{
         Box(
