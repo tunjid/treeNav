@@ -48,7 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.movableContentWithReceiverOf
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,28 +67,28 @@ import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.demo.common.ui.AppState.Companion.rememberMultiPaneDisplayState
+import com.tunjid.demo.common.ui.avatar.avatarPaneEntry
 import com.tunjid.demo.common.ui.chat.chatPaneEntry
 import com.tunjid.demo.common.ui.chatrooms.chatRoomPaneEntry
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.me.mePaneEntry
-import com.tunjid.demo.common.ui.avatar.avatarPaneEntry
 import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
-import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.multiPaneDisplayBackstack
+import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.transforms.backPreviewTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
 import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.compose.transforms.paneModifierTransform
-import com.tunjid.treenav.requireCurrent
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
+import com.tunjid.treenav.requireCurrent
 import com.tunjid.treenav.switch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -275,12 +275,12 @@ class AppState(
     )
 
     internal val movableNavigationBar =
-        movableContentWithReceiverOf<NavigationBarState, Modifier> { modifier ->
+        movableContentOf<Modifier> { modifier ->
             PaneNavigationBar(modifier)
         }
 
     internal val movableNavigationRail =
-        movableContentWithReceiverOf<NavigationBarState, Modifier> { modifier ->
+        movableContentOf<Modifier> { modifier ->
             PaneNavigationRail(modifier)
         }
 
