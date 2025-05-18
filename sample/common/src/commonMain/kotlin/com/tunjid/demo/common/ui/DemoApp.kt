@@ -109,7 +109,6 @@ fun App(
                     sharedTransitionScope = this
                 )
             }
-            appState.movableSharedElementHostState = movableSharedElementHostState
             MultiPaneDisplay(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -240,8 +239,6 @@ fun InteractionSource.isActive(): Boolean {
 class AppState(
     private val navigationRepository: NavigationRepository = NavigationRepository,
 ) {
-
-    internal lateinit var movableSharedElementHostState: MovableSharedElementHostState<ThreePane, SampleDestination>
 
     private val navigationState = mutableStateOf(
         navigationRepository.navigationStateFlow.value

@@ -27,6 +27,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -39,9 +40,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
-import com.tunjid.treenav.compose.rememberPaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.ThreePaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.current
@@ -55,17 +55,19 @@ fun PaneScaffoldState.PaneNavigationBar(
     enterTransition = enterTransition,
     exitTransition = exitTransition,
     canShow = canShowBottomNavigation,
-    content = {
-        val finalModifier = modifier
-            .navigationSharedElement(
-                sharedContentState = rememberSharedContentState(BottomNavSharedElementKey),
+    content = content@{
+        Box(
+            modifier = modifier
+                .navigationSharedElement(
+                    sharedContentState = rememberSharedContentState(BottomNavSharedElementKey),
+                )
+        ) {
+            if (canUseMovableContent) LocalAppState.current.movableNavigationBar(
+                this@content,
+                Modifier.fillMaxConstraints()
             )
-
-        if (canUseMovableContent)  LocalAppState.current.movableNavigationBar(
-            this,
-            finalModifier
-        )
-        else PaneNavigationBar(finalModifier)
+            else PaneNavigationBar(Modifier.fillMaxConstraints())
+        }
     }
 )
 
@@ -78,17 +80,19 @@ fun PaneScaffoldState.PaneNavigationRail(
     enterTransition = enterTransition,
     exitTransition = exitTransition,
     canShow = canShowNavRail,
-    content = {
-        val finalModifier = modifier
-            .navigationSharedElement(
-                sharedContentState = rememberSharedContentState(NavRailSharedElementKey),
+    content = content@{
+        Box(
+            modifier = modifier
+                .navigationSharedElement(
+                    sharedContentState = rememberSharedContentState(NavRailSharedElementKey),
+                )
+        ) {
+            if (canUseMovableContent) LocalAppState.current.movableNavigationRail(
+                this@content,
+                Modifier.fillMaxConstraints()
             )
-
-        if (canUseMovableContent) LocalAppState.current.movableNavigationRail(
-            this,
-            finalModifier
-        )
-        else PaneNavigationRail(finalModifier)
+            else PaneNavigationRail(Modifier.fillMaxConstraints())
+        }
     }
 )
 
@@ -157,19 +161,9 @@ private fun PaneScaffoldState.withUpdatedPaneScaffoldNavigationState(
     canShow: Boolean,
     content: @Composable NavigationBarState.() -> Unit
 ) {
-    val appState = LocalAppState.current
-
-    val paneMovableElementSharedTransitionScope =
-        rememberPaneMovableElementSharedTransitionScope(
-            paneSharedTransitionScope = this,
-            movableSharedElementScope = rememberPaneMovableSharedElementScope(
-                movableSharedElementHostState = appState.movableSharedElementHostState
-            ),
-        )
-
     val state = remember {
         NavigationBarState(
-            delegate = paneMovableElementSharedTransitionScope,
+            delegate = this,
             enterTransition = enterTransition,
             exitTransition = exitTransition,
             canShow = canShow,
@@ -185,7 +179,7 @@ private fun PaneScaffoldState.withUpdatedPaneScaffoldNavigationState(
 
 @Stable
 internal class NavigationBarState(
-    private val delegate: ThreePaneMovableElementSharedTransitionScope<SampleDestination>,
+    private val delegate: PaneScaffoldState,
     enterTransition: EnterTransition,
     exitTransition: ExitTransition,
     canShow: Boolean,
@@ -195,7 +189,7 @@ internal class NavigationBarState(
     var canShow by mutableStateOf(canShow)
 
     val canUseMovableContent
-        get() = when {
+        get() = canShow && when {
             isActive && isPreviewingBack && paneState.pane == ThreePane.TransientPrimary -> true
             isActive && !isPreviewingBack && paneState.pane == ThreePane.Primary -> true
             else -> false
@@ -208,12 +202,28 @@ internal class NavigationBarState(
     @OptIn(ExperimentalSharedTransitionApi::class)
     fun Modifier.navigationSharedElement(
         sharedContentState: SharedTransitionScope.SharedContentState,
-    ) = sharedElement(
+    ) = sharedElementWithCallerManagedVisibility(
         sharedContentState = sharedContentState,
-        animatedVisibilityScope = delegate,
+        visible = canShow && delegate.isActive,
         zIndexInOverlay = NavigationSharedElementZIndex,
     )
 }
+
+private fun Modifier.fillMaxConstraints() =
+    layout { measurable, constraints ->
+        val placeable = measurable.measure(
+            constraints.copy(
+                minWidth = constraints.maxWidth,
+                maxHeight = constraints.maxHeight
+            )
+        )
+        layout(
+            width = placeable.width,
+            height = placeable.height
+        ) {
+            placeable.place(0, 0)
+        }
+    }
 
 private data object BottomNavSharedElementKey
 private data object NavRailSharedElementKey
