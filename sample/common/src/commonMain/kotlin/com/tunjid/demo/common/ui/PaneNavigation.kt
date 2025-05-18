@@ -22,6 +22,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -44,9 +45,9 @@ fun PaneScaffoldState.PaneNavigationBar(
 ) {
     AnimatedVisibility(
         modifier = modifier
-            .sharedElementWithCallerManagedVisibility(
+            .sharedElement(
                 sharedContentState = rememberSharedContentState(NavigationBarSharedElementKey),
-                visible = isActive && canUseMovableNavigationBar,
+                animatedVisibilityScope = this,
                 zIndexInOverlay = NavigationSharedElementZIndex,
             ),
         visible = canShowNavigationBar,
@@ -68,10 +69,11 @@ fun PaneScaffoldState.PaneNavigationRail(
 ) {
     AnimatedVisibility(
         modifier = modifier
-            .sharedElementWithCallerManagedVisibility(
+            .sharedElement(
                 sharedContentState = rememberSharedContentState(NavigationRailSharedElementKey),
-                visible = isActive && canUseMovableNavigationRail,
+                animatedVisibilityScope = this,
                 zIndexInOverlay = NavigationSharedElementZIndex,
+                boundsTransform = { _, _ -> snap() },
             ),
         visible = canShowNavigationRail,
         enter = if (canShowNavigationRail) enterTransition else EnterTransition.None,
