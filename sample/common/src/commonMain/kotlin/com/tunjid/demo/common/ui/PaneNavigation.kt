@@ -19,6 +19,7 @@
 package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -69,11 +70,11 @@ fun PaneScaffoldState.PaneNavigationRail(
 ) {
     AnimatedVisibility(
         modifier = modifier
-            .sharedElement(
+            .sharedElementWithCallerManagedVisibility(
                 sharedContentState = rememberSharedContentState(NavigationRailSharedElementKey),
-                animatedVisibilityScope = this,
+                visible = canShowNavigationRail,
                 zIndexInOverlay = NavigationSharedElementZIndex,
-                boundsTransform = { _, _ -> snap() },
+                boundsTransform = NavigationRailBoundsTransform,
             ),
         visible = canShowNavigationRail,
         enter = if (canShowNavigationRail) enterTransition else EnterTransition.None,
@@ -133,3 +134,5 @@ private data object NavigationBarSharedElementKey
 private data object NavigationRailSharedElementKey
 
 private const val NavigationSharedElementZIndex = 2f
+
+private val NavigationRailBoundsTransform = BoundsTransform { _, _ -> snap() }
