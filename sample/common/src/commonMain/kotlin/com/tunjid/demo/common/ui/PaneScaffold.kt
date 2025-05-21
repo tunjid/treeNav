@@ -64,11 +64,21 @@ class PaneScaffoldState internal constructor(
     threePaneMovableElementSharedTransitionScope: ThreePaneMovableElementSharedTransitionScope<SampleDestination>,
 ) : ThreePaneMovableElementSharedTransitionScope<SampleDestination> by threePaneMovableElementSharedTransitionScope {
 
-    internal val canShowBottomNavigation get() = !appState.isMediumScreenWidthOrWider
+    internal val canShowNavigationBar get() = !appState.isMediumScreenWidthOrWider
 
-    internal val canShowNavRail
+    internal val canShowNavigationRail
         get() = appState.filteredPaneOrder.firstOrNull() == paneState.pane
                 && appState.isMediumScreenWidthOrWider
+
+    val canUseMovableNavigationBar
+        get() = canShowNavigationBar && when {
+            isActive && isPreviewingBack && paneState.pane == ThreePane.TransientPrimary -> true
+            isActive && !isPreviewingBack && paneState.pane == ThreePane.Primary -> true
+            else -> false
+        }
+
+    val canUseMovableNavigationRail
+        get() = canShowNavigationRail && isActive
 
     internal val canShowFab
         get() = when (paneState.pane) {
@@ -86,6 +96,9 @@ class PaneScaffoldState internal constructor(
     internal fun hasMatchedSize(): Boolean =
         abs(scaffoldCurrentSize.width - scaffoldTargetSize.width) <= 2
                 && abs(scaffoldCurrentSize.height - scaffoldTargetSize.height) <= 2
+
+    private val isPreviewingBack: Boolean
+        get() = paneState.adaptations.contains(ThreePane.PrimaryToTransient)
 }
 
 @Composable

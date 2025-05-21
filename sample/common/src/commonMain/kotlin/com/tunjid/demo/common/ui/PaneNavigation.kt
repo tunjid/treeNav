@@ -19,10 +19,11 @@
 package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -33,17 +34,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.tunjid.demo.common.ui.data.SampleDestination
-import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
-import com.tunjid.treenav.compose.rememberPaneMovableElementSharedTransitionScope
-import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.ThreePaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.current
 
 @Composable
@@ -51,171 +43,96 @@ fun PaneScaffoldState.PaneNavigationBar(
     modifier: Modifier = Modifier,
     enterTransition: EnterTransition = slideInVertically(initialOffsetY = { it }),
     exitTransition: ExitTransition = slideOutVertically(targetOffsetY = { it }),
-) = withUpdatedPaneScaffoldNavigationState(
-    enterTransition = enterTransition,
-    exitTransition = exitTransition,
-    canShow = canShowBottomNavigation,
-    content = {
-        val finalModifier = modifier
-            .navigationSharedElement(
-                sharedContentState = rememberSharedContentState(BottomNavSharedElementKey),
-            )
-
-        if (canUseMovableContent)  LocalAppState.current.movableNavigationBar(
-            this,
-            finalModifier
-        )
-        else PaneNavigationBar(finalModifier)
-    }
-)
+) {
+    AnimatedVisibility(
+        modifier = modifier
+            .sharedElement(
+                sharedContentState = rememberSharedContentState(NavigationBarSharedElementKey),
+                animatedVisibilityScope = this,
+                zIndexInOverlay = NavigationSharedElementZIndex,
+            ),
+        visible = canShowNavigationBar,
+        enter = enterTransition,
+        exit = exitTransition,
+        content = {
+            val appState = LocalAppState.current
+            if (canUseMovableNavigationBar) appState.movableNavigationBar(Modifier)
+            else appState.PaneNavigationBar(Modifier)
+        }
+    )
+}
 
 @Composable
 fun PaneScaffoldState.PaneNavigationRail(
     modifier: Modifier = Modifier,
     enterTransition: EnterTransition = slideInHorizontally(initialOffsetX = { -it }),
     exitTransition: ExitTransition = slideOutHorizontally(targetOffsetX = { -it }),
-) = withUpdatedPaneScaffoldNavigationState(
-    enterTransition = enterTransition,
-    exitTransition = exitTransition,
-    canShow = canShowNavRail,
-    content = {
-        val finalModifier = modifier
-            .navigationSharedElement(
-                sharedContentState = rememberSharedContentState(NavRailSharedElementKey),
-            )
-
-        if (canUseMovableContent) LocalAppState.current.movableNavigationRail(
-            this,
-            finalModifier
-        )
-        else PaneNavigationRail(finalModifier)
-    }
-)
-
-@Composable
-internal fun NavigationBarState.PaneNavigationBar(
-    modifier: Modifier = Modifier,
 ) {
-    val appState = LocalAppState.current
     AnimatedVisibility(
-        modifier = modifier,
-        visible = canShow,
-        enter = enterTransition,
-        exit = exitTransition,
-        content = {
-            NavigationBar {
-                SampleDestination.NavTabs.entries.forEach { item ->
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = item.title,
-                            )
-                        },
-                        selected = item == appState.currentNavigation.current,
-                        onClick = { appState.setTab(item) }
-                    )
-                }
-            }
-        },
-    )
-}
-
-@Composable
-internal fun NavigationBarState.PaneNavigationRail(
-    modifier: Modifier = Modifier,
-) {
-    val appState = LocalAppState.current
-    AnimatedVisibility(
-        modifier = modifier,
-        visible = canShow,
-        enter = enterTransition,
-        exit = exitTransition,
-        content = {
-            NavigationRail {
-                SampleDestination.NavTabs.entries.forEach { item ->
-                    NavigationRailItem(
-                        selected = item == appState.currentNavigation.current,
-                        icon = {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = item.title,
-                            )
-                        },
-                        onClick = { appState.setTab(item) }
-                    )
-                }
-            }
-        }
-    )
-}
-
-@Composable
-private fun PaneScaffoldState.withUpdatedPaneScaffoldNavigationState(
-    enterTransition: EnterTransition,
-    exitTransition: ExitTransition,
-    canShow: Boolean,
-    content: @Composable NavigationBarState.() -> Unit
-) {
-    val appState = LocalAppState.current
-
-    val paneMovableElementSharedTransitionScope =
-        rememberPaneMovableElementSharedTransitionScope(
-            paneSharedTransitionScope = this,
-            movableSharedElementScope = rememberPaneMovableSharedElementScope(
-                movableSharedElementHostState = appState.movableSharedElementHostState
+        modifier = modifier
+            .sharedElementWithCallerManagedVisibility(
+                sharedContentState = rememberSharedContentState(NavigationRailSharedElementKey),
+                visible = canShowNavigationRail,
+                zIndexInOverlay = NavigationSharedElementZIndex,
+                boundsTransform = NavigationRailBoundsTransform,
             ),
-        )
-
-    val state = remember {
-        NavigationBarState(
-            delegate = paneMovableElementSharedTransitionScope,
-            enterTransition = enterTransition,
-            exitTransition = exitTransition,
-            canShow = canShow,
-        )
-    }.also {
-        it.enterTransition = enterTransition
-        it.exitTransition = exitTransition
-        it.canShow = canShow
+        visible = canShowNavigationRail,
+        enter = if (canShowNavigationRail) enterTransition else EnterTransition.None,
+        exit = if (canShowNavigationRail) exitTransition else ExitTransition.None,
+    ) {
+        val appState = LocalAppState.current
+        if (canUseMovableNavigationRail) appState.movableNavigationRail(Modifier)
+        else appState.PaneNavigationRail(Modifier)
     }
-
-    state.content()
 }
 
-@Stable
-internal class NavigationBarState(
-    private val delegate: ThreePaneMovableElementSharedTransitionScope<SampleDestination>,
-    enterTransition: EnterTransition,
-    exitTransition: ExitTransition,
-    canShow: Boolean,
-) : ThreePaneMovableElementSharedTransitionScope<SampleDestination> by delegate {
-    var enterTransition by mutableStateOf(enterTransition)
-    var exitTransition by mutableStateOf(exitTransition)
-    var canShow by mutableStateOf(canShow)
-
-    val canUseMovableContent
-        get() = when {
-            isActive && isPreviewingBack && paneState.pane == ThreePane.TransientPrimary -> true
-            isActive && !isPreviewingBack && paneState.pane == ThreePane.Primary -> true
-            else -> false
+@Composable
+internal fun AppState.PaneNavigationBar(
+    modifier: Modifier = Modifier
+) {
+    NavigationBar(
+        modifier = modifier
+    ) {
+        SampleDestination.NavTabs.entries.forEach { item ->
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.title,
+                    )
+                },
+                selected = item == currentNavigation.current,
+                onClick = { setTab(item) }
+            )
         }
-
-    private val isPreviewingBack: Boolean
-        get() = paneState.adaptations.contains(ThreePane.PrimaryToTransient)
-
-
-    @OptIn(ExperimentalSharedTransitionApi::class)
-    fun Modifier.navigationSharedElement(
-        sharedContentState: SharedTransitionScope.SharedContentState,
-    ) = sharedElement(
-        sharedContentState = sharedContentState,
-        animatedVisibilityScope = delegate,
-        zIndexInOverlay = NavigationSharedElementZIndex,
-    )
+    }
 }
 
-private data object BottomNavSharedElementKey
-private data object NavRailSharedElementKey
+@Composable
+internal fun AppState.PaneNavigationRail(
+    modifier: Modifier = Modifier
+) {
+    NavigationRail(
+        modifier = modifier
+    ) {
+        SampleDestination.NavTabs.entries.forEach { item ->
+            NavigationRailItem(
+                selected = item == currentNavigation.current,
+                icon = {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.title,
+                    )
+                },
+                onClick = { setTab(item) }
+            )
+        }
+    }
+}
+
+private data object NavigationBarSharedElementKey
+private data object NavigationRailSharedElementKey
 
 private const val NavigationSharedElementZIndex = 2f
+
+private val NavigationRailBoundsTransform = BoundsTransform { _, _ -> snap() }
