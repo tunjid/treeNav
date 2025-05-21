@@ -37,10 +37,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.navigation3.DecoratedNavEntryProvider
-import com.tunjid.treenav.compose.navigation3.NavEntry
+import com.tunjid.treenav.compose.navigation3.runtime.DecoratedNavEntryProvider
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 import com.tunjid.treenav.compose.navigation3.decorators.rememberMovableContentNavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.decorators.rememberSavedStateNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.decorators.rememberViewModelStoreNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.decorators.transitionAwareLifecycleNavEntryDecorator
 

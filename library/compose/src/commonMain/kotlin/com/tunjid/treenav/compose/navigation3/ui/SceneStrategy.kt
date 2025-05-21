@@ -18,7 +18,7 @@ package com.tunjid.treenav.compose.navigation3.ui
 
 
 import androidx.compose.runtime.Composable
-import com.tunjid.treenav.compose.navigation3.NavEntry
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 
 /**
  * A strategy that tries to calculate a [Scene] given a list of [NavEntry].

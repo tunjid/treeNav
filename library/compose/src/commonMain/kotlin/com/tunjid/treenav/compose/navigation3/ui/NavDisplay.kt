@@ -44,10 +44,10 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastForEachReversed
-import com.tunjid.treenav.compose.navigation3.DecoratedNavEntryProvider
-import com.tunjid.treenav.compose.navigation3.NavEntry
-import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.decorators.rememberSavedStateNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.DecoratedNavEntryProvider
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.ui.NavDisplay.DEFAULT_TRANSITION_DURATION_MILLISECOND
 import com.tunjid.treenav.compose.navigation3.ui.NavDisplay.POP_TRANSITION_SPEC
 import com.tunjid.treenav.compose.navigation3.ui.NavDisplay.PREDICTIVE_POP_TRANSITION_SPEC
@@ -264,6 +264,7 @@ internal fun <T : Any> NavDisplay(
             }
 
         // Transition Handling
+        /** Keep track of the previous entries for the transition's current scene. */
         /** Keep track of the previous entries for the transition's current scene. */
         val transitionCurrentStateEntries = remember(transition.currentState) { entries.toList() }
 

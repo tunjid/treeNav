@@ -16,7 +16,7 @@
 
 package com.tunjid.treenav.compose.navigation3.ui
 
-import com.tunjid.treenav.compose.navigation3.NavEntry
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 
 /**
  * A specific scene to render 1 or more [NavEntry] instances as an overlay.

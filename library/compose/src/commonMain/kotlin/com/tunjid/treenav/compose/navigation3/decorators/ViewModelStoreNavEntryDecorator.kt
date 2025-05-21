@@ -36,8 +36,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
-import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.navEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.navEntryDecorator
 
 @Composable
 internal expect fun shouldRemoveViewModelStoreCallback(): () -> Boolean

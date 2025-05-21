@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.navigation3
+package com.tunjid.treenav.compose.navigation3.runtime
 
 import androidx.compose.runtime.Composable
 

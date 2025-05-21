@@ -17,7 +17,7 @@
 package com.tunjid.treenav.compose.navigation3.ui
 
 import androidx.compose.runtime.Composable
-import com.tunjid.treenav.compose.navigation3.NavEntry
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 
 internal data class SinglePaneScene<T : Any>(
     override val key: T,

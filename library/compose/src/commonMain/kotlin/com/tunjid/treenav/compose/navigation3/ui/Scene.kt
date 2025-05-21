@@ -17,7 +17,7 @@
 package com.tunjid.treenav.compose.navigation3.ui
 
 import androidx.compose.runtime.Composable
-import com.tunjid.treenav.compose.navigation3.NavEntry
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 
 /**
  * A specific scene to render 1 or more [NavEntry]s.
