@@ -62,6 +62,9 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay2(
 
     val backStack = remember { mutableStateListOf<Destination>() }.also { mutableBackStack ->
         state.backStackTransform(navigationState).let { currentBackStack ->
+            val sameBackStack = currentBackStack == mutableBackStack
+            if (sameBackStack) return@let
+
             mutableBackStack.clear()
             mutableBackStack.addAll(currentBackStack)
         }
