@@ -76,6 +76,7 @@ import com.tunjid.demo.common.ui.me.mePaneEntry
 import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.MultiPaneDisplay
+import com.tunjid.treenav.compose.MultiPaneDisplay2
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
@@ -84,6 +85,7 @@ import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.transforms.backPreviewTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
+import com.tunjid.treenav.compose.transforms.RenderTransform
 import com.tunjid.treenav.compose.transforms.Transform
 import com.tunjid.treenav.compose.transforms.paneModifierTransform
 import com.tunjid.treenav.pop
@@ -109,9 +111,12 @@ fun App(
                     sharedTransitionScope = this
                 )
             }
-            MultiPaneDisplay(
+            MultiPaneDisplay2(
+                sharedTransitionScope = this,
                 modifier = Modifier
                     .fillMaxSize(),
+                pop = MultiStackNav::pop,
+                goBack = appState::goBack,
                 state = appState.rememberMultiPaneDisplayState(
                     remember {
                         listOf(
@@ -126,22 +131,22 @@ fun App(
                                     appState.splitLayoutState.size
                                 }
                             ),
-                            backPreviewTransform(
-                                isPreviewingBack = derivedStateOf {
-                                    appState.isPreviewingBack
-                                },
-                                navigationStateBackTransform = MultiStackNav::pop,
-                            ),
+//                            backPreviewTransform(
+//                                isPreviewingBack = derivedStateOf {
+//                                    appState.isPreviewingBack
+//                                },
+//                                navigationStateBackTransform = MultiStackNav::pop,
+//                            ),
                             threePanedMovableSharedElementTransform(
                                 movableSharedElementHostState = movableSharedElementHostState
                             ),
-                            paneModifierTransform {
-                                if (paneState.pane == ThreePane.TransientPrimary) Modifier
-                                    .fillMaxSize()
-                                    .backPreview(appState.backPreviewState)
-                                else Modifier
-                                    .fillMaxSize()
-                            }
+//                            paneModifierTransform {
+//                                if (paneState.pane == ThreePane.TransientPrimary) Modifier
+//                                    .fillMaxSize()
+//                                    .backPreview(appState.backPreviewState)
+//                                else Modifier
+//                                    .fillMaxSize()
+//                            },
                         )
                     }
                 ),
