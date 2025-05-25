@@ -144,27 +144,6 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay2(
     )
 }
 
-@Composable
-private fun <Destination : Node, Pane> SlotBasedPanedNavigationState<Pane, Destination>.rememberUpdatedPanedNavigationState(
-    backStackIds: List<String>,
-    panesToDestinations: Map<Pane, Destination?>,
-    slots: Set<Slot>
-): State<SlotBasedPanedNavigationState<Pane, Destination>> =
-    remember {
-        mutableStateOf(this)
-    }.also {
-        val backStackChanged = it.value.backStackIds != backStackIds
-        val paneMappingChanged = it.value.panesToDestinations != panesToDestinations
-
-        if (backStackChanged || paneMappingChanged) {
-            it.value = it.value.adaptTo(
-                slots = slots,
-                panesToDestinations = panesToDestinations,
-                backStackIds = backStackIds,
-            )
-        }
-    }
-
 @Stable
 private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : Node, Pane>(
     private val state: MultiPaneDisplayState<Pane, NavigationState, Destination>,
@@ -292,6 +271,27 @@ private fun <NavigationState> NavigationState.findStateMatching(
     }
     return navigationState
 }
+
+@Composable
+private fun <Destination : Node, Pane> SlotBasedPanedNavigationState<Pane, Destination>.rememberUpdatedPanedNavigationState(
+    backStackIds: List<String>,
+    panesToDestinations: Map<Pane, Destination?>,
+    slots: Set<Slot>
+): State<SlotBasedPanedNavigationState<Pane, Destination>> =
+    remember {
+        mutableStateOf(this)
+    }.also {
+        val backStackChanged = it.value.backStackIds != backStackIds
+        val paneMappingChanged = it.value.panesToDestinations != panesToDestinations
+
+        if (backStackChanged || paneMappingChanged) {
+            it.value = it.value.adaptTo(
+                slots = slots,
+                panesToDestinations = panesToDestinations,
+                backStackIds = backStackIds,
+            )
+        }
+    }
 
 private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     throw IllegalArgumentException(
