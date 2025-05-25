@@ -17,7 +17,6 @@
 package com.tunjid.demo.common.ui.chat
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -55,17 +54,10 @@ fun chatPaneEntry() = threePaneEntry<SampleDestination>(
                 .fillMaxSize(),
             content = {
                 ChatScreen(
-                    movableSharedElementScope = this,
+                    paneScaffoldState = this,
                     state = viewModel.state.collectAsStateWithLifecycle().value,
                     onAction = viewModel.accept,
                 )
-                LaunchedEffect(paneState.pane) {
-                    viewModel.accept(
-                        Action.UpdateInPrimaryPane(
-                            isInPrimaryPane = paneState.pane == ThreePane.Primary
-                        )
-                    )
-                }
             },
             navigationBar = {
                 PaneNavigationBar()

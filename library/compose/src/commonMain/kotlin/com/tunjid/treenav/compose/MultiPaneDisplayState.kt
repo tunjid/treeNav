@@ -19,6 +19,7 @@ package com.tunjid.treenav.compose
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntryDecorator
 import com.tunjid.treenav.compose.transforms.CompoundTransform
 import com.tunjid.treenav.compose.transforms.DestinationTransform
 import com.tunjid.treenav.compose.transforms.PaneTransform
@@ -35,6 +36,8 @@ import com.tunjid.treenav.compose.transforms.Transform
  * @param navigationState the navigation state to be adapted into various panes.
  * @param backStackTransform a transform to read the back stack of the navigation state.
  * @param destinationTransform a transform of the [navigationState] to its current destination.
+ * @param popTransform a transform of the [navigationState] when back is pressed.
+ * @param onPopped an action to perform when the navigation state has been popped to a new state.
  * @param panesToDestinationsTransform provides the strategy used to adapt the current
  * [Destination] to the panes available.
  * @param renderTransform the transform used to render a [Destination] in its pane.
@@ -44,6 +47,8 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
     val navigationState: State<NavigationState>,
     val backStackTransform: (NavigationState) -> List<Destination>,
     val destinationTransform: (NavigationState) -> Destination,
+    val popTransform: (NavigationState) -> NavigationState,
+    val onPopped: (NavigationState) -> Unit,
     val panesToDestinationsTransform: @Composable (Destination) -> Map<Pane, Destination?>,
     val renderTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
 )
@@ -59,6 +64,8 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
  * @param navigationState the navigation state to be adapted into various panes.
  * @param backStackTransform a transform to read the back stack of the navigation state.
  * @param destinationTransform a transform of the [navigationState] to its current destination.
+ * @param popTransform a transform of the [navigationState] when back is pressed.
+ * @param onPopped an action to perform when the navigation state has been popped to a new state.
  * @param entryProvider provides the [Transform]s and content needed to render
  * a [Destination] in its pane.
  * @param transforms a list of transforms applied to every [Destination] before it is
@@ -69,6 +76,8 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
     navigationState: State<NavigationState>,
     backStackTransform: (NavigationState) -> List<Destination>,
     destinationTransform: (NavigationState) -> Destination,
+    popTransform: (NavigationState) -> NavigationState,
+    onPopped: (NavigationState) -> Unit,
     entryProvider: (Destination) -> PaneEntry<Pane, Destination>,
     transforms: List<Transform<Pane, NavigationState, Destination>>,
 ) = transforms.fold(
@@ -77,6 +86,8 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
         navigationState = navigationState,
         backStackTransform = backStackTransform,
         destinationTransform = destinationTransform,
+        popTransform = popTransform,
+        onPopped = onPopped,
         panesToDestinationsTransform = { destination ->
             entryProvider(destination).paneTransform(destination)
         },
@@ -105,6 +116,8 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
         panes = panes,
         navigationState = navigationState,
         backStackTransform = backStackTransform,
+        popTransform = popTransform,
+        onPopped =  onPopped,
         destinationTransform = when (transform) {
             is DestinationTransform -> { destination ->
                 transform.toDestination(

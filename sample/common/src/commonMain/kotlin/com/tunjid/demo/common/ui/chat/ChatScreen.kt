@@ -47,6 +47,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.tunjid.demo.common.ui.PaneScaffoldState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
@@ -54,13 +55,14 @@ import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
+import com.tunjid.treenav.compose.threepane.ThreePane
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun ChatScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     state: State,
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier,
@@ -69,10 +71,11 @@ fun ChatScreen(
     Column(
         modifier,
     ) {
+        val isInPrimaryPane = paneScaffoldState.paneState.pane == ThreePane.Primary
         SampleTopAppBar(
             title = state.room?.name ?: "",
-            onBackPressed = remember(state.isInPrimaryPane) {
-                if (state.isInPrimaryPane) return@remember {
+            onBackPressed = remember(isInPrimaryPane) {
+                if (isInPrimaryPane) return@remember {
                     onAction(Action.Navigation.Pop)
                 } else null
             },
@@ -81,11 +84,11 @@ fun ChatScreen(
             me = state.me,
             roomName = state.room?.name,
             messages = state.chats,
-            isInPrimaryPane = state.isInPrimaryPane,
+            isInPrimaryPane = isInPrimaryPane,
             navigateToProfile = onAction,
             modifier = Modifier.fillMaxSize(),
             scrollState = scrollState,
-            movableSharedElementScope = movableSharedElementScope,
+            movableSharedElementScope = paneScaffoldState,
         )
     }
 }

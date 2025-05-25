@@ -65,7 +65,6 @@ class ChatViewModel(
                 keySelector = Action::key
             ) {
                 when (val type = type()) {
-                    is Action.UpdateInPrimaryPane -> type.flow.updateInPrimaryPaneMutations()
                     is Action.Navigation -> navigationRepository.navigationMutations(
                         type.flow
                     )
@@ -105,13 +104,9 @@ private fun chatLoadMutations(
             copy(chats = it)
         }
 
-private fun Flow<Action.UpdateInPrimaryPane>.updateInPrimaryPaneMutations(): Flow<Mutation<State>> =
-    mapToMutation { copy(isInPrimaryPane = it.isInPrimaryPane) }
-
 data class State(
     val me: Profile? = null,
     val room: ChatRoom? = null,
-    val isInPrimaryPane: Boolean = true,
     val chats: List<MessageItem> = emptyList(),
 )
 
@@ -124,9 +119,6 @@ sealed class Action(
     val key: String,
 ) {
 
-    data class UpdateInPrimaryPane(
-        val isInPrimaryPane: Boolean,
-    ) : Action("UpdateInPrimaryPane")
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data object Pop : Navigation(), NavigationAction by navigationAction(

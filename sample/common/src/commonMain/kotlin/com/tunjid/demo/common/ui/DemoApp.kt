@@ -63,7 +63,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.backpreview.BackPreviewState
-import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.demo.common.ui.AppState.Companion.rememberMultiPaneDisplayState
@@ -75,19 +74,15 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.me.mePaneEntry
 import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplay2
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.multiPaneDisplayBackstack
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.transforms.backPreviewTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
-import com.tunjid.treenav.compose.transforms.RenderTransform
 import com.tunjid.treenav.compose.transforms.Transform
-import com.tunjid.treenav.compose.transforms.paneModifierTransform
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
 import com.tunjid.treenav.requireCurrent
@@ -111,12 +106,11 @@ fun App(
                     sharedTransitionScope = this
                 )
             }
+
             MultiPaneDisplay2(
                 sharedTransitionScope = this,
                 modifier = Modifier
                     .fillMaxSize(),
-                pop = MultiStackNav::pop,
-                goBack = appState::goBack,
                 state = appState.rememberMultiPaneDisplayState(
                     remember {
                         listOf(
@@ -148,7 +142,7 @@ fun App(
 //                                    .fillMaxSize()
 //                            },
                         )
-                    }
+                    },
                 ),
             ) {
                 appState.displayScope = this
@@ -326,6 +320,12 @@ class AppState(
                     navigationState = navigationState,
                     backStackTransform = MultiStackNav::multiPaneDisplayBackstack,
                     destinationTransform = MultiStackNav::requireCurrent,
+                    popTransform = MultiStackNav::pop,
+                    onPopped = { poppedNavigationState ->
+                        navigationRepository.navigate {
+                            poppedNavigationState
+                        }
+                    },
                     entryProvider = { destination ->
                         when (destination) {
                             SampleDestination.NavTabs.ChatRooms -> chatRoomPaneEntry()
