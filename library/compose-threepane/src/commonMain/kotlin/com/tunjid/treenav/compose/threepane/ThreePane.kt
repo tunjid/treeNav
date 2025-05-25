@@ -22,9 +22,7 @@ import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Adaptation.Swap
 import com.tunjid.treenav.compose.MultiPaneDisplay
@@ -103,39 +101,11 @@ fun <R : Node> threePaneEntry(
     paneMapping: @Composable (R) -> Map<ThreePane, R?> = {
         mapOf(ThreePane.Primary to it)
     },
-    render: @Composable PaneScope<ThreePane, R>.(R) -> Unit,
+    render: @Composable (PaneScope<ThreePane, R>.(R) -> Unit),
 ) = PaneEntry(
     paneTransform = paneMapping,
     renderTransform = { destination, original ->
-        val state = paneState
-        val shouldAnimate = when (state.pane) {
-            ThreePane.Primary,
-            ThreePane.Secondary,
-                -> when {
-                ThreePane.PrimaryToSecondary in state.adaptations -> false
-                ThreePane.SecondaryToPrimary in state.adaptations -> false
-                else -> true
-            }
-
-            ThreePane.TransientPrimary -> when {
-                ThreePane.PrimaryToTransient in state.adaptations -> false
-                else -> true
-            }
-
-            else -> true
-        }
-        Box(
-            modifier =
-                if (shouldAnimate) Modifier.animateEnterExit(
-                    enter = enterTransition(),
-                    exit = exitTransition()
-                )
-                else Modifier,
-            content = {
-                original(destination)
-            }
-        )
-
+        original(destination)
     },
     content = render
 )
