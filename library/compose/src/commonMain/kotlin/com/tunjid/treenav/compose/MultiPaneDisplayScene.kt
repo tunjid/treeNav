@@ -104,15 +104,13 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay2(
         modifier = modifier,
         onBack = { count ->
             val poppedBackStackIds = state.backStackTransform(navigationState)
-                .map { it.id }
+                .map(Node::id)
                 .dropLast(count)
-            val poppedNavigationState = state.navigationState.value.findStateMatching(
+
+            val poppedNavigationState = state.findNavigationStateMatching(
                 backstackIds = poppedBackStackIds,
-                backStackTransform = { navigationState ->
-                    state.backStackTransform(navigationState).map(Node::id)
-                },
-                pop = state.popTransform,
             )
+
             state.onPopped(poppedNavigationState)
         },
         entryDecorators = listOf(
@@ -167,12 +165,8 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
             // Calculate the scene for the entries specified.
             // Since there might be a predictive back gesture, pop until the right navigation state
             // is found
-            val current = state.navigationState.value.findStateMatching(
+            val current = state.findNavigationStateMatching(
                 backstackIds = backstackIds,
-                backStackTransform = { navigationState ->
-                    state.backStackTransform(navigationState).map(Node::id)
-                },
-                pop = state.popTransform,
             )
 
             val activeIds = state.destinationTransform(current)
@@ -201,13 +195,13 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
 }
 
 private class MultiPaneDisplayScene<Pane, Destination : Node>(
+    override val entries: List<NavEntry<Destination>>,
+    override val previousEntries: List<NavEntry<Destination>>,
     private val backstackIds: List<String>,
     private val destination: Destination,
     private val slots: Set<Slot>,
     private val panesToDestinations: @Composable (Destination) -> Map<Pane, Destination?>,
     private val currentPanedNavigationState: SlotBasedPanedNavigationState<Pane, Destination>,
-    override val entries: List<NavEntry<Destination>>,
-    override val previousEntries: List<NavEntry<Destination>>,
     private val scopeContent: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : Scene<Destination> {
 
@@ -262,16 +256,14 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     }
 }
 
-private fun <NavigationState> NavigationState.findStateMatching(
+private fun <NavigationState : Node> MultiPaneDisplayState<*, NavigationState, *>.findNavigationStateMatching(
     backstackIds: List<String>,
-    backStackTransform: (NavigationState) -> List<String>,
-    pop: (NavigationState) -> NavigationState,
 ): NavigationState {
-    var navigationState = this
-    while (backStackTransform(navigationState) != backstackIds) {
-        navigationState = pop(navigationState)
+    var state = navigationState.value
+    while (backStackTransform(state).map(Node::id) != backstackIds) {
+        state = popTransform(state)
     }
-    return navigationState
+    return state
 }
 
 @Composable
