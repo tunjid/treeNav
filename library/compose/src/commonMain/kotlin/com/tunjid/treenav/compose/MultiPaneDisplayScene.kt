@@ -106,10 +106,10 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay2(
             val poppedBackStackIds = state.backStackTransform(navigationState)
                 .map { it.id }
                 .dropLast(count)
-            val poppedNavigationState = navigationState.findStateMatching(
+            val poppedNavigationState = state.navigationState.value.findStateMatching(
                 backstackIds = poppedBackStackIds,
-                backStackTransform = {
-                    state.backStackTransform(it).map(Node::id)
+                backStackTransform = { navigationState ->
+                    state.backStackTransform(navigationState).map(Node::id)
                 },
                 pop = state.popTransform,
             )
@@ -170,7 +170,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
             val current = state.navigationState.value.findStateMatching(
                 backstackIds = backstackIds,
                 backStackTransform = { navigationState ->
-                    state.backStackTransform(navigationState).map { it.id }
+                    state.backStackTransform(navigationState).map(Node::id)
                 },
                 pop = state.popTransform,
             )
