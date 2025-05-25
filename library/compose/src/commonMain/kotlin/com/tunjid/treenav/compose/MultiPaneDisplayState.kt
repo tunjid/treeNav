@@ -19,7 +19,6 @@ package com.tunjid.treenav.compose
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.navigation3.runtime.NavEntryDecorator
 import com.tunjid.treenav.compose.transforms.CompoundTransform
 import com.tunjid.treenav.compose.transforms.DestinationTransform
 import com.tunjid.treenav.compose.transforms.PaneTransform

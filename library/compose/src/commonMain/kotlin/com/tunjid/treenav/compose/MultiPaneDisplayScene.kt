@@ -22,8 +22,8 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -76,22 +76,17 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay2(
     }
 
     val panedNavigationState = remember {
-        mutableStateOf(
-            value = SlotBasedPanedNavigationState.initial<Pane, Destination>(slots = slots)
-                .adaptTo(
-                    slots = slots,
-                    panesToDestinations = panesToDestinations.value,
-                    backStackIds = backStack.map(Node::id),
-                )
-        )
-    }
-        .also {
-            it.updateOnChange(
-                backStackIds = backStack.map(Node::id),
+        SlotBasedPanedNavigationState.initial<Pane, Destination>(slots = slots)
+            .adaptTo(
+                slots = slots,
                 panesToDestinations = panesToDestinations.value,
-                slots = slots
+                backStackIds = backStack.map(Node::id),
             )
-        }
+    }.rememberUpdatedPanedNavigationState(
+        backStackIds = backStack.map(Node::id),
+        panesToDestinations = panesToDestinations.value,
+        slots = slots
+    )
 
     val sceneStrategy = remember {
         MultiPanePaneSceneStrategy(
@@ -149,23 +144,26 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay2(
     )
 }
 
-private fun <Destination : Node, Pane> MutableState<SlotBasedPanedNavigationState<Pane, Destination>>.updateOnChange(
+@Composable
+private fun <Destination : Node, Pane> SlotBasedPanedNavigationState<Pane, Destination>.rememberUpdatedPanedNavigationState(
     backStackIds: List<String>,
     panesToDestinations: Map<Pane, Destination?>,
     slots: Set<Slot>
-) {
-    val backStackChanged = value.backStackIds != backStackIds
-    val paneMappingChanged = value.panesToDestinations != panesToDestinations
+): State<SlotBasedPanedNavigationState<Pane, Destination>> =
+    remember {
+        mutableStateOf(this)
+    }.also {
+        val backStackChanged = it.value.backStackIds != backStackIds
+        val paneMappingChanged = it.value.panesToDestinations != panesToDestinations
 
-    if (backStackChanged || paneMappingChanged) {
-        value = value.adaptTo(
-            slots = slots,
-            panesToDestinations = panesToDestinations,
-            backStackIds = backStackIds,
-        )
+        if (backStackChanged || paneMappingChanged) {
+            it.value = it.value.adaptTo(
+                slots = slots,
+                panesToDestinations = panesToDestinations,
+                backStackIds = backStackIds,
+            )
+        }
     }
-}
-
 
 @Stable
 private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : Node, Pane>(
@@ -202,10 +200,10 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                 }
 
             val poppedBackstackIds = state.backStackTransform(state.popTransform(current))
-                    .mapTo(
-                        destination = mutableSetOf(),
-                        transform = Node::id
-                    )
+                .mapTo(
+                    destination = mutableSetOf(),
+                    transform = Node::id
+                )
 
             MultiPaneDisplayScene(
                 backstackIds = backstackIds,
@@ -236,15 +234,11 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
 
     override val content: @Composable () -> Unit = {
 
-        val panedNavigationState by remember {
-            mutableStateOf(currentPanedNavigationState)
-        }.also {
-            it.updateOnChange(
-                backStackIds = backstackIds,
-                panesToDestinations = panesToDestinations(destination),
-                slots = slots,
-            )
-        }
+        val panedNavigationState by currentPanedNavigationState.rememberUpdatedPanedNavigationState(
+            backStackIds = backstackIds,
+            panesToDestinations = panesToDestinations(destination),
+            slots = slots,
+        )
 
         val multiPaneDisplayScope: MultiPaneDisplayScope<Pane, Destination> = remember {
             object : MultiPaneDisplayScope<Pane, Destination> {
