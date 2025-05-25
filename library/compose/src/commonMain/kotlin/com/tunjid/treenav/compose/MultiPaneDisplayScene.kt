@@ -75,14 +75,16 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay2(
         ).toSet()
     }
 
-    val panedNavigationState = remember {
+    val initialPanedNavigationState = remember {
         SlotBasedPanedNavigationState.initial<Pane, Destination>(slots = slots)
             .adaptTo(
                 slots = slots,
                 panesToDestinations = panesToDestinations.value,
                 backStackIds = backStack.map(Node::id),
             )
-    }.rememberUpdatedPanedNavigationState(
+    }
+
+    val panedNavigationState = initialPanedNavigationState.rememberUpdatedPanedNavigationState(
         backStackIds = backStack.map(Node::id),
         panesToDestinations = panesToDestinations.value,
         slots = slots
@@ -206,7 +208,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     private val currentPanedNavigationState: SlotBasedPanedNavigationState<Pane, Destination>,
     override val entries: List<NavEntry<Destination>>,
     override val previousEntries: List<NavEntry<Destination>>,
-    private val scopeContent: @Composable() (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
+    private val scopeContent: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : Scene<Destination> {
 
     override val key: Any = destination.id
