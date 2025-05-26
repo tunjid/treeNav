@@ -18,12 +18,12 @@ import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.Order
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.backStack
-import com.tunjid.treenav.reversedBackStackSequence
 import com.tunjid.treenav.flatten
 import com.tunjid.treenav.minus
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
 import com.tunjid.treenav.push
+import com.tunjid.treenav.reversedBackStackSequence
 import com.tunjid.treenav.swap
 import com.tunjid.treenav.switch
 import kotlin.test.BeforeTest

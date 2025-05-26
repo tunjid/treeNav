@@ -16,7 +16,6 @@
 
 import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.JavaVersion
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.VersionCatalogsExtension
 
 /*

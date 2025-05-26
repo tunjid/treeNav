@@ -36,7 +36,6 @@ import com.tunjid.composables.dragtodismiss.dragToDismiss
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.strings.Route
 
 @Stable
 internal class DragToPopState {

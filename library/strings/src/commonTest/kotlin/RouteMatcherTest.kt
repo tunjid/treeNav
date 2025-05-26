@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-import com.tunjid.treenav.strings.Route
-import com.tunjid.treenav.strings.RouteParams
+import com.tunjid.treenav.strings.routeOf
 import com.tunjid.treenav.strings.routeParserFrom
 import com.tunjid.treenav.strings.routeString
 import com.tunjid.treenav.strings.urlRouteMatcher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-data class TestRoute(
-    override val routeParams: RouteParams
-) : Route
 
 class UrlRouteMatcherTest {
 
@@ -33,7 +29,7 @@ class UrlRouteMatcherTest {
         val routeParser = routeParserFrom(
             urlRouteMatcher(
                 routePattern = "/users/{id}",
-                routeMapper = ::TestRoute
+                routeMapper = ::routeOf
             )
         )
         val route = routeParser.parse("/users/jeff")
@@ -53,7 +49,7 @@ class UrlRouteMatcherTest {
         val routeParser = routeParserFrom(
             urlRouteMatcher(
                 routePattern = "/users/{id}",
-                routeMapper = ::TestRoute
+                routeMapper = ::routeOf
             )
         )
         val routeString = routeString(

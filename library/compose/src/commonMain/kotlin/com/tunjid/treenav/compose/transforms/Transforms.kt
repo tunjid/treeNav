@@ -2,9 +2,9 @@ package com.tunjid.treenav.compose.transforms
 
 import androidx.compose.runtime.Composable
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayState
+import com.tunjid.treenav.compose.PaneScope
 
 /**
  * Provides APIs for adjusting what is presented in a [MultiPaneDisplay].

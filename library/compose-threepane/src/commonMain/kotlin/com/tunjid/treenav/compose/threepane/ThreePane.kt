@@ -126,11 +126,11 @@ fun <R : Node> threePaneEntry(
         }
         Box(
             modifier =
-            if (shouldAnimate) Modifier.animateEnterExit(
-                enter = enterTransition(),
-                exit = exitTransition()
-            )
-            else Modifier,
+                if (shouldAnimate) Modifier.animateEnterExit(
+                    enter = enterTransition(),
+                    exit = exitTransition()
+                )
+                else Modifier,
             content = {
                 original(destination)
             }

@@ -24,9 +24,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.transforms.PaneTransform
 import com.tunjid.treenav.compose.transforms.Transform
-import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
  * An [Transform] that selectively displays panes for a [ThreePane] layout

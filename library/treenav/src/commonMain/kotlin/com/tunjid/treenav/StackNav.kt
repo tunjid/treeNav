@@ -122,7 +122,7 @@ val StackNav.canPop: Boolean get() = children.size > 1
 
 val StackNav.current: Node? get() = children.lastOrNull()
 
-inline fun <reified T : Node> StackNav.requireCurrent(): T  {
+inline fun <reified T : Node> StackNav.requireCurrent(): T {
     val node = current ?: throw IllegalArgumentException("The current node is null")
     check(node is T) {
         "Expected the current node to be of type ${T::class.simpleName} but was ${node::class.simpleName}."

@@ -19,7 +19,6 @@ package com.tunjid.treenav.strings
 /**
  * A class for looking up items that match a certain path pattern by route
  */
-@Suppress("unused")
 class RouteTrie<T> {
 
     private val rootTrieNode = TrieNode<T>()
@@ -32,4 +31,12 @@ class RouteTrie<T> {
     operator fun get(route: Route): T? = rootTrieNode.find(
         path = route.id,
     )
+}
+
+/**
+ * Converts this [Map] to a [RouteTrie] capable of looking up any type [T] by matching it
+ * to it's [PathPattern].
+ */
+fun <T> Map<PathPattern, T>.toRouteTrie() = RouteTrie<T>().apply {
+    forEach { (pattern, value) -> set(pattern, value) }
 }

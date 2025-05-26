@@ -18,13 +18,13 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.Order
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.backStack
-import com.tunjid.treenav.reversedBackStackSequence
 import com.tunjid.treenav.current
 import com.tunjid.treenav.flatten
 import com.tunjid.treenav.minus
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
 import com.tunjid.treenav.push
+import com.tunjid.treenav.reversedBackStackSequence
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

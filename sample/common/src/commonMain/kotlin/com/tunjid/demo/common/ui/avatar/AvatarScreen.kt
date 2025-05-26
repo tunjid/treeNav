@@ -27,8 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
-import com.tunjid.demo.common.ui.avatar.Action
-import com.tunjid.demo.common.ui.avatar.State
 import com.tunjid.demo.common.ui.dragToPop
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf

@@ -25,7 +25,7 @@ import androidx.compose.runtime.Composable
  *
  * @param navEntry the [NavEntry] to wrap
  */
-internal open class NavEntryWrapper<T : Any>(public val navEntry: NavEntry<T>) :
+internal open class NavEntryWrapper<T : Any>(val navEntry: NavEntry<T>) :
     NavEntry<T>(navEntry.key, navEntry.metadata, navEntry.content) {
     override val key: T
         get() = navEntry.key
