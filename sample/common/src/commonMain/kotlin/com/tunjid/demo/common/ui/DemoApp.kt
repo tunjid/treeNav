@@ -74,7 +74,7 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.me.mePaneEntry
 import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.compose.MultiPaneDisplay2
+import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
@@ -107,10 +107,7 @@ fun App(
                 )
             }
 
-            MultiPaneDisplay2(
-                sharedTransitionScope = this,
-                modifier = Modifier
-                    .fillMaxSize(),
+            MultiPaneDisplay(
                 state = appState.rememberMultiPaneDisplayState(
                     remember {
                         listOf(
@@ -144,6 +141,8 @@ fun App(
                         )
                     },
                 ),
+                modifier = Modifier
+                    .fillMaxSize(),
             ) {
                 appState.displayScope = this
                 appState.splitLayoutState.visibleCount = appState.filteredPaneOrder.size
