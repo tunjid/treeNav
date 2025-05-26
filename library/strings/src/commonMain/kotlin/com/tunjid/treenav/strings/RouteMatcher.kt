@@ -17,11 +17,31 @@
 package com.tunjid.treenav.strings
 
 /**
- * Matches route [String] representations into concrete [Route] instances
+ * Matches a specific [pattern] to a specific [Route].
  */
 interface RouteMatcher {
+
+    /**
+     * The [pattern] describing the general form of the [Route] to match.
+     */
     val pattern: PathPattern
+
+    /**
+     * Creates a [Route] from the parsed parameter parameters.
+     */
     fun route(params: RouteParams): Route
+}
+
+/**
+ * Parses urls to create [Route] instances.
+ */
+fun interface RouteParser {
+
+    /**
+     * Given a url [pathAndQueries] defining a navigation [Route], this method attempts to create
+     * the matching [Route] for it, otherwise it returns null.
+     */
+    fun parse(pathAndQueries: String): Route?
 }
 
 /**
