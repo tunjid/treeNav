@@ -19,9 +19,9 @@ package com.tunjid.treenav.compose
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.backStack
-import com.tunjid.treenav.requireCurrent
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
+import com.tunjid.treenav.requireCurrent
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

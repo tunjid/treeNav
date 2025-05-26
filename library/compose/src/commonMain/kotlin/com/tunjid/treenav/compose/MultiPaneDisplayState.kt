@@ -18,7 +18,6 @@ package com.tunjid.treenav.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.transforms.CompoundTransform
 import com.tunjid.treenav.compose.transforms.DestinationTransform

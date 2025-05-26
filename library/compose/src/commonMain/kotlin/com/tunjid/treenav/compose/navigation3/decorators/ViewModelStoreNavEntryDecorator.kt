@@ -39,7 +39,8 @@ import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.navEntryDecorator
 
-@Composable internal expect fun shouldRemoveViewModelStoreCallback(): () -> Boolean
+@Composable
+internal expect fun shouldRemoveViewModelStoreCallback(): () -> Boolean
 
 internal expect fun SavedStateViewModelFactory(
     savedStateRegistryOwner: SavedStateRegistryOwner

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.kotlin.dsl.configure

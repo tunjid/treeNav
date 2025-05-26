@@ -15,6 +15,7 @@
  */
 
 package com.tunjid.treenav.compose.navigation3
+
 import androidx.compose.runtime.Composable
 
 /**
@@ -26,7 +27,7 @@ import androidx.compose.runtime.Composable
  * @param content content for this entry to be displayed when this entry is active
  */
 internal open class NavEntry<T : Any>(
-    public open val key: T,
-    public open val metadata: Map<String, Any> = emptyMap(),
-    public open val content: @Composable (T) -> Unit
+    open val key: T,
+    open val metadata: Map<String, Any> = emptyMap(),
+    open val content: @Composable (T) -> Unit
 )

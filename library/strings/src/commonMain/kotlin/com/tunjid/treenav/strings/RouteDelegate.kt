@@ -36,7 +36,7 @@ private class RouteDelegate<T>(
         null -> when {
             isOptional -> default
             else -> default ?: throw NoSuchElementException(
-                "There is no value for the property '${property.name}' in the Route's ${if(isPath) "path arguments" else "query parameters"}."
+                "There is no value for the property '${property.name}' in the Route's ${if (isPath) "path arguments" else "query parameters"}."
             )
         }
 

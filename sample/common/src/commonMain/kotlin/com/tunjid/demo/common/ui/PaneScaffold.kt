@@ -51,8 +51,8 @@ import androidx.compose.ui.zIndex
 import com.tunjid.composables.ui.skipIf
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.treenav.compose.PaneScope
-import com.tunjid.treenav.compose.threepane.ThreePaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.ThreePaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.threepane.rememberThreePaneMovableElementSharedTransitionScope
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
@@ -104,7 +104,8 @@ class PaneScaffoldState internal constructor(
 @Composable
 fun PaneScope<ThreePane, SampleDestination>.rememberPaneScaffoldState(): PaneScaffoldState {
     val appState = LocalAppState.current
-    val paneMovableElementSharedTransitionScope = rememberThreePaneMovableElementSharedTransitionScope()
+    val paneMovableElementSharedTransitionScope =
+        rememberThreePaneMovableElementSharedTransitionScope()
     return remember(appState) {
         PaneScaffoldState(
             appState = appState,

@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
-
 /*
  * Copyright 2021 Google LLC
  *

@@ -17,19 +17,12 @@
 package com.tunjid.treenav.compose
 
 import com.tunjid.treenav.MultiStackNav
-import com.tunjid.treenav.Node
 import com.tunjid.treenav.StackNav
 import com.tunjid.treenav.backStack
-import com.tunjid.treenav.requireCurrent
-import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
-import com.tunjid.treenav.reversedBackStackSequence
 import com.tunjid.treenav.switch
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 
 class StackNavExtTest {
@@ -47,11 +40,13 @@ class StackNavExtTest {
             .push(TestNode("E", children = listOf(TestNode("1"), TestNode("2"))))
             .push(TestNode("F"))
 
-        println(pushed.backStack(
-            includeCurrentDestinationChildren = true,
-            placeChildrenBeforeParent = true,
-            distinctDestinations = true,
-        ))
+        println(
+            pushed.backStack(
+                includeCurrentDestinationChildren = true,
+                placeChildrenBeforeParent = true,
+                distinctDestinations = true,
+            )
+        )
         assertEquals(
             expected = pushed.backStack(
                 includeCurrentDestinationChildren = true,

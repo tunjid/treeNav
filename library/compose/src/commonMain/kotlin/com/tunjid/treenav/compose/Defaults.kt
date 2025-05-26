@@ -34,13 +34,13 @@ import androidx.compose.ui.unit.LayoutDirection
 @Stable
 internal object Defaults {
 
-     val EmptyElement: @Composable (Any?, Modifier) -> Unit = { _, _ -> }
+    val EmptyElement: @Composable (Any?, Modifier) -> Unit = { _, _ -> }
 
     @ExperimentalSharedTransitionApi
-     val DefaultBoundsTransform = BoundsTransform { _, _ -> DefaultSpring }
+    val DefaultBoundsTransform = BoundsTransform { _, _ -> DefaultSpring }
 
     @ExperimentalSharedTransitionApi
-     val ParentClip: OverlayClip =
+    val ParentClip: OverlayClip =
         object : OverlayClip {
             override fun getClipPath(
                 sharedContentState: SharedContentState,

@@ -12,6 +12,6 @@ import com.tunjid.treenav.compose.transforms.RenderTransform
 @Stable
 class PaneEntry<Pane, Destination : Node>(
     internal val renderTransform: RenderTransform<Pane, Destination>,
-    internal val paneTransform:  @Composable (Destination) -> Map<Pane, Destination?>,
+    internal val paneTransform: @Composable (Destination) -> Map<Pane, Destination?>,
     internal val content: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
 )

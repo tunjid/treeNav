@@ -25,7 +25,7 @@ import com.tunjid.treenav.backStack
  * A convenience method for reading the back stack for this [MultiStackNav]
  * optimized for consumption for a [MultiPaneDisplay].
  */
-inline fun <reified Destination: Node> MultiStackNav.multiPaneDisplayBackstack(): List<Destination> =
+inline fun <reified Destination : Node> MultiStackNav.multiPaneDisplayBackstack(): List<Destination> =
     backStack(
         includeCurrentDestinationChildren = true,
         placeChildrenBeforeParent = true,
@@ -37,7 +37,7 @@ inline fun <reified Destination: Node> MultiStackNav.multiPaneDisplayBackstack()
  * A convenience method for reading the back stack for this [MultiStackNav]
  * optimized for consumption for a [MultiPaneDisplay].
  */
-inline fun <reified Destination: Node> StackNav.multiPaneDisplayBackstack(): List<Destination> =
+inline fun <reified Destination : Node> StackNav.multiPaneDisplayBackstack(): List<Destination> =
     backStack(
         includeCurrentDestinationChildren = true,
         placeChildrenBeforeParent = true,
