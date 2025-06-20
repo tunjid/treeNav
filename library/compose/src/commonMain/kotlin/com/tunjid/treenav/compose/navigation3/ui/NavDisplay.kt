@@ -62,7 +62,7 @@ internal object NavDisplay {
      * Function to be called on the [NavEntry.metadata] to notify the [NavDisplay] that the content
      * should be animated using the provided [ContentTransform].
      */
-    public fun transitionSpec(
+    fun transitionSpec(
         transitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform?
     ): Map<String, Any> = mapOf(TRANSITION_SPEC to transitionSpec)
 
@@ -70,7 +70,7 @@ internal object NavDisplay {
      * Function to be called on the [NavEntry.metadata] to notify the [NavDisplay] that, when
      * popping from backstack, the content should be animated using the provided [ContentTransform].
      */
-    public fun popTransitionSpec(
+    fun popTransitionSpec(
         popTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform?
     ): Map<String, Any> = mapOf(POP_TRANSITION_SPEC to popTransitionSpec)
 
@@ -79,11 +79,11 @@ internal object NavDisplay {
      * popping from backstack using a Predictive back gesture, the content should be animated using
      * the provided [ContentTransform].
      */
-    public fun predictivePopTransitionSpec(
+    fun predictivePopTransitionSpec(
         predictivePopTransitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform?
     ): Map<String, Any> = mapOf(PREDICTIVE_POP_TRANSITION_SPEC to predictivePopTransitionSpec)
 
-    public val defaultPredictivePopTransitionSpec:
+    val defaultPredictivePopTransitionSpec:
             AnimatedContentTransitionScope<*>.() -> ContentTransform =
         {
             ContentTransform(
@@ -127,6 +127,7 @@ internal object NavDisplay {
  *   entries to pop from the end of the backstack, as calculated by the [sceneStrategy].
  * @param entryDecorators list of [NavEntryDecorator] to add information to the entry content
  * @param sceneStrategy the [SceneStrategy] to determine which scene to render a list of entries.
+ * @param sizeTransform the [SizeTransform] for the [AnimatedContent].
  * @param transitionSpec Default [ContentTransform] when navigating to [NavEntry]s.
  * @param popTransitionSpec Default [ContentTransform] when popping [NavEntry]s.
  * @param predictivePopTransitionSpec Default [ContentTransform] when popping with predictive back
@@ -242,11 +243,11 @@ internal fun <T : Any> NavDisplay(
         val sceneToRenderableEntryMap =
             remember(
                 mostRecentSceneKeys.toList(),
-                scenes.values.map { scene -> scene.entries.map(NavEntry<T>::key) },
+                scenes.values.map { scene -> scene.entries.map(NavEntry<T>::contentKey) },
                 transition.targetState,
             ) {
                 buildMap {
-                    val coveredEntryKeys = mutableSetOf<T>()
+                    val coveredEntryKeys = mutableSetOf<Any>()
                     (mostRecentSceneKeys.filter { it != transition.targetState } +
                             listOf(transition.targetState))
                         .fastForEachReversed { sceneKey ->
@@ -254,23 +255,26 @@ internal fun <T : Any> NavDisplay(
                             put(
                                 sceneKey,
                                 scene.entries
-                                    .map { it.key }
+                                    .map { it.contentKey }
                                     .filterNot(coveredEntryKeys::contains)
                                     .toSet(),
                             )
-                            scene.entries.forEach { coveredEntryKeys.add(it.key) }
+                            scene.entries.forEach { coveredEntryKeys.add(it.contentKey) }
                         }
                 }
             }
 
         // Transition Handling
         /** Keep track of the previous entries for the transition's current scene. */
-        /** Keep track of the previous entries for the transition's current scene. */
         val transitionCurrentStateEntries = remember(transition.currentState) { entries.toList() }
 
         // Consider this a pop if the current entries match the previous entries we have recorded
         // from the current state of the transition
-        val isPop = isPop(transitionCurrentStateEntries.map { it.key }, entries.map { it.key })
+        val isPop =
+            isPop(
+                transitionCurrentStateEntries.map { it.contentKey },
+                entries.map { it.contentKey },
+            )
 
         val zIndices = remember { mutableObjectFloatMapOf<Pair<KClass<*>, Any>>() }
         val initialKey = transition.currentState
@@ -339,12 +343,10 @@ internal fun <T : Any> NavDisplay(
                     transitionEntry.contentTransform(PREDICTIVE_POP_TRANSITION_SPEC)?.invoke(this)
                         ?: predictivePopTransitionSpec(this)
                 }
-
                 isPop -> {
                     transitionEntry.contentTransform(POP_TRANSITION_SPEC)?.invoke(this)
                         ?: popTransitionSpec(this)
                 }
-
                 else -> {
                     transitionEntry.contentTransform(TRANSITION_SPEC)?.invoke(this)
                         ?: transitionSpec(this)
@@ -402,7 +404,7 @@ internal fun <T : Any> NavDisplay(
         // Show all OverlayScene instances above the AnimatedContent
         overlayScenes.fastForEachReversed { overlayScene ->
             // TODO Calculate what entries should be displayed from sceneToRenderableEntryMap
-            val allEntries = overlayScene.entries.map { it.key }.toSet()
+            val allEntries = overlayScene.entries.map { it.contentKey }.toSet()
             CompositionLocalProvider(LocalEntriesToRenderInCurrentScene provides allEntries) {
                 overlayScene.content.invoke()
             }

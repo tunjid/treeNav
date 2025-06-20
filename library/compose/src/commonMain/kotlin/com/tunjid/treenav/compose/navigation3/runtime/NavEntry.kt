@@ -14,20 +14,49 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.navigation3
-.runtime
+package com.tunjid.treenav.compose.navigation3.runtime
 import androidx.compose.runtime.Composable
+import androidx.annotation.RestrictTo
 
 /**
  * Entry maintains and stores the key and the content represented by that key. Entries should be
  * created as part of a [NavDisplay.entryProvider](reference/androidx/navigation/NavDisplay).
  *
+ * @param T the type of the key for this NavEntry
  * @param key key for this entry
+ * @param contentKey A unique, stable id that uniquely identifies the content of this NavEntry. To
+ *   maximize stability, it should ge derived from the [key]. The contentKey type must be saveable
+ *   (i.e. on Android, it should be saveable via Android). Defaults to [key].toString().
  * @param metadata provides information to the display
  * @param content content for this entry to be displayed when this entry is active
  */
 internal open class NavEntry<T : Any>(
-    open val key: T,
+    private val key: T,
+    val contentKey: Any = defaultContentKey(key),
     open val metadata: Map<String, Any> = emptyMap(),
-    open val content: @Composable (T) -> Unit
-)
+    private val content: @Composable (T) -> Unit,
+) {
+    /** Allows creating a NavEntry from another NavEntry while keeping [content] field private */
+    internal constructor(
+        navEntry: NavEntry<T>
+    ) : this(navEntry.key, navEntry.contentKey, navEntry.metadata, navEntry.content)
+
+    /**
+     * Invokes the composable content of this NavEntry with the key that was provided when
+     * instantiating this NavEntry
+     */
+    @Composable
+    open fun Content() {
+        this.content(key)
+    }
+
+    /**
+     * Returns true if this NavEntry is in the [backStack], false otherwise.
+     *
+     * @param [backStack] the backStack to check if it contains this NavEntry.
+     */
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
+    fun isInBackStack(backStack: List<Any>): Boolean = backStack.contains(this.key)
+}
+
+@PublishedApi internal fun defaultContentKey(key: Any): Any = key.toString()

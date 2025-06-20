@@ -37,6 +37,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.Keys.id
 import com.tunjid.treenav.compose.navigation3.decorators.rememberViewModelStoreNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
@@ -163,6 +164,9 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
         entryProvider = { key ->
             NavEntry(
                 key = key,
+                metadata = mapOf(
+                    Keys.ID_KEY to key.id
+                ),
                 content = { destination ->
                     val scope = LocalPaneScope.current
                     @Suppress("UNCHECKED_CAST")
@@ -188,7 +192,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
         onBack: (count: Int) -> Unit
     ): Scene<Destination> {
 
-        val backstackIds = entries.map { it.key.id }
+        val backstackIds = entries.map { it.id }
 
         return remember(backstackIds) {
 
@@ -216,8 +220,8 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                 slots = slots,
                 panesToDestinations = state.panesToDestinationsTransform,
                 currentPanedNavigationState = currentPanedNavigationState(),
-                entries = entries.filter { it.key.id in activeIds },
-                previousEntries = entries.filter { it.key.id in poppedBackstackIds },
+                entries = entries.filter { it.id in activeIds },
+                previousEntries = entries.filter { it.id in poppedBackstackIds },
                 scopeContent = content
             )
         }
@@ -251,7 +255,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                 @Composable
                 override fun Destination(pane: Pane) {
                     val id = panedNavigationState.destinationFor(pane)?.id
-                    val entry = entries.firstOrNull { it.key.id == id } ?: return
+                    val entry = entries.firstOrNull { it.id == id } ?: return
 
                     val paneState = panedNavigationState.slotFor(pane)
                         ?.let(panedNavigationState::paneStateFor) ?: return
@@ -271,7 +275,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                     CompositionLocalProvider(
                         LocalPaneScope provides scope
                     ) {
-                        entry.content(entry.key)
+                        entry.Content()
                     }
                 }
 
@@ -323,3 +327,8 @@ private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     )
 }
 
+internal object Keys {
+    val ID_KEY = "com.tunjid.treenav.compose.id"
+
+    val NavEntry<*>.id get() = metadata[ID_KEY] as String
+}

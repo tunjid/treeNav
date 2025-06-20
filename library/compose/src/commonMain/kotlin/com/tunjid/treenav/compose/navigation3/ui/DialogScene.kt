@@ -22,9 +22,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 
+
 /** An [OverlayScene] that renders an [entry] within a [Dialog]. */
 internal class DialogScene<T : Any>(
-    override val key: T,
+    override val key: Any,
     override val previousEntries: List<NavEntry<T>>,
     override val overlaidEntries: List<NavEntry<T>>,
     private val entry: NavEntry<T>,
@@ -35,9 +36,7 @@ internal class DialogScene<T : Any>(
     override val entries: List<NavEntry<T>> = listOf(entry)
 
     override val content: @Composable (() -> Unit) = {
-        Dialog(onDismissRequest = { onBack(1) }, properties = dialogProperties) {
-            entry.content.invoke(entry.key)
-        }
+        Dialog(onDismissRequest = { onBack(1) }, properties = dialogProperties) { entry.Content() }
     }
 }
 
@@ -49,7 +48,7 @@ internal class DialogScene<T : Any>(
  */
 internal class DialogSceneStrategy<T : Any>() : SceneStrategy<T> {
     @Composable
-    public override fun calculateScene(
+    override fun calculateScene(
         entries: List<NavEntry<T>>,
         onBack: (count: Int) -> Unit,
     ): Scene<T>? {
@@ -57,7 +56,7 @@ internal class DialogSceneStrategy<T : Any>() : SceneStrategy<T> {
         val dialogProperties = lastEntry?.metadata?.get(DIALOG_KEY) as? DialogProperties
         return dialogProperties?.let { properties ->
             DialogScene(
-                key = lastEntry.key,
+                key = lastEntry.contentKey,
                 previousEntries = entries.dropLast(1),
                 overlaidEntries = entries.dropLast(1),
                 entry = lastEntry,

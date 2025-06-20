@@ -37,12 +37,13 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.navigation3.runtime.DecoratedNavEntryProvider
-import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
-import com.tunjid.treenav.compose.navigation3.decorators.rememberMovableContentNavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
+import com.tunjid.treenav.compose.Keys.id
 import com.tunjid.treenav.compose.navigation3.decorators.rememberViewModelStoreNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.decorators.transitionAwareLifecycleNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.DecoratedNavEntryProvider
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
+import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.ui.rememberSceneSetupNavEntryDecorator
 
 @Composable
 internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntryMultiPaneDisplayScope(
@@ -76,7 +77,7 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
             )
         },
         entryDecorators = listOf(
-            rememberMovableContentNavEntryDecorator(),
+            rememberSceneSetupNavEntryDecorator(),
             rememberSavedStateNavEntryDecorator(),
             transitionAwareLifecycleNavEntryDecorator(
                 backStack = backStack,
@@ -97,12 +98,12 @@ internal fun <Destination : Node, NavigationState : Node, Pane> DecoratedNavEntr
                     paneRenderer = {
                         val currentEntry = remember(paneState.currentDestination?.id) {
                             updatedEntries.findLast {
-                                it.key.id == paneState.currentDestination?.id
+                                it.id == paneState.currentDestination?.id
                             }
                         }
                         checkNotNull(currentEntry) {
                             "There is no entry for the current navigation destination with id ${paneState.currentDestination?.id}"
-                        }.content(currentEntry.key)
+                        }.Content()
                     },
                 )
             }
