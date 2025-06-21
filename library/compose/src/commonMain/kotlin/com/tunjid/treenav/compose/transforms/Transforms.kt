@@ -12,27 +12,6 @@ import com.tunjid.treenav.compose.PaneScope
 sealed interface Transform<Pane, in NavigationState : Node, Destination : Node>
 
 /**
- * A [Transform] that allows for changing the current [Destination] in the [MultiPaneDisplay]
- * sees without actually modifying the backing [NavigationState].
- */
-fun interface DestinationTransform<Pane, NavigationState : Node, Destination : Node>
-    : Transform<Pane, NavigationState, Destination> {
-
-    /**
-     * Given a [NavigationState], provide the current [Destination] to show. The [Destination]
-     * returned must already exist in the back stack of the [MultiPaneDisplayState.navigationState].
-     *
-     * @param navigationState the current navigation state.
-     * @param previousTransform a [Transform] that when invoked, returns the [Destination] that
-     * would have been shown pre-transform that can then be composed with new logic.
-     */
-    fun toDestination(
-        navigationState: NavigationState,
-        previousTransform: (NavigationState) -> Destination,
-    ): Destination
-}
-
-/**
  * A [Transform] that allows for changing which [Destination] shows in which [Pane].
  */
 fun interface PaneTransform<Pane, Destination : Node>
@@ -75,32 +54,3 @@ fun interface RenderTransform<Pane, Destination : Node>
         previousTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
     )
 }
-
-internal class CompoundTransform<Pane, NavigationState : Node, Destination : Node>(
-    destinationTransform: DestinationTransform<Pane, NavigationState, Destination>?,
-    paneTransform: PaneTransform<Pane, Destination>?,
-    renderTransform: RenderTransform<Pane, Destination>?,
-) : Transform<Pane, NavigationState, Destination> {
-    val transforms = listOfNotNull(
-        destinationTransform,
-        paneTransform,
-        renderTransform,
-    )
-}
-
-/**
- * Creates a transform that an aggregation of the transforms provided to it.
- *
- * @see DestinationTransform
- * @see PaneTransform
- * @see RenderTransform
- */
-fun <Pane, NavigationState : Node, Destination : Node> compoundTransform(
-    destinationTransform: DestinationTransform<Pane, NavigationState, Destination>? = null,
-    paneTransform: PaneTransform<Pane, Destination>? = null,
-    renderTransform: RenderTransform<Pane, Destination>? = null,
-): Transform<Pane, NavigationState, Destination> = CompoundTransform(
-    destinationTransform = destinationTransform,
-    paneTransform = paneTransform,
-    renderTransform = renderTransform,
-)

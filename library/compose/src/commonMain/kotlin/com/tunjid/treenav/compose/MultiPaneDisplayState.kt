@@ -16,14 +16,10 @@
 
 package com.tunjid.treenav.compose
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.transforms.CompoundTransform
-import com.tunjid.treenav.compose.transforms.DestinationTransform
 import com.tunjid.treenav.compose.transforms.PaneTransform
 import com.tunjid.treenav.compose.transforms.RenderTransform
 import com.tunjid.treenav.compose.transforms.Transform
@@ -45,14 +41,14 @@ import com.tunjid.treenav.compose.transforms.Transform
  * @param renderTransform the transform used to render a [Destination] in its pane.
  */
 class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> internal constructor(
-   internal val panes: List<Pane>,
-   internal val navigationState: State<NavigationState>,
-   internal val backStackTransform: (NavigationState) -> List<Destination>,
-   internal val destinationTransform: (NavigationState) -> Destination,
-   internal val popTransform: (NavigationState) -> NavigationState,
-   internal val onPopped: (NavigationState) -> Unit,
-   internal val panesToDestinationsTransform: @Composable (Destination) -> Map<Pane, Destination?>,
-   internal val renderTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
+    internal val panes: List<Pane>,
+    internal val navigationState: State<NavigationState>,
+    internal val backStackTransform: (NavigationState) -> List<Destination>,
+    internal val destinationTransform: (NavigationState) -> Destination,
+    internal val popTransform: (NavigationState) -> NavigationState,
+    internal val onPopped: (NavigationState) -> Unit,
+    internal val panesToDestinationsTransform: @Composable (Destination) -> Map<Pane, Destination?>,
+    internal val renderTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
 ) {
     internal val backPreviewState = mutableStateOf(false)
 }
@@ -107,26 +103,13 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
         MultiPaneDisplayState<Pane, NavigationState, Destination>.plus(
     transform: Transform<Pane, NavigationState, Destination>,
 ): MultiPaneDisplayState<Pane, NavigationState, Destination> =
-    if (transform is CompoundTransform) transform.transforms.fold(
-        initial = this,
-        operation = MultiPaneDisplayState<Pane, NavigationState, Destination>::plus,
-    )
-    else MultiPaneDisplayState(
+    MultiPaneDisplayState(
         panes = panes,
         navigationState = navigationState,
         backStackTransform = backStackTransform,
         popTransform = popTransform,
-        onPopped =  onPopped,
-        destinationTransform = when (transform) {
-            is DestinationTransform -> { destination ->
-                transform.toDestination(
-                    navigationState = destination,
-                    previousTransform = destinationTransform
-                )
-            }
-
-            else -> destinationTransform
-        },
+        onPopped = onPopped,
+        destinationTransform = destinationTransform,
         panesToDestinationsTransform = when (transform) {
             is PaneTransform -> { destination ->
                 transform.toPanesAndDestinations(
