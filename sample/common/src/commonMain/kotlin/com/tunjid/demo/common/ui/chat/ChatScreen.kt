@@ -53,7 +53,6 @@ import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.data.Profile
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import com.tunjid.treenav.compose.threepane.ThreePane
 import kotlinx.datetime.Instant
@@ -88,7 +87,7 @@ fun ChatScreen(
             navigateToProfile = onAction,
             modifier = Modifier.fillMaxSize(),
             scrollState = scrollState,
-            movableSharedElementScope = paneScaffoldState,
+            paneScaffoldState = paneScaffoldState,
         )
     }
 }
@@ -103,7 +102,7 @@ fun Messages(
     navigateToProfile: (Action.Navigation.GoToProfile) -> Unit,
     scrollState: LazyListState,
     modifier: Modifier = Modifier,
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
 ) {
     Box(modifier = modifier) {
         LazyColumn(
@@ -128,7 +127,7 @@ fun Messages(
                     isInPrimaryPane = isInPrimaryPane,
                     isFirstMessageByAuthor = isFirstMessageByAuthor,
                     isLastMessageByAuthor = isLastMessageByAuthor,
-                    movableSharedElementScope = movableSharedElementScope,
+                    paneScaffoldState = paneScaffoldState,
                 )
             }
         }
@@ -145,7 +144,7 @@ fun Message(
     isInPrimaryPane: Boolean,
     isFirstMessageByAuthor: Boolean,
     isLastMessageByAuthor: Boolean,
-    movableSharedElementScope: MovableSharedElementScope
+    paneScaffoldState: PaneScaffoldState,
 ) {
     val borderColor = if (isUserMe) {
         MaterialTheme.colorScheme.primary
@@ -178,7 +177,7 @@ fun Message(
                         }
                     },
             ) {
-                movableSharedElementScope.updatedMovableSharedElementOf(
+                paneScaffoldState.updatedMovableSharedElementOf(
                     key = "$roomName-${item.sender.name}",
                     state = ProfilePhotoArgs(
                         profileName = item.sender.name,
