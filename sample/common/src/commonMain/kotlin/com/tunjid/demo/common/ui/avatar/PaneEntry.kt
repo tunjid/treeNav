@@ -55,7 +55,7 @@ fun avatarPaneEntry() = threePaneEntry<SampleDestination>(
             containerColor = Color.Transparent,
             content = {
                 AvatarScreen(
-                    movableSharedElementScope = this,
+                    paneScaffoldState = this,
                     state = viewModel.state.collectAsStateWithLifecycle().value,
                     onAction = viewModel.accept,
                     modifier = Modifier.fillMaxSize()

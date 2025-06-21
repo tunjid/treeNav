@@ -48,7 +48,7 @@ fun mePaneEntry(
                 .fillMaxSize(),
             content = {
                 ProfileScreen(
-                    movableSharedElementScope = this,
+                    paneScaffoldState = this,
                     state = viewModel.state.collectAsStateWithLifecycle().value,
                     onAction = viewModel.accept,
                 )

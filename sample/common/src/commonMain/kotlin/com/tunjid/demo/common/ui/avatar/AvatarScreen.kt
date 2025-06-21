@@ -25,16 +25,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import com.tunjid.demo.common.ui.PaneScaffoldState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.dragToPop
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AvatarScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     state: State,
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier,
@@ -46,7 +46,7 @@ fun AvatarScreen(
             .fillMaxSize()
     ) {
         val profileName = state.profileName ?: state.profile?.name ?: ""
-        movableSharedElementScope.updatedMovableSharedElementOf(
+        paneScaffoldState.updatedMovableSharedElementOf(
             key = "${state.roomName}-$profileName",
             state = ProfilePhotoArgs(
                 profileName = profileName,

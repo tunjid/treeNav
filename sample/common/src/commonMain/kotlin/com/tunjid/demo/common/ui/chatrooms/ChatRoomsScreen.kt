@@ -45,19 +45,19 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.collapsingheader.CollapsingHeaderLayout
 import com.tunjid.composables.collapsingheader.CollapsingHeaderState
+import com.tunjid.demo.common.ui.PaneScaffoldState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
 fun ChatRoomsScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     state: State,
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier,
@@ -72,7 +72,7 @@ fun ChatRoomsScreen(
         },
         body = {
             ChatRooms(
-                movableSharedElementScope = movableSharedElementScope,
+                paneScaffoldState = paneScaffoldState,
                 state = state,
                 onAction = onAction,
             )
@@ -102,7 +102,7 @@ private fun Header(headerState: CollapsingHeaderState) {
 
 @Composable
 private fun ChatRooms(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     state: State,
     onAction: (Action) -> Unit
 ) {
@@ -114,7 +114,7 @@ private fun ChatRooms(
             key = ChatRoom::name,
             itemContent = { room ->
                 ChatRoomListItem(
-                    movableSharedElementScope = movableSharedElementScope,
+                    paneScaffoldState = paneScaffoldState,
                     roomName = room.name,
                     participants = room.messages
                         .map(Message::sender)
@@ -131,7 +131,7 @@ private fun ChatRooms(
 
 @Composable
 fun ChatRoomListItem(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     roomName: String,
     participants: List<String>,
     modifier: Modifier = Modifier,
@@ -153,7 +153,7 @@ fun ChatRoomListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             ChatRoomParticipants(
-                movableSharedElementScope = movableSharedElementScope,
+                paneScaffoldState = paneScaffoldState,
                 participants = participants,
                 roomName = roomName,
             )
@@ -169,10 +169,10 @@ fun ChatRoomListItem(
 @OptIn(ExperimentalLayoutApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChatRoomParticipants(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     participants: List<String>,
     roomName: String,
-) = with(movableSharedElementScope) {
+) = with(paneScaffoldState) {
     FlowRow(
         modifier = Modifier
             .width(64.dp)
