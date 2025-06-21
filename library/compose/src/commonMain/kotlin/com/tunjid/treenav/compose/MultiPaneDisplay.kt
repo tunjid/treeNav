@@ -37,6 +37,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.Keys.children
 import com.tunjid.treenav.compose.Keys.id
 import com.tunjid.treenav.compose.navigation3.decorators.rememberViewModelStoreNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
@@ -172,7 +173,8 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
                 contentKey = key.id,
                 metadata = mapOf(
                     Keys.ID_KEY to key.id,
-                    Keys.DESTINATION_KEY to key
+                    Keys.DESTINATION_KEY to key,
+                    Keys.CHILDREN_KEY to key.children,
                 ),
                 content = { destination ->
                     val scope = LocalPaneScope.current
@@ -229,8 +231,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                     destination.children.mapTo(mutableSetOf(), Node::id) + destination.id
                 }
 
-            val poppedBackstackIds = state.backStackTransform(state.popTransform(current))
-                .map(transform = Node::id)
+            val poppedBackstack = state.backStackTransform(state.popTransform(current))
 
             val mutableEntries = entries.toMutableList()
 
@@ -242,8 +243,12 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                 panesToDestinations = state.panesToDestinationsTransform,
                 currentPanedNavigationState = currentPanedNavigationState(),
                 entries = entries.filter { it.id in activeIds },
-                previousEntries = poppedBackstackIds.map { id ->
-                    val index = mutableEntries.indexOfFirst { it.id == id }
+                // Try to match up NavEntries to state using their id and children.
+                // Best case is O(n) where the backstack isn't shuffled.
+                previousEntries = poppedBackstack.map { destination ->
+                    val index = mutableEntries.indexOfFirst {
+                        it.id == destination.id && it.children == destination.children
+                    }
                     mutableEntries.removeAt(index)
                 },
                 scopeContent = content
@@ -359,8 +364,11 @@ internal val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
 internal object Keys {
     val ID_KEY = "com.tunjid.treenav.compose.id"
     val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
+    val CHILDREN_KEY = "com.tunjid.treenav.compose.children"
 
-    val NavEntry<*>.id get() = metadata[ID_KEY] as String
-    inline fun <reified T : Node> NavEntry<*>.destination() = metadata[DESTINATION_KEY] as T
+    internal val NavEntry<*>.id get() = metadata[ID_KEY] as String
+    internal val NavEntry<*>.children get() = metadata[CHILDREN_KEY]
+
+    internal inline fun <reified T : Node> NavEntry<*>.destination() = metadata[DESTINATION_KEY] as T
 
 }
