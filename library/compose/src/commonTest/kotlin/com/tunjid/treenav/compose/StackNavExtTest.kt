@@ -40,18 +40,11 @@ class StackNavExtTest {
             .push(TestNode("E", children = listOf(TestNode("1"), TestNode("2"))))
             .push(TestNode("F"))
 
-        println(
-            pushed.backStack(
-                includeCurrentDestinationChildren = true,
-                placeChildrenBeforeParent = true,
-                distinctDestinations = true,
-            )
-        )
         assertEquals(
             expected = pushed.backStack(
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = true,
-                distinctDestinations = true,
+                distinctDestinations = false,
             ),
             actual = pushed.multiPaneDisplayBackstack()
         )

@@ -29,7 +29,7 @@ inline fun <reified Destination : Node> MultiStackNav.multiPaneDisplayBackstack(
     backStack(
         includeCurrentDestinationChildren = true,
         placeChildrenBeforeParent = true,
-        distinctDestinations = true,
+        distinctDestinations = false,
     )
         .filterIsInstance<Destination>()
 

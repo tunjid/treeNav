@@ -362,13 +362,14 @@ internal val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
 }
 
 internal object Keys {
-    val ID_KEY = "com.tunjid.treenav.compose.id"
-    val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
-    val CHILDREN_KEY = "com.tunjid.treenav.compose.children"
+    internal const val ID_KEY = "com.tunjid.treenav.compose.id"
+    internal const val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
+    internal const val CHILDREN_KEY = "com.tunjid.treenav.compose.children"
 
     internal val NavEntry<*>.id get() = metadata[ID_KEY] as String
     internal val NavEntry<*>.children get() = metadata[CHILDREN_KEY]
 
-    internal inline fun <reified T : Node> NavEntry<*>.destination() = metadata[DESTINATION_KEY] as T
+    internal inline fun <reified T : Node> NavEntry<*>.destination() =
+        metadata[DESTINATION_KEY] as T
 
 }
