@@ -39,7 +39,7 @@ import com.tunjid.treenav.compose.threepane.ThreePane
 fun Modifier.predictiveBackBackgroundModifier(
     paneScope: PaneScope<ThreePane, *>,
 ): Modifier {
-    if (paneScope.paneState.pane != ThreePane.TransientPrimary)
+//    if (paneScope.paneState.pane != ThreePane.TransientPrimary)
         return this
 
     var elevation by remember { mutableStateOf(0.dp) }

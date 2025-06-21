@@ -160,10 +160,7 @@ fun App(
                         )
                     },
                     itemContent = { index ->
-                        DragToPopLayout(
-                            state = appState,
-                            pane = appState.filteredPaneOrder[index]
-                        )
+                        Destination(appState.filteredPaneOrder[index])
                     }
                 )
             }

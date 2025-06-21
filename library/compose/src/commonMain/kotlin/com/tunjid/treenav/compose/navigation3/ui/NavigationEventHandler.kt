@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun NavigationEventHandler(
     enabled: () -> Boolean = { true },
+    passThrough: Boolean = false,
     onBack: suspend (progress: Flow<NavigationEvent>) -> Unit,
 ) {
     // ensure we don't re-register callbacks when onBack changes
@@ -46,7 +47,12 @@ internal fun NavigationEventHandler(
     val navEventScope = rememberCoroutineScope()
 
     val navEventCallBack = remember {
-        NavigationEventHandlerCallback(enabled, navEventScope, currentOnBack)
+        NavigationEventHandlerCallback(
+            enabled = enabled,
+            passThrough = passThrough,
+            onBackScope = navEventScope,
+            currentOnBack = currentOnBack,
+        )
     }
 
     // we want to use the same callback, but ensure we adjust the variable on recomposition
@@ -100,9 +106,14 @@ private class OnBackInstance(
 
 private class NavigationEventHandlerCallback(
     enabled: () -> Boolean,
+    passThrough: Boolean,
     var onBackScope: CoroutineScope,
     var currentOnBack: suspend (progress: Flow<NavigationEvent>) -> Unit,
 ) : NavigationEventCallback(enabled()) {
+
+    init {
+        this.isPassThrough = passThrough
+    }
     private var onBackInstance: OnBackInstance? = null
     private var isActive = false
 

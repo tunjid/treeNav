@@ -79,34 +79,9 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
                 "Shared elements may only be used in non null panes"
             )
             // Allow shared elements in the primary or transient primary content only
-            ThreePane.Primary -> when {
-                paneScope.isPreviewingBack -> sharedElementWithCallerManagedVisibility(
-                    sharedContentState = rememberSharedContentState(key),
-                    visible = false,
-                    boundsTransform = boundsTransform,
-                    placeHolderSize = placeHolderSize,
-                    renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                    zIndexInOverlay = zIndexInOverlay,
-                    clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-                )
-                // Share the element
-                else -> sharedElementWithCallerManagedVisibility(
-                    sharedContentState = rememberSharedContentState(key),
-                    visible = when (visible) {
-                        null -> paneScope.isActive
-                        else -> paneScope.isActive && visible
-                    },
-                    boundsTransform = boundsTransform,
-                    placeHolderSize = placeHolderSize,
-                    renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                    zIndexInOverlay = zIndexInOverlay,
-                    clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-                )
-            }
-            // Share the element when in the transient pane
-            ThreePane.TransientPrimary -> sharedElementWithCallerManagedVisibility(
+            ThreePane.Primary -> sharedElement(
                 sharedContentState = rememberSharedContentState(key),
-                visible = paneScope.isActive,
+                animatedVisibilityScope = paneScope,
                 boundsTransform = boundsTransform,
                 placeHolderSize = placeHolderSize,
                 renderInOverlayDuringTransition = renderInOverlayDuringTransition,
@@ -122,7 +97,3 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
         }
     }
 }
-
-private val PaneScope<ThreePane, *>.isPreviewingBack: Boolean
-    get() = paneState.pane == ThreePane.Primary
-            && paneState.adaptations.contains(ThreePane.PrimaryToTransient)

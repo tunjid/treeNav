@@ -23,7 +23,6 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.animation.core.Transition
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
@@ -46,16 +45,7 @@ import com.tunjid.treenav.compose.transforms.Transform
  * [ThreePane] layouts.
  *
  * It is an opinionated implementation that always shows the movable shared element in
- * the [ThreePane.Primary] pane unless:
- *
- * - The [ThreePane.PrimaryToTransient] adaptation is present and a shared element match is
- * found. During this, the movable shared element will be shown in
- * the [ThreePane.TransientPrimary] pane. During this, an empty box will be rendered
- * in the [ThreePane.Primary] pane.
- *
- * - The [ThreePane.PrimaryToTransient] adaptation is present and a shared element match is NOT
- * found. During this, the element will simply be rendered as is in [ThreePane.Primary], but
- * without movable content semantics.
+ * the [ThreePane.Primary] pane.
  *
  * Note: The movable shared element is never rendered in the following panes:
  * - [ThreePane.Secondary]
@@ -143,25 +133,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
             "Shared elements may only be used in non null panes"
         )
         // Allow shared elements in the primary or transient primary content only
-        ThreePane.Primary -> when {
-            // Show a blank space for shared elements between the destinations
-            isPreviewingBack && hostState.isCurrentlyShared(key) -> EmptyElement
-            // If previewing and it won't be shared, show the item as is
-            isPreviewingBack -> sharedElement
-            // Share the element
-            else -> delegate.movableSharedElementOf(
-                key = key,
-                boundsTransform = boundsTransform,
-                placeHolderSize = placeHolderSize,
-                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                zIndexInOverlay = zIndexInOverlay,
-                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-                alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-                sharedElement = sharedElement
-            )
-        }
-        // Share the element when in the transient pane
-        ThreePane.TransientPrimary -> delegate.movableSharedElementOf(
+        ThreePane.Primary -> delegate.movableSharedElementOf(
             key = key,
             boundsTransform = boundsTransform,
             placeHolderSize = placeHolderSize,
@@ -178,13 +150,4 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         ThreePane.Overlay,
             -> alternateOutgoingSharedElement ?: sharedElement
     }
-}
-
-private val PaneScope<ThreePane, *>.isPreviewingBack: Boolean
-    get() = paneState.pane == ThreePane.Primary
-            && paneState.adaptations.contains(ThreePane.PrimaryToTransient)
-
-// An empty element representing blank space
-private val EmptyElement: @Composable (Any?, Modifier) -> Unit = { _, modifier ->
-    Box(modifier)
 }

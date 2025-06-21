@@ -65,25 +65,6 @@ fun Modifier.dragToPop(): Modifier {
 }
 
 @Composable
-internal fun MultiPaneDisplayScope<ThreePane, SampleDestination>.DragToPopLayout(
-    state: AppState,
-    pane: ThreePane,
-) {
-    // Only place the DragToDismiss Modifier on the Primary pane
-    if (pane == ThreePane.Primary) {
-        Box(
-            modifier = Modifier.dragToPopInternal(state)
-        ) {
-            Destination(pane)
-        }
-        // Place the transient primary screen above  the primary
-        Destination(ThreePane.TransientPrimary)
-    } else {
-        Destination(pane)
-    }
-}
-
-@Composable
 private fun Modifier.dragToPopInternal(state: AppState): Modifier {
     val density = LocalDensity.current
     val dismissThreshold = remember { with(density) { 200.dp.toPx().let { it * it } } }

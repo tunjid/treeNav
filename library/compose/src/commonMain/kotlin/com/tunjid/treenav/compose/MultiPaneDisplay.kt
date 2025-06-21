@@ -43,9 +43,12 @@ import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.ui.LocalNavAnimatedContentScope
 import com.tunjid.treenav.compose.navigation3.ui.NavDisplay
+import com.tunjid.treenav.compose.navigation3.ui.NavigationEventHandler
 import com.tunjid.treenav.compose.navigation3.ui.Scene
 import com.tunjid.treenav.compose.navigation3.ui.SceneStrategy
 import com.tunjid.treenav.compose.navigation3.ui.rememberSceneSetupNavEntryDecorator
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.collect
 
 /**
  * Scope that provides context about individual panes [Pane] in an [MultiPaneDisplay].
@@ -133,11 +136,13 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
         slots = slots
     )
 
+
     val sceneStrategy = remember {
         MultiPanePaneSceneStrategy(
             state = state,
             slots = slots,
             currentPanedNavigationState = panedNavigationState::value,
+            isPreviewingBack = state.backPreviewState::value,
             content = content,
         )
     }
@@ -165,7 +170,8 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
             NavEntry(
                 key = key,
                 metadata = mapOf(
-                    Keys.ID_KEY to key.id
+                    Keys.ID_KEY to key.id,
+                    Keys.DESTINATION_KEY to key
                 ),
                 content = { destination ->
                     val scope = LocalPaneScope.current
@@ -175,6 +181,19 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
             )
         },
     )
+
+    NavigationEventHandler(
+        enabled = { true },
+        passThrough = true,
+    ) { progress ->
+        try {
+            state.backPreviewState.value = true
+            progress.collect()
+            state.backPreviewState.value = false
+        } catch (e: CancellationException) {
+            state.backPreviewState.value = false
+        }
+    }
 }
 
 
@@ -182,6 +201,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
 private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : Node, Pane>(
     private val state: MultiPaneDisplayState<Pane, NavigationState, Destination>,
     private val slots: Set<Slot>,
+    private val isPreviewingBack: () -> Boolean,
     private val currentPanedNavigationState: () -> SlotBasedPanedNavigationState<Pane, Destination>,
     private val content: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : SceneStrategy<Destination> {
@@ -218,6 +238,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                 backstackIds = backstackIds,
                 destination = state.destinationTransform(current),
                 slots = slots,
+                isPreviewingBack = isPreviewingBack,
                 panesToDestinations = state.panesToDestinationsTransform,
                 currentPanedNavigationState = currentPanedNavigationState(),
                 entries = entries.filter { it.id in activeIds },
@@ -234,6 +255,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     private val backstackIds: List<String>,
     private val destination: Destination,
     private val slots: Set<Slot>,
+    private val isPreviewingBack: () -> Boolean,
     private val panesToDestinations: @Composable (Destination) -> Map<Pane, Destination?>,
     private val currentPanedNavigationState: SlotBasedPanedNavigationState<Pane, Destination>,
     private val scopeContent: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
@@ -266,7 +288,11 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                         AnimatedPaneScope(
                             paneState = paneState,
                             activeState = derivedStateOf {
-                                animatedContentScope.transition.targetState == EnterExitState.Visible
+                                val previewing = isPreviewingBack()
+                                val isEntering =
+                                    animatedContentScope.transition.targetState == EnterExitState.Visible
+                                if (previewing) !isEntering
+                                else isEntering
                             },
                             animatedContentScope = animatedContentScope,
                         )
@@ -321,7 +347,7 @@ internal fun <Destination : Node, Pane> SlotBasedPanedNavigationState<Pane, Dest
         }
     }
 
-private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
+internal val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     throw IllegalArgumentException(
         "PaneScope should not be read until provided in the composition"
     )
@@ -329,6 +355,9 @@ private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
 
 internal object Keys {
     val ID_KEY = "com.tunjid.treenav.compose.id"
+    val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
 
     val NavEntry<*>.id get() = metadata[ID_KEY] as String
+    inline fun <reified T : Node> NavEntry<*>.destination() = metadata[DESTINATION_KEY] as T
+
 }

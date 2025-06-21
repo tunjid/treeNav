@@ -16,8 +16,11 @@
 
 package com.tunjid.treenav.compose
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.transforms.CompoundTransform
 import com.tunjid.treenav.compose.transforms.DestinationTransform
@@ -42,15 +45,17 @@ import com.tunjid.treenav.compose.transforms.Transform
  * @param renderTransform the transform used to render a [Destination] in its pane.
  */
 class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> internal constructor(
-    val panes: List<Pane>,
-    val navigationState: State<NavigationState>,
-    val backStackTransform: (NavigationState) -> List<Destination>,
-    val destinationTransform: (NavigationState) -> Destination,
-    val popTransform: (NavigationState) -> NavigationState,
-    val onPopped: (NavigationState) -> Unit,
-    val panesToDestinationsTransform: @Composable (Destination) -> Map<Pane, Destination?>,
-    val renderTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
-)
+   internal val panes: List<Pane>,
+   internal val navigationState: State<NavigationState>,
+   internal val backStackTransform: (NavigationState) -> List<Destination>,
+   internal val destinationTransform: (NavigationState) -> Destination,
+   internal val popTransform: (NavigationState) -> NavigationState,
+   internal val onPopped: (NavigationState) -> Unit,
+   internal val panesToDestinationsTransform: @Composable (Destination) -> Map<Pane, Destination?>,
+   internal val renderTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
+) {
+    internal val backPreviewState = mutableStateOf(false)
+}
 
 /**
  * Provides an [MultiPaneDisplayState] for configuring a [MultiPaneDisplay] for
@@ -92,12 +97,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
         },
         renderTransform = { destination ->
             val nav = entryProvider(destination)
-            with(nav.renderTransform) {
-                Render(
-                    destination = destination,
-                    previousTransform = nav.content,
-                )
-            }
+            nav.content(this, destination)
         }
     ),
     operation = MultiPaneDisplayState<Pane, NavigationState, Destination>::plus

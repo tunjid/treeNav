@@ -41,13 +41,6 @@ enum class ThreePane {
     Primary,
 
     /**
-     * A optional pane for placing content from the [Primary] pane, if a preview of the previous
-     * navigation destinations is occurring. The primary content is rendered here, while
-     * the previous primary content is rendered in the [Primary] pane.
-     */
-    TransientPrimary,
-
-    /**
      * An optional pane for displaying a navigation destination alongside the [Primary] pane.
      * This is useful for list-detail, or supporting panels flows.
      */
@@ -75,11 +68,6 @@ enum class ThreePane {
             from = Secondary,
             to = Primary
         )
-
-        val PrimaryToTransient = Swap(
-            from = Primary,
-            to = TransientPrimary
-        )
     }
 }
 
@@ -104,9 +92,6 @@ fun <R : Node> threePaneEntry(
     render: @Composable (PaneScope<ThreePane, R>.(R) -> Unit),
 ) = PaneEntry(
     paneTransform = paneMapping,
-    renderTransform = { destination, original ->
-        original(destination)
-    },
     content = render
 )
 
