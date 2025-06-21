@@ -79,7 +79,7 @@ class StackNavExtTest {
             expected = pushed.backStack(
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = true,
-                distinctDestinations = true,
+                distinctDestinations = false,
             ),
             actual = pushed.multiPaneDisplayBackstack()
         )

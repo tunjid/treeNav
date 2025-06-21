@@ -169,6 +169,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
         entryProvider = { key ->
             NavEntry(
                 key = key,
+                contentKey = key.id,
                 metadata = mapOf(
                     Keys.ID_KEY to key.id,
                     Keys.DESTINATION_KEY to key
