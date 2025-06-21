@@ -169,7 +169,6 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
         entryProvider = { key ->
             NavEntry(
                 key = key,
-                contentKey = key.id,
                 metadata = mapOf(
                     Keys.ID_KEY to key.id,
                     Keys.DESTINATION_KEY to key
@@ -230,10 +229,9 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                 }
 
             val poppedBackstackIds = state.backStackTransform(state.popTransform(current))
-                .mapTo(
-                    destination = mutableSetOf(),
-                    transform = Node::id
-                )
+                .map(transform = Node::id)
+
+            val mutableEntries = entries.toMutableList()
 
             MultiPaneDisplayScene(
                 backstackIds = backstackIds,
@@ -243,7 +241,10 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                 panesToDestinations = state.panesToDestinationsTransform,
                 currentPanedNavigationState = currentPanedNavigationState(),
                 entries = entries.filter { it.id in activeIds },
-                previousEntries = entries.filter { it.id in poppedBackstackIds },
+                previousEntries = poppedBackstackIds.map { id ->
+                    val index = mutableEntries.indexOfFirst { it.id == id }
+                    mutableEntries.removeAt(index)
+                },
                 scopeContent = content
             )
         }
