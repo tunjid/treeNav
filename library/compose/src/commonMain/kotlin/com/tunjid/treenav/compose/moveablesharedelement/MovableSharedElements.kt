@@ -167,13 +167,14 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
         sharedContentState: SharedContentState,
         sharedElement: @Composable (S, Modifier) -> Unit,
     ): @Composable (S, Modifier) -> Unit {
-        val movableSharedElementState = keysToMovableSharedElements.getOrPut(sharedContentState.key) {
-            MovableSharedElementState(
-                sharedContentState = sharedContentState,
-                sharedElement = sharedElement,
-                onRemoved = { keysToMovableSharedElements.remove(sharedContentState.key) }
-            )
-        }.also { it.sharedContentState = sharedContentState }
+        val movableSharedElementState =
+            keysToMovableSharedElements.getOrPut(sharedContentState.key) {
+                MovableSharedElementState(
+                    sharedContentState = sharedContentState,
+                    sharedElement = sharedElement,
+                    onRemoved = { keysToMovableSharedElements.remove(sharedContentState.key) }
+                )
+            }.also { it.sharedContentState = sharedContentState }
 
         // Can't really guarantee that the caller will use the same key for the right type
         return movableSharedElementState.moveableSharedElement
