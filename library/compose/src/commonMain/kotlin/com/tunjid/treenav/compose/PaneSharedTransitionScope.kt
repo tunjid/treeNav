@@ -46,7 +46,7 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
      * @see [SharedTransitionScope.sharedElement].
      */
     fun Modifier.paneSharedElement(
-        key: Any,
+        sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
         placeHolderSize: PlaceHolderSize = contentSize,
         renderInOverlayDuringTransition: Boolean = true,

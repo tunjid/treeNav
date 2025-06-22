@@ -65,7 +65,7 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
 
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun Modifier.paneSharedElement(
-        key: Any,
+        sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
         placeHolderSize: PlaceHolderSize,
         renderInOverlayDuringTransition: Boolean,
@@ -80,7 +80,7 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
             )
             // Allow shared elements in the primary or transient primary content only
             ThreePane.Primary -> sharedElement(
-                sharedContentState = rememberSharedContentState(key),
+                sharedContentState = sharedContentState,
                 animatedVisibilityScope = paneScope,
                 boundsTransform = boundsTransform,
                 placeHolderSize = placeHolderSize,
