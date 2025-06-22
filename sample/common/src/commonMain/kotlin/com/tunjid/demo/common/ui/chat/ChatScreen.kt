@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
@@ -47,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import com.tunjid.demo.common.ui.PaneScaffoldState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
@@ -72,7 +74,13 @@ fun ChatScreen(
     ) {
         val isInPrimaryPane = paneScaffoldState.paneState.pane == ThreePane.Primary
         SampleTopAppBar(
-            title = state.room?.name ?: "",
+            title = {
+                ChatTitle(
+                    roomName = state.roomName,
+                    participants = state.participants,
+                    paneScaffoldState = paneScaffoldState
+                )
+            },
             onBackPressed = remember(isInPrimaryPane) {
                 if (isInPrimaryPane) return@remember {
                     onAction(Action.Navigation.Pop)
@@ -82,16 +90,54 @@ fun ChatScreen(
         Messages(
             me = state.me,
             roomName = state.room?.name,
-            messages = state.chats,
             isInPrimaryPane = isInPrimaryPane,
+            messages = state.chats,
             navigateToProfile = onAction,
-            modifier = Modifier.fillMaxSize(),
             scrollState = scrollState,
+            modifier = Modifier.fillMaxSize(),
             paneScaffoldState = paneScaffoldState,
         )
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun ChatTitle(
+    roomName: String,
+    participants: List<String>,
+    paneScaffoldState: PaneScaffoldState
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = roomName
+        )
+        Spacer(
+            modifier = Modifier
+                .width(16.dp)
+        )
+        participants.forEachIndexed { index, participant ->
+            paneScaffoldState.updatedMovableSharedElementOf(
+                sharedContentState = paneScaffoldState.rememberSharedContentState(
+                    key = "${roomName}-${participant}"
+                ),
+                state = ProfilePhotoArgs(
+                    profileName = participant,
+                    contentScale = ContentScale.Crop,
+                    cornerRadius = 42.dp,
+                    contentDescription = null,
+                ),
+                modifier = Modifier
+                    .size(24.dp)
+                    .offset(x = index * (-8).dp),
+                sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
+                    ProfilePhoto(args, innerModifier)
+                }
+            )
+        }
+    }
+}
 
 @Composable
 fun Messages(
@@ -121,13 +167,13 @@ fun Messages(
 
                 Message(
                     onAuthorClick = navigateToProfile,
-                    roomName = roomName,
                     item = content,
+                    roomName = roomName,
                     isUserMe = content.sender.name == me?.name,
                     isInPrimaryPane = isInPrimaryPane,
                     isFirstMessageByAuthor = isFirstMessageByAuthor,
                     isLastMessageByAuthor = isLastMessageByAuthor,
-                    paneScaffoldState = paneScaffoldState,
+                    paneScaffoldState = paneScaffoldState
                 )
             }
         }
@@ -179,7 +225,7 @@ fun Message(
             ) {
                 paneScaffoldState.updatedMovableSharedElementOf(
                     sharedContentState = paneScaffoldState.rememberSharedContentState(
-                        key ="$roomName-${item.sender.name}"
+                        key ="$roomName-${item.sender.name}-profile"
                     ),
                     state = ProfilePhotoArgs(
                         profileName = item.sender.name,

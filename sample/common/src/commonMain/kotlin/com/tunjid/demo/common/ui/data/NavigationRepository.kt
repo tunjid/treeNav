@@ -49,6 +49,7 @@ sealed interface SampleDestination : Node {
 
     data class Chat(
         val roomName: String,
+        val participants: List<String> = emptyList(),
     ) : SampleDestination {
 
         override val id: String

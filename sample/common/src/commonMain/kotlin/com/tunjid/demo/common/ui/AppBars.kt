@@ -53,14 +53,12 @@ fun rememberAppBarCollapsingHeaderState(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SampleTopAppBar(
-    title: String,
+    title: @Composable () -> Unit,
     onBackPressed: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     TopAppBar(
-        title = {
-            Text(text = title)
-        },
+        title = title,
         navigationIcon = {
             if (onBackPressed != null) IconButton(
                 onClick = onBackPressed,
@@ -73,6 +71,21 @@ fun SampleTopAppBar(
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+        modifier = modifier,
+    )
+}
+
+@Composable
+fun SampleTopAppBar(
+    title: String,
+    onBackPressed: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
+    SampleTopAppBar(
+        title = {
+            Text(text = title)
+        },
+        onBackPressed = onBackPressed,
         modifier = modifier,
     )
 }

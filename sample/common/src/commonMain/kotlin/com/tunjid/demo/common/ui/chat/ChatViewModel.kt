@@ -50,7 +50,10 @@ class ChatViewModel(
     chat: SampleDestination.Chat,
 ) : ViewModel(coroutineScope),
     ActionStateMutator<Action, StateFlow<State>> by coroutineScope.actionStateFlowMutator(
-        initialState = State(),
+        initialState = State(
+            roomName = chat.roomName,
+            participants = chat.participants,
+        ),
         inputs = listOf(
             profileRepository.meMutations(),
             chatsRepository.chatRoomMutations(chat),
@@ -106,7 +109,9 @@ private fun chatLoadMutations(
 
 data class State(
     val me: Profile? = null,
+    val roomName: String,
     val room: ChatRoom? = null,
+    val participants: List<String>,
     val chats: List<MessageItem> = emptyList(),
 )
 

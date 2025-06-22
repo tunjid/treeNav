@@ -114,15 +114,21 @@ private fun ChatRooms(
             items = state.chatRooms,
             key = ChatRoom::name,
             itemContent = { room ->
+                val participants = room.messages
+                    .map(Message::sender)
+                    .distinct()
+                    .take(3)
                 ChatRoomListItem(
                     paneScaffoldState = paneScaffoldState,
                     roomName = room.name,
-                    participants = room.messages
-                        .map(Message::sender)
-                        .distinct()
-                        .take(3),
+                    participants = participants,
                     onRoomClicked = {
-                        onAction(Action.Navigation.ToRoom(roomName = it))
+                        onAction(
+                            Action.Navigation.ToRoom(
+                                roomName = it,
+                                participants = participants,
+                            )
+                        )
                     }
                 )
             }

@@ -72,8 +72,9 @@ sealed class Action(
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data class ToRoom(
             val roomName: String,
+            val participants: List<String>,
         ) : Navigation(), NavigationAction by navigationAction(
-            { push(SampleDestination.Chat(roomName)) }
+            { push(SampleDestination.Chat(roomName, participants)) }
         )
     }
 }

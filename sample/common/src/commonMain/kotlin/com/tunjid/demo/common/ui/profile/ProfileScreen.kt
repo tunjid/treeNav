@@ -122,7 +122,7 @@ private fun ProfilePhoto(
     if (profileName != null) {
         paneScaffoldState.updatedMovableSharedElementOf(
             sharedContentState = paneScaffoldState.rememberSharedContentState(
-                key = "${state.roomName}-$profileName"
+                key = "${state.roomName}-$profileName-profile"
             ),
             state = ProfilePhotoArgs(
                 profileName = profileName,
