@@ -82,17 +82,18 @@ fun ChatRoomsScreen(
 
 @Composable
 private fun Header(headerState: CollapsingHeaderState) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .offset {
-                IntOffset(
-                    x = 0,
-                    y = -headerState.translation.roundToInt()
-                )
-            }
-    ) {
+    Box{
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .offset {
+                    IntOffset(
+                        x = 0,
+                        y = -headerState.translation.roundToInt()
+                    )
+                }
+        )
         SampleTopAppBar(
             title = "Chat Rooms",
             onBackPressed = null
