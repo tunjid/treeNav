@@ -18,6 +18,7 @@ package com.tunjid.treenav.compose.navigation3.runtime
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -95,7 +96,10 @@ internal fun SavedStateNavEntryDecorator(
                 entry.Content()
             }
         }
-        childRegistry.lifecycle.currentState = Lifecycle.State.RESUMED
+        DisposableEffect(Unit) {
+            childRegistry.lifecycle.currentState = Lifecycle.State.RESUMED
+            onDispose {  }
+        }
     }
 }
 
