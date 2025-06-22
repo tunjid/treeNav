@@ -118,6 +118,9 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
     override val isActive: Boolean
         get() = delegate.paneScope.isActive
 
+    override val inPredictiveBack: Boolean
+        get() = delegate.paneScope.inPredictiveBack
+
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
         sharedContentState: SharedTransitionScope.SharedContentState,

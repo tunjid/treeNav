@@ -17,12 +17,10 @@
 package com.tunjid.treenav.compose
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.EnterExitState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -295,13 +293,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                     val scope = remember {
                         AnimatedPaneScope(
                             paneState = paneState,
-                            activeState = derivedStateOf {
-                                val previewing = isPreviewingBack()
-                                val isEntering =
-                                    animatedContentScope.transition.targetState == EnterExitState.Visible
-                                if (previewing) !isEntering
-                                else isEntering
-                            },
+                            isPreviewingBack = isPreviewingBack,
                             animatedContentScope = animatedContentScope,
                         )
                     }.also { it.paneState = paneState }
