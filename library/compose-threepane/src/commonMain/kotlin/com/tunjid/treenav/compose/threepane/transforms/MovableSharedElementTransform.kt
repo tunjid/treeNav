@@ -120,7 +120,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
 
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
-        key: Any,
+        sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
         placeHolderSize: PlaceHolderSize,
         renderInOverlayDuringTransition: Boolean,
@@ -134,7 +134,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         )
         // Allow shared elements in the primary or transient primary content only
         ThreePane.Primary -> delegate.movableSharedElementOf(
-            key = key,
+            sharedContentState = sharedContentState,
             boundsTransform = boundsTransform,
             placeHolderSize = placeHolderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,

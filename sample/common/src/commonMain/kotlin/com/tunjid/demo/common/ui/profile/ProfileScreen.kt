@@ -121,7 +121,9 @@ private fun ProfilePhoto(
     val profileName = state.profileName ?: state.profile?.name
     if (profileName != null) {
         paneScaffoldState.updatedMovableSharedElementOf(
-            key = "${state.roomName}-$profileName",
+            sharedContentState = paneScaffoldState.rememberSharedContentState(
+                key = "${state.roomName}-$profileName"
+            ),
             state = ProfilePhotoArgs(
                 profileName = profileName,
                 contentScale = ContentScale.Crop,

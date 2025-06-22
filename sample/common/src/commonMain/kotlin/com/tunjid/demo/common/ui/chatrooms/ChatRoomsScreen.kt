@@ -82,7 +82,7 @@ fun ChatRoomsScreen(
 
 @Composable
 private fun Header(headerState: CollapsingHeaderState) {
-    Box{
+    Box {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -186,7 +186,9 @@ fun ChatRoomParticipants(
     ) {
         participants.forEach { profileName ->
             updatedMovableSharedElementOf(
-                key = "$roomName-${profileName}",
+                sharedContentState = paneScaffoldState.rememberSharedContentState(
+                    key = "$roomName-${profileName}"
+                ),
                 state = ProfilePhotoArgs(
                     profileName = profileName,
                     contentScale = ContentScale.Crop,

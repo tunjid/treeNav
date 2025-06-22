@@ -178,7 +178,9 @@ fun Message(
                     },
             ) {
                 paneScaffoldState.updatedMovableSharedElementOf(
-                    key = "$roomName-${item.sender.name}",
+                    sharedContentState = paneScaffoldState.rememberSharedContentState(
+                        key ="$roomName-${item.sender.name}"
+                    ),
                     state = ProfilePhotoArgs(
                         profileName = item.sender.name,
                         contentScale = ContentScale.Crop,

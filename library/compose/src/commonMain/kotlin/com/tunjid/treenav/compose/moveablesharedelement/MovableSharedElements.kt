@@ -41,7 +41,7 @@ interface MovableSharedElementScope {
      * NOTE: It is an error to compose the movable shared element in different locations
      * simultaneously, and the behavior of the shared element is undefined in this case.
      *
-     * @param key The shared element key to identify the movable shared element.
+     * @param sharedContentState The shared element key to identify the movable shared element.
      * @param boundsTransform Allows for customizing the animation for the bounds of
      * the [sharedElement].
      * @param placeHolderSize Allows for adjusting the reported size to the parent layout during
@@ -66,7 +66,7 @@ interface MovableSharedElementScope {
      */
     @OptIn(ExperimentalSharedTransitionApi::class)
     fun <T> movableSharedElementOf(
-        key: Any,
+        sharedContentState: SharedContentState,
         boundsTransform: BoundsTransform,
         placeHolderSize: PlaceHolderSize,
         renderInOverlayDuringTransition: Boolean,
@@ -83,7 +83,7 @@ interface MovableSharedElementScope {
  *
  * @see [MovableSharedElementScope.movableSharedElementOf].
  *
- * @param key The shared element key to identify the movable shared element.
+ * @param sharedContentState The shared element key to identify the movable shared element.
  * @param boundsTransform Allows for customizing the animation for the bounds of
  * the [sharedElement].
  * @param placeHolderSize Allows for adjusting the reported size to the parent layout during
@@ -107,7 +107,7 @@ interface MovableSharedElementScope {
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
-    key: Any,
+    sharedContentState: SharedContentState,
     state: T,
     modifier: Modifier = Modifier,
     boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
@@ -118,7 +118,7 @@ fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
     alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)? = null,
     sharedElement: @Composable (T, Modifier) -> Unit
 ) = movableSharedElementOf(
-    key = key,
+    sharedContentState = sharedContentState,
     boundsTransform = boundsTransform,
     placeHolderSize = placeHolderSize,
     renderInOverlayDuringTransition = renderInOverlayDuringTransition,
@@ -164,15 +164,14 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
      */
     @Suppress("UnusedReceiverParameter")
     fun <S> MovableSharedElementScope.createOrUpdateSharedElement(
-        key: Any,
         sharedContentState: SharedContentState,
         sharedElement: @Composable (S, Modifier) -> Unit,
     ): @Composable (S, Modifier) -> Unit {
-        val movableSharedElementState = keysToMovableSharedElements.getOrPut(key) {
+        val movableSharedElementState = keysToMovableSharedElements.getOrPut(sharedContentState.key) {
             MovableSharedElementState(
                 sharedContentState = sharedContentState,
                 sharedElement = sharedElement,
-                onRemoved = { keysToMovableSharedElements.remove(key) }
+                onRemoved = { keysToMovableSharedElements.remove(sharedContentState.key) }
             )
         }.also { it.sharedContentState = sharedContentState }
 
@@ -212,7 +211,7 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
 
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
-        key: Any,
+        sharedContentState: SharedContentState,
         boundsTransform: BoundsTransform,
         placeHolderSize: PlaceHolderSize,
         renderInOverlayDuringTransition: Boolean,
@@ -222,7 +221,6 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit = { state, modifier ->
         with(movableSharedElementHostState) {
-            val sharedContentState = rememberSharedContentState(key)
             Box(
                 modifier
                     .sharedElementWithCallerManagedVisibility(
@@ -238,7 +236,6 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
                 when {
                     paneScope.isActive ->
                         createOrUpdateSharedElement(
-                            key = key,
                             sharedContentState = sharedContentState,
                             sharedElement = sharedElement
                         )(state, Modifier.fillMaxConstraints())
@@ -248,8 +245,8 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
                     else -> when {
                         // The element is being shared in its new destination, stop showing it
                         // in the in active one
-                        movableSharedElementHostState.isCurrentlyShared(key)
-                                && movableSharedElementHostState.isMatchFound(key) -> Defaults.EmptyElement(
+                        movableSharedElementHostState.isCurrentlyShared(sharedContentState.key)
+                                && movableSharedElementHostState.isMatchFound(sharedContentState.key) -> Defaults.EmptyElement(
                             state,
                             Modifier.fillMaxConstraints()
                         )
