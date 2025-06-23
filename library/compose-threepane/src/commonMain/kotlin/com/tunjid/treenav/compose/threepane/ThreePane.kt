@@ -120,8 +120,11 @@ private fun PaneScope<ThreePane, *>.canAnimate() =
         paneState.adaptations.any { adaptation ->
             adaptation is Adaptation.Same
         } -> false
+
         paneState.adaptations.any { adaptation ->
             adaptation is Adaptation.Pop
+        } && paneState.adaptations.none {
+            it is Swap<*>
         } -> true
 
         else -> when (val pane = paneState.pane) {
