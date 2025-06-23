@@ -122,7 +122,7 @@ private fun PaneScope<ThreePane, *>.canAnimate() =
         } -> false
 
         paneState.adaptations.any { adaptation ->
-            adaptation is Adaptation.Pop
+            adaptation is Adaptation.Pop || adaptation is Adaptation.Change
         } && paneState.adaptations.none {
             it is Swap<*>
         } -> true
