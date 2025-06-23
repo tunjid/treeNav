@@ -72,28 +72,25 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
         visible: Boolean?,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
-    ): Modifier = composed {
+    ): Modifier = when (paneScope.paneState.pane) {
+        null -> throw IllegalArgumentException(
+            "Shared elements may only be used in non null panes"
+        )
+        // Allow shared elements in the primary or transient primary content only
+        ThreePane.Primary -> sharedElement(
+            sharedContentState = sharedContentState,
+            animatedVisibilityScope = paneScope,
+            boundsTransform = boundsTransform,
+            placeHolderSize = placeHolderSize,
+            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+            zIndexInOverlay = zIndexInOverlay,
+            clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+        )
 
-        when (paneScope.paneState.pane) {
-            null -> throw IllegalArgumentException(
-                "Shared elements may only be used in non null panes"
-            )
-            // Allow shared elements in the primary or transient primary content only
-            ThreePane.Primary -> sharedElement(
-                sharedContentState = sharedContentState,
-                animatedVisibilityScope = paneScope,
-                boundsTransform = boundsTransform,
-                placeHolderSize = placeHolderSize,
-                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                zIndexInOverlay = zIndexInOverlay,
-                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-            )
-
-            // In the other panes use the element as is
-            ThreePane.Secondary,
-            ThreePane.Tertiary,
-            ThreePane.Overlay,
-                -> this
-        }
+        // In the other panes use the element as is
+        ThreePane.Secondary,
+        ThreePane.Tertiary,
+        ThreePane.Overlay,
+            -> this
     }
 }
