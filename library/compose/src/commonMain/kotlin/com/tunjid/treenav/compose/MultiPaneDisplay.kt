@@ -18,6 +18,7 @@ package com.tunjid.treenav.compose
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -152,6 +153,12 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
         )
     }
 
+    val transitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
+        state.transitionSpec(
+            sceneStrategy.scenes.getValue(sceneDestinationKey).multiPaneDisplayScope
+        )
+    }
+
     NavDisplay(
         backStack = backStack,
         modifier = modifier,
@@ -171,21 +178,9 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
             rememberViewModelStoreNavEntryDecorator(),
         ),
         sceneStrategy = sceneStrategy,
-        transitionSpec = {
-            state.transitionSpec(
-                sceneStrategy.scenes.getValue(sceneDestinationKey).multiPaneDisplayScope
-            )
-        },
-        popTransitionSpec = {
-            state.transitionSpec(
-                sceneStrategy.scenes.getValue(sceneDestinationKey).multiPaneDisplayScope
-            )
-        },
-        predictivePopTransitionSpec = {
-            state.transitionSpec(
-                sceneStrategy.scenes.getValue(sceneDestinationKey).multiPaneDisplayScope
-            )
-        },
+        transitionSpec = transitionSpec,
+        popTransitionSpec = transitionSpec,
+        predictivePopTransitionSpec = transitionSpec,
         entryProvider = state.navEntryProvider,
     )
 
