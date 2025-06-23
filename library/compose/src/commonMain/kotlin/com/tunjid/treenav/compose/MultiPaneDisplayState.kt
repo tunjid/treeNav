@@ -67,17 +67,23 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
                 ID_KEY to destination.id,
                 DESTINATION_KEY to destination,
                 CHILDREN_KEY to destination.children,
+                PANE_ENTER_TRANSITION_KEY to paneEntry.enterTransition,
+                PANE_EXIT_TRANSITION_KEY to paneEntry.exitTransition,
             ),
             content = { innerDestination ->
-                renderTransform(localPaneScope(),paneEntry, innerDestination)
+                renderTransform(localPaneScope(), paneEntry, innerDestination)
             },
         )
     }
 
-    companion object  {
+    companion object {
         private const val ID_KEY = "com.tunjid.treenav.compose.id"
         private const val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
         private const val CHILDREN_KEY = "com.tunjid.treenav.compose.children"
+        private const val PANE_ENTER_TRANSITION_KEY =
+            "com.tunjid.treenav.compose.pane.enter.transition"
+        private const val PANE_EXIT_TRANSITION_KEY =
+            "com.tunjid.treenav.compose.pane.exit.transition"
 
         internal val NavEntry<*>.id get() = metadata[ID_KEY] as String
         internal val NavEntry<*>.children get() = metadata[CHILDREN_KEY]
@@ -85,6 +91,14 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
         @Suppress("UNCHECKED_CAST")
         internal inline fun <T : Node> NavEntry<*>.destination() =
             metadata[DESTINATION_KEY] as T
+
+        @Suppress("UNCHECKED_CAST")
+        internal inline val NavEntry<*>.paneEnterTransition
+            get() = metadata[PANE_ENTER_TRANSITION_KEY] as PaneScope<*, *>.() -> EnterTransition
+
+        @Suppress("UNCHECKED_CAST")
+        internal inline val NavEntry<*>.paneExitTransition
+            get() = metadata[PANE_EXIT_TRANSITION_KEY] as PaneScope<*, *>.() -> ExitTransition
     }
 }
 
@@ -131,8 +145,8 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
         panesToDestinationsTransform = { destination ->
             entryProvider(destination).paneTransform(destination)
         },
-        renderTransform = { paneEntry, destination ->
-            paneEntry.content(this, destination)
+        renderTransform = transform@{ paneEntry, destination ->
+            paneEntry.content(this@transform, destination)
         }
     ),
     operation = MultiPaneDisplayState<Pane, NavigationState, Destination>::plus
@@ -184,4 +198,5 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
 private val NoContentTransform = ContentTransform(
     targetContentEnter = EnterTransition.None,
     initialContentExit = ExitTransition.None,
+    sizeTransform = null,
 )

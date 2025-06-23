@@ -24,6 +24,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.Adaptation
 import com.tunjid.treenav.compose.Adaptation.Swap
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.PaneEntry
@@ -78,19 +79,25 @@ enum class ThreePane {
  * - A navigation destination moves between the [ThreePane.Primary] and
  *     [ThreePane.TransientPrimary] panes, the pane animations are not run.
  *
- * @param enterTransition the transition to run for the entering pane when permitted.
- * @param exitTransition the transition to run for the exiting pane when permitted.
+ * @param enterTransition the transition to run for the entering pane.
+ * @param exitTransition the transition to run for the exiting pane.
  * @param paneMapping the mapping of panes to navigation destinations.
  * @param render the Composable for rendering the current destination.
  */
 fun <R : Node> threePaneEntry(
-    enterTransition: PaneScope<ThreePane, R>.() -> EnterTransition = { DefaultFadeIn },
-    exitTransition: PaneScope<ThreePane, R>.() -> ExitTransition = { DefaultFadeOut },
+    enterTransition: PaneScope<ThreePane, R>.() -> EnterTransition = {
+        if (canAnimate()) DefaultFadeIn else EnterTransition.None
+    },
+    exitTransition: PaneScope<ThreePane, R>.() -> ExitTransition = {
+        if (canAnimate()) DefaultFadeOut else ExitTransition.None
+    },
     paneMapping: @Composable (R) -> Map<ThreePane, R?> = {
         mapOf(ThreePane.Primary to it)
     },
     render: @Composable (PaneScope<ThreePane, R>.(R) -> Unit),
 ) = PaneEntry(
+    enterTransition = enterTransition,
+    exitTransition = exitTransition,
     paneTransform = paneMapping,
     content = render
 )
@@ -106,3 +113,22 @@ private val DefaultFadeIn = fadeIn(
 private val DefaultFadeOut = fadeOut(
     animationSpec = RouteTransitionAnimationSpec,
 )
+
+private fun PaneScope<ThreePane, *>.canAnimate() =
+    when {
+        inPredictiveBack && isActive -> false
+        paneState.adaptations.any { adaptation ->
+            adaptation is Adaptation.Pop
+        } -> true
+
+        else -> when (val pane = paneState.pane) {
+            ThreePane.Primary,
+            ThreePane.Secondary,
+            ThreePane.Tertiary -> paneState.adaptations.any { adaptation ->
+                adaptation is Swap<*> && adaptation.from == pane
+            }
+
+            ThreePane.Overlay,
+            null -> true
+        }
+    }

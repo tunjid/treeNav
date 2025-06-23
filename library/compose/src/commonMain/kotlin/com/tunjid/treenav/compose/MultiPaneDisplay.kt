@@ -19,6 +19,9 @@ package com.tunjid.treenav.compose
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -41,6 +44,8 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.id
+import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.paneEnterTransition
+import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.paneExitTransition
 import com.tunjid.treenav.compose.navigation3.decorators.rememberViewModelStoreNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
@@ -308,7 +313,23 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
             CompositionLocalProvider(
                 LocalPaneScope provides scope
             ) {
-                entry.Content()
+                with(scope) {
+                    val enterTransition = entry.paneEnterTransition(this)
+                    val exitTransition = entry.paneExitTransition(this)
+                    val shouldAnimate = enterTransition != EnterTransition.None
+                            || exitTransition != ExitTransition.None
+                    Box(
+                        modifier =
+                            if (shouldAnimate) Modifier.animateEnterExit(
+                                enterTransition,
+                                exitTransition
+                            )
+                            else Modifier,
+                        content = {
+                            entry.Content()
+                        }
+                    )
+                }
             }
         }
 
