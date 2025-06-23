@@ -48,7 +48,7 @@ fun AvatarScreen(
         val profileName = state.profileName ?: state.profile?.name ?: ""
         paneScaffoldState.updatedMovableSharedElementOf(
             sharedContentState = paneScaffoldState.rememberSharedContentState(
-                key = "${state.roomName}-$profileName"
+                key = "${state.roomName}-$profileName-profile"
             ),
             state = ProfilePhotoArgs(
                 profileName = profileName,

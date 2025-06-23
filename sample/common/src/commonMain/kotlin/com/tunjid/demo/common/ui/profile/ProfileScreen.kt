@@ -89,13 +89,14 @@ fun ProfileScreen(
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ProfileHeader(
     state: State,
     paneScaffoldState: PaneScaffoldState,
     modifier: Modifier = Modifier,
     onBackPressed: (() -> Unit)?,
-) {
+) = with(paneScaffoldState) {
     Box(
         modifier = Modifier.heightIn(min = 400.dp)
     ) {
@@ -105,7 +106,13 @@ private fun ProfileHeader(
             modifier = modifier
         )
         SampleTopAppBar(
-            title = if (state.profileName == null) "Me" else "Profile",
+            title = {
+                Text(
+                    modifier = Modifier
+                        .paneSharedElement(rememberSharedContentState("title")),
+                    text = if (state.profileName == null) "Me" else "Profile",
+                )
+            },
             onBackPressed = onBackPressed,
         )
     }

@@ -19,7 +19,6 @@ package com.tunjid.demo.common.ui.chatrooms
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,7 +67,10 @@ fun ChatRoomsScreen(
         state = headerState,
         modifier = modifier,
         headerContent = {
-            Header(headerState)
+            Header(
+                headerState = headerState,
+                paneScaffoldState = paneScaffoldState,
+            )
         },
         body = {
             ChatRooms(
@@ -80,8 +82,12 @@ fun ChatRoomsScreen(
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun Header(headerState: CollapsingHeaderState) {
+private fun Header(
+    headerState: CollapsingHeaderState,
+    paneScaffoldState: PaneScaffoldState,
+) = with(paneScaffoldState) {
     Box {
         Box(
             modifier = Modifier
@@ -95,7 +101,13 @@ private fun Header(headerState: CollapsingHeaderState) {
                 }
         )
         SampleTopAppBar(
-            title = "Chat Rooms",
+            title = {
+                Text(
+                    modifier = Modifier
+                        .paneSharedElement(rememberSharedContentState("title")),
+                    text = "Chat Rooms",
+                )
+            },
             onBackPressed = null
         )
     }
@@ -173,7 +185,7 @@ fun ChatRoomListItem(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChatRoomParticipants(
     paneScaffoldState: PaneScaffoldState,

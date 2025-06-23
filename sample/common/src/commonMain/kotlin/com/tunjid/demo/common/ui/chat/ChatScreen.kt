@@ -106,19 +106,21 @@ private fun ChatTitle(
     roomName: String,
     participants: List<String>,
     paneScaffoldState: PaneScaffoldState
-) {
+) = with(paneScaffoldState) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = roomName
+            modifier = Modifier
+                .paneSharedElement(rememberSharedContentState("title")),
+            text = roomName,
         )
         Spacer(
             modifier = Modifier
                 .width(16.dp)
         )
         participants.forEachIndexed { index, participant ->
-            paneScaffoldState.updatedMovableSharedElementOf(
+            updatedMovableSharedElementOf(
                 sharedContentState = paneScaffoldState.rememberSharedContentState(
                     key = "${roomName}-${participant}"
                 ),
@@ -225,7 +227,7 @@ fun Message(
             ) {
                 paneScaffoldState.updatedMovableSharedElementOf(
                     sharedContentState = paneScaffoldState.rememberSharedContentState(
-                        key ="$roomName-${item.sender.name}-profile"
+                        key = "$roomName-${item.sender.name}-profile"
                     ),
                     state = ProfilePhotoArgs(
                         profileName = item.sender.name,
