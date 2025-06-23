@@ -16,6 +16,9 @@
 
 package com.tunjid.treenav.compose
 
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +50,7 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
     internal val destinationTransform: (NavigationState) -> Destination,
     internal val popTransform: (NavigationState) -> NavigationState,
     internal val onPopped: (NavigationState) -> Unit,
+    internal val transitionSpec: MultiPaneDisplayScope<Pane, Destination>.() -> ContentTransform,
     internal val panesToDestinationsTransform: @Composable (Destination) -> Map<Pane, Destination?>,
     internal val renderTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
 ) {
@@ -73,13 +77,16 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
  */
 fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
     panes: List<Pane>,
+    transforms: List<Transform<Pane, NavigationState, Destination>>,
     navigationState: State<NavigationState>,
     backStackTransform: (NavigationState) -> List<Destination>,
     destinationTransform: (NavigationState) -> Destination,
     popTransform: (NavigationState) -> NavigationState,
     onPopped: (NavigationState) -> Unit,
+    transitionSpec: MultiPaneDisplayScope<Pane, Destination>.() -> ContentTransform = {
+        NoContentTransform
+    },
     entryProvider: (Destination) -> PaneEntry<Pane, Destination>,
-    transforms: List<Transform<Pane, NavigationState, Destination>>,
 ) = transforms.fold(
     initial = MultiPaneDisplayState(
         panes = panes,
@@ -88,6 +95,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
         destinationTransform = destinationTransform,
         popTransform = popTransform,
         onPopped = onPopped,
+        transitionSpec = transitionSpec,
         panesToDestinationsTransform = { destination ->
             entryProvider(destination).paneTransform(destination)
         },
@@ -110,6 +118,7 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
         popTransform = popTransform,
         onPopped = onPopped,
         destinationTransform = destinationTransform,
+        transitionSpec = transitionSpec,
         panesToDestinationsTransform = when (transform) {
             is PaneTransform -> { destination ->
                 transform.toPanesAndDestinations(
@@ -133,3 +142,8 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
             else -> renderTransform
         },
     )
+
+private val NoContentTransform = ContentTransform(
+    targetContentEnter = EnterTransition.None,
+    initialContentExit = ExitTransition.None,
+)
