@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 import com.tunjid.treenav.compose.transforms.PaneTransform
 import com.tunjid.treenav.compose.transforms.RenderTransform
 import com.tunjid.treenav.compose.transforms.Transform
@@ -51,10 +52,40 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
     internal val popTransform: (NavigationState) -> NavigationState,
     internal val onPopped: (NavigationState) -> Unit,
     internal val transitionSpec: MultiPaneDisplayScope<Pane, Destination>.() -> ContentTransform,
+    internal val entryProvider: (Destination) -> PaneEntry<Pane, Destination>,
     internal val panesToDestinationsTransform: @Composable (Destination) -> Map<Pane, Destination?>,
-    internal val renderTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
+    internal val renderTransform: @Composable PaneScope<Pane, Destination>.(PaneEntry<Pane, Destination>, Destination) -> Unit,
 ) {
     internal val backPreviewState = mutableStateOf(false)
+
+    internal val navEntryProvider = { destination: Destination ->
+        val paneEntry = entryProvider(destination)
+        NavEntry(
+            key = destination,
+            contentKey = destination.id,
+            metadata = mapOf(
+                ID_KEY to destination.id,
+                DESTINATION_KEY to destination,
+                CHILDREN_KEY to destination.children,
+            ),
+            content = { innerDestination ->
+                renderTransform(localPaneScope(),paneEntry, innerDestination)
+            },
+        )
+    }
+
+    companion object  {
+        private const val ID_KEY = "com.tunjid.treenav.compose.id"
+        private const val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
+        private const val CHILDREN_KEY = "com.tunjid.treenav.compose.children"
+
+        internal val NavEntry<*>.id get() = metadata[ID_KEY] as String
+        internal val NavEntry<*>.children get() = metadata[CHILDREN_KEY]
+
+        @Suppress("UNCHECKED_CAST")
+        internal inline fun <T : Node> NavEntry<*>.destination() =
+            metadata[DESTINATION_KEY] as T
+    }
 }
 
 /**
@@ -96,12 +127,12 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
         popTransform = popTransform,
         onPopped = onPopped,
         transitionSpec = transitionSpec,
+        entryProvider = entryProvider,
         panesToDestinationsTransform = { destination ->
             entryProvider(destination).paneTransform(destination)
         },
-        renderTransform = { destination ->
-            val nav = entryProvider(destination)
-            nav.content(this, destination)
+        renderTransform = { paneEntry, destination ->
+            paneEntry.content(this, destination)
         }
     ),
     operation = MultiPaneDisplayState<Pane, NavigationState, Destination>::plus
@@ -119,6 +150,7 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
         onPopped = onPopped,
         destinationTransform = destinationTransform,
         transitionSpec = transitionSpec,
+        entryProvider = entryProvider,
         panesToDestinationsTransform = when (transform) {
             is PaneTransform -> { destination ->
                 transform.toPanesAndDestinations(
@@ -130,11 +162,17 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
             else -> panesToDestinationsTransform
         },
         renderTransform = when (transform) {
-            is RenderTransform -> { destination ->
+            is RenderTransform -> { paneEntry, destination ->
                 with(transform) {
                     Render(
                         destination = destination,
-                        previousTransform = renderTransform,
+                        previousTransform = previous@{ innerDestination ->
+                            renderTransform(
+                                this@previous,
+                                paneEntry,
+                                innerDestination,
+                            )
+                        },
                     )
                 }
             }

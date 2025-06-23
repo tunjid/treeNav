@@ -38,8 +38,8 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.Keys.children
-import com.tunjid.treenav.compose.Keys.id
+import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
+import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.id
 import com.tunjid.treenav.compose.navigation3.decorators.rememberViewModelStoreNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
@@ -186,22 +186,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
                 sceneStrategy.scenes.getValue(sceneDestinationKey).multiPaneDisplayScope
             )
         },
-        entryProvider = { key ->
-            NavEntry(
-                key = key,
-                contentKey = key.id,
-                metadata = mapOf(
-                    Keys.ID_KEY to key.id,
-                    Keys.DESTINATION_KEY to key,
-                    Keys.CHILDREN_KEY to key.children,
-                ),
-                content = { destination ->
-                    val scope = LocalPaneScope.current
-                    @Suppress("UNCHECKED_CAST")
-                    state.renderTransform(scope as PaneScope<Pane, Destination>, destination)
-                },
-            )
-        },
+        entryProvider = state.navEntryProvider,
     )
 
     NavigationEventHandler(
@@ -400,15 +385,8 @@ internal val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     )
 }
 
-internal object Keys {
-    internal const val ID_KEY = "com.tunjid.treenav.compose.id"
-    internal const val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
-    internal const val CHILDREN_KEY = "com.tunjid.treenav.compose.children"
-
-    internal val NavEntry<*>.id get() = metadata[ID_KEY] as String
-    internal val NavEntry<*>.children get() = metadata[CHILDREN_KEY]
-
-    internal inline fun <reified T : Node> NavEntry<*>.destination() =
-        metadata[DESTINATION_KEY] as T
-
+@Composable
+internal fun <Pane, Destination : Node> localPaneScope(): PaneScope<Pane, Destination> {
+    @Suppress("UNCHECKED_CAST")
+    return LocalPaneScope.current as PaneScope<Pane, Destination>
 }
