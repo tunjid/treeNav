@@ -118,6 +118,9 @@ private fun PaneScope<ThreePane, *>.canAnimate() =
     when {
         inPredictiveBack && isActive -> false
         paneState.adaptations.any { adaptation ->
+            adaptation is Adaptation.Same
+        } -> false
+        paneState.adaptations.any { adaptation ->
             adaptation is Adaptation.Pop
         } -> true
 
