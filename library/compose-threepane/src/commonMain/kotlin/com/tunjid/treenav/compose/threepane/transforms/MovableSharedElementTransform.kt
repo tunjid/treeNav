@@ -41,8 +41,6 @@ import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScop
 import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.ThreePane.Primary
-import com.tunjid.treenav.compose.threepane.ThreePane.Secondary
 import com.tunjid.treenav.compose.transforms.RenderTransform
 import com.tunjid.treenav.compose.transforms.Transform
 
@@ -198,8 +196,8 @@ private fun PaneScope<ThreePane, *>.canAnimateSecondary(): Boolean {
 }
 
 private val PrimaryToSecondary = Swap(
-    from = Primary,
-    to = Secondary
+    from = ThreePane.Primary,
+    to = ThreePane.Secondary
 )
 
 private fun Modifier.fillMaxConstraints() =
