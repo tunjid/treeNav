@@ -312,6 +312,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
             }.also {
                 panedNavigationState.update(
                     animatedPaneScope = it,
+                    animatedContentScope = animatedContentScope,
                     slot = slot,
                 )
             }
@@ -320,27 +321,25 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                 LocalPaneScope provides scope
             ) {
                 with(scope) {
-                    val enterTransition = remember(
-                        scope.isPreviewingBack,
+                    val paneModifier = remember(
+                        isActive,
+                        inPredictiveBack,
                         panedNavigationState.identityHash(),
                     ) {
-                        entry.paneEnterTransition(this)
+                        val enterTransition = entry.paneEnterTransition(this)
+                        val exitTransition = entry.paneExitTransition(this)
+                        val shouldAnimate = enterTransition != EnterTransition.None
+                                || exitTransition != ExitTransition.None
+
+                        if (shouldAnimate) Modifier.animateEnterExit(
+                            enterTransition,
+                            exitTransition
+                        )
+                        else Modifier
                     }
-                    val exitTransition = remember(
-                        scope.isPreviewingBack,
-                        panedNavigationState.identityHash(),
-                    ) {
-                        entry.paneExitTransition(this)
-                    }
-                    val shouldAnimate = enterTransition != EnterTransition.None
-                            || exitTransition != ExitTransition.None
+
                     Box(
-                        modifier =
-                            if (shouldAnimate) Modifier.animateEnterExit(
-                                enterTransition,
-                                exitTransition
-                            )
-                            else Modifier,
+                        modifier = paneModifier,
                         content = {
                             entry.Content()
                         }

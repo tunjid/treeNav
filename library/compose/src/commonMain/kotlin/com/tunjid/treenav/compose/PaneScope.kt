@@ -65,8 +65,10 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
 internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
     private val slotPaneState: SlotPaneState<Pane, Destination>,
     val isPreviewingBack: () -> Boolean,
-    val animatedContentScope: AnimatedContentScope
-) : PaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
+    animatedContentScope: AnimatedContentScope
+) : PaneScope<Pane, Destination>, AnimatedVisibilityScope {
+
+    var animatedContentScope: AnimatedContentScope by mutableStateOf(animatedContentScope)
 
     override val paneState: PaneState<Pane, Destination>
         get() = slotPaneState
@@ -79,6 +81,9 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
 
     override val inPredictiveBack: Boolean
         get() = isPreviewingBack()
+
+    override val transition: Transition<EnterExitState>
+        get() = animatedContentScope.transition
 
     companion object {
         /**
@@ -94,6 +99,8 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
             adaptations: Set<Adaptation>,
         ) : PaneState<Pane, Destination> {
             var slot: Slot? by mutableStateOf(slot)
+
+            @Suppress("unused")
             val previousDestination: Destination? by mutableStateOf(previousDestination)
 
             override val currentDestination: Destination? by mutableStateOf(currentDestination)
@@ -124,8 +131,11 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
 
         fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.update(
             animatedPaneScope: AnimatedPaneScope<Pane, Destination>,
+            animatedContentScope: AnimatedContentScope,
             slot: Slot,
         ) {
+            animatedPaneScope.animatedContentScope = animatedContentScope
+
             withPaneAndDestination(slot) { pane, _ ->
                 val state = animatedPaneScope.slotPaneState
                 val panedNavigationStateHash = this@update.identityHash()
