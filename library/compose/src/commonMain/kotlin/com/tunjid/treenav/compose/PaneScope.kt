@@ -22,8 +22,10 @@ import androidx.compose.animation.EnterExitState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import com.tunjid.treenav.Node
 import kotlin.jvm.JvmInline
 
@@ -82,6 +84,7 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
          */
         @Stable
         private class SlotPaneState<Pane, Destination : Node>(
+            panedNavigationStateHash: Int,
             slot: Slot?,
             previousDestination: Destination?,
             currentDestination: Destination?,
@@ -90,9 +93,12 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
         ) : PaneState<Pane, Destination> {
             var slot: Slot? by mutableStateOf(slot)
             val previousDestination: Destination? by mutableStateOf(previousDestination)
+
             override val currentDestination: Destination? by mutableStateOf(currentDestination)
             override var pane: Pane? by mutableStateOf(pane)
             override var adaptations: Set<Adaptation> by mutableStateOf(adaptations)
+
+            var lastPanedNavigationStateHash by mutableIntStateOf(panedNavigationStateHash)
         }
 
         fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.paneScope(
@@ -102,6 +108,7 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
         ) = withPaneAndDestination(slot) { pane, destination ->
             AnimatedPaneScope(
                 slotPaneState = SlotPaneState(
+                    panedNavigationStateHash = this@paneScope.hashCode(),
                     slot = slot,
                     currentDestination = destination,
                     previousDestination = previousPanesToDestinations[pane],
@@ -118,10 +125,20 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
             slot: Slot,
         ) {
             withPaneAndDestination(slot) { pane, _ ->
-                animatedPaneScope.slotPaneState.slot = slot
-                animatedPaneScope.slotPaneState.pane = pane
-                animatedPaneScope.slotPaneState.adaptations =
-                    pane?.let(::adaptationsIn) ?: emptySet()
+                val state = animatedPaneScope.slotPaneState
+                val panedNavigationStateHash = this@update.hashCode()
+
+                if (state.slot == slot
+                    && state.pane == pane
+                    && state.lastPanedNavigationStateHash == panedNavigationStateHash
+                ) return@withPaneAndDestination
+
+                Snapshot.withMutableSnapshot {
+                    state.slot = slot
+                    state.pane = pane
+                    state.adaptations = pane?.let(::adaptationsIn) ?: emptySet()
+                    state.lastPanedNavigationStateHash = panedNavigationStateHash
+                }
             }
         }
     }
