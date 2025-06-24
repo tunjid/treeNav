@@ -73,32 +73,30 @@ enum class ThreePane {
 }
 
 /**
- * A [PaneEntry] for selectively running animations in [ThreePane] [MultiPaneDisplay]. When:
- * - A navigation destination moves between the [ThreePane.Primary] and [ThreePane.Secondary]
- *     panes, the pane animations are not run to provide a seamless movement experience.
- * - A navigation destination moves between the [ThreePane.Primary] and
- *     [ThreePane.TransientPrimary] panes, the pane animations are not run.
+ * Provides a default [PaneEntry] for selectively running animations in
+ * [ThreePane] [MultiPaneDisplay].
  *
- * @param enterTransition the transition to run for the entering pane.
- * @param exitTransition the transition to run for the exiting pane.
- * @param paneMapping the mapping of panes to navigation destinations.
+ * @param enterTransition the [EnterTransition] used when this [PaneEntry] adapts in the display.
+ * @param exitTransition the [ExitTransition] used when this [PaneEntry] adapts in the display.
+ * @param paneMapping the [Destination]s that are shown alongside the [Destination] provided and
+ * which of the [ThreePane]s they should show up in.
  * @param render the Composable for rendering the current destination.
  */
-fun <R : Node> threePaneEntry(
-    enterTransition: PaneScope<ThreePane, R>.() -> EnterTransition = {
+fun <Destination : Node> threePaneEntry(
+    enterTransition: PaneScope<ThreePane, Destination>.() -> EnterTransition = {
         if (canAnimate()) DefaultFadeIn else EnterTransition.None
     },
-    exitTransition: PaneScope<ThreePane, R>.() -> ExitTransition = {
+    exitTransition: PaneScope<ThreePane, Destination>.() -> ExitTransition = {
         if (canAnimate()) DefaultFadeOut else ExitTransition.None
     },
-    paneMapping: @Composable (R) -> Map<ThreePane, R?> = {
+    paneMapping: @Composable (Destination) -> Map<ThreePane, Destination?> = {
         mapOf(ThreePane.Primary to it)
     },
-    render: @Composable (PaneScope<ThreePane, R>.(R) -> Unit),
+    render: @Composable (PaneScope<ThreePane, Destination>.(Destination) -> Unit),
 ) = PaneEntry(
     enterTransition = enterTransition,
     exitTransition = exitTransition,
-    paneTransform = paneMapping,
+    paneMapping = paneMapping,
     content = render
 )
 

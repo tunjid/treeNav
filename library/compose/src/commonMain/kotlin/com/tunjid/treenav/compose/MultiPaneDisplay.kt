@@ -113,7 +113,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
 ) {
     val navigationState by state.navigationState
     val panesToDestinations = rememberUpdatedState(
-        state.panesToDestinationsTransform(
+        state.destinationPanes(
             state.destinationTransform(navigationState)
         )
     )
@@ -250,7 +250,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                 destination = destination,
                 slots = slots,
                 isPreviewingBack = isPreviewingBack,
-                panesToDestinations = state.panesToDestinationsTransform,
+                panesToDestinations = state.destinationPanes,
                 onSceneDisposed = { scenes.remove(destination.id) },
                 currentPanedNavigationState = currentPanedNavigationState(),
                 entries = entries.filter { it.id in activeIds },
