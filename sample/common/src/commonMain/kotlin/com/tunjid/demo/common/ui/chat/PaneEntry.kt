@@ -18,9 +18,7 @@ package com.tunjid.demo.common.ui.chat
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.PaneNavigationBar
 import com.tunjid.demo.common.ui.PaneNavigationRail
@@ -29,6 +27,7 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
 import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
 import com.tunjid.demo.common.ui.rememberPaneScaffoldState
+import com.tunjid.demo.common.ui.viewModelCoroutineScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
@@ -41,10 +40,9 @@ fun chatPaneEntry() = threePaneEntry<SampleDestination>(
     },
     render = { destination ->
         check(destination is SampleDestination.Chat)
-        val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ChatViewModel> {
             ChatViewModel(
-                coroutineScope = scope,
+                coroutineScope = viewModelCoroutineScope(),
                 chat = destination,
             )
         }

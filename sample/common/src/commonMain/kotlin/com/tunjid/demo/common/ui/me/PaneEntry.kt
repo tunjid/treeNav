@@ -18,9 +18,7 @@ package com.tunjid.demo.common.ui.me
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.PaneNavigationBar
 import com.tunjid.demo.common.ui.PaneNavigationRail
@@ -29,15 +27,15 @@ import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
 import com.tunjid.demo.common.ui.profile.ProfileScreen
 import com.tunjid.demo.common.ui.profile.ProfileViewModel
 import com.tunjid.demo.common.ui.rememberPaneScaffoldState
+import com.tunjid.demo.common.ui.viewModelCoroutineScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
 fun mePaneEntry(
 ) = threePaneEntry(
     render = {
-        val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<ProfileViewModel> {
             ProfileViewModel(
-                coroutineScope = scope,
+                coroutineScope = viewModelCoroutineScope(),
                 profileName = null,
                 roomName = null,
             )

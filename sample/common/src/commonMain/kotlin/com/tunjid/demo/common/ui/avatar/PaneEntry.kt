@@ -19,14 +19,13 @@ package com.tunjid.demo.common.ui.avatar
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
 import com.tunjid.demo.common.ui.rememberPaneScaffoldState
+import com.tunjid.demo.common.ui.viewModelCoroutineScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
@@ -41,10 +40,9 @@ fun avatarPaneEntry() = threePaneEntry<SampleDestination>(
     },
     render = { destination ->
         check(destination is SampleDestination.Avatar)
-        val scope = LocalLifecycleOwner.current.lifecycle.coroutineScope
         val viewModel = viewModel<AvatarViewModel> {
             AvatarViewModel(
-                coroutineScope = scope,
+                coroutineScope = viewModelCoroutineScope(),
                 profileName = destination.profileName,
                 roomName = destination.roomName,
             )

@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui.chat
 
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.ChatsRepository
@@ -37,13 +36,14 @@ import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
 import com.tunjid.treenav.swap
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 
 class ChatViewModel(
-    coroutineScope: LifecycleCoroutineScope,
+    coroutineScope: CoroutineScope,
     chatsRepository: ChatsRepository = ChatsRepository,
     profileRepository: ProfileRepository = ProfileRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
