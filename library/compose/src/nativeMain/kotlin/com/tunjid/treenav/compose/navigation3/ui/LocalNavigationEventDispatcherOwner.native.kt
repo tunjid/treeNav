@@ -17,8 +17,14 @@
 package com.tunjid.treenav.compose.navigation3.ui
 
 import androidx.compose.runtime.Composable
+import androidx.navigationevent.NavigationEventDispatcher
 import androidx.navigationevent.NavigationEventDispatcherOwner
 
 @Composable
 internal actual fun findViewTreeNavigationEventDispatcherOwner(): NavigationEventDispatcherOwner? =
-    null
+    Owner
+
+private object Owner: NavigationEventDispatcherOwner {
+    override val navigationEventDispatcher: NavigationEventDispatcher =
+        NavigationEventDispatcher()
+}
