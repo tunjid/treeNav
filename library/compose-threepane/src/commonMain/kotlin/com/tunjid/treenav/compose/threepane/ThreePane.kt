@@ -58,18 +58,6 @@ enum class ThreePane {
      * An optional pane for showing dialogs, or context sheets over existing panes.
      */
     Overlay;
-
-    companion object {
-        val PrimaryToSecondary = Swap(
-            from = Primary,
-            to = Secondary
-        )
-
-        val SecondaryToPrimary = Swap(
-            from = Secondary,
-            to = Primary
-        )
-    }
 }
 
 /**

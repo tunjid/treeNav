@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Adaptation
+import com.tunjid.treenav.compose.Adaptation.Swap
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.PaneScope
@@ -40,6 +41,8 @@ import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScop
 import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.ThreePane.Primary
+import com.tunjid.treenav.compose.threepane.ThreePane.Secondary
 import com.tunjid.treenav.compose.transforms.RenderTransform
 import com.tunjid.treenav.compose.transforms.Transform
 
@@ -188,11 +191,16 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
 
 private fun PaneScope<ThreePane, *>.canAnimateSecondary(): Boolean {
     if (inPredictiveBack) return false
-    if (!paneState.adaptations.contains(ThreePane.PrimaryToSecondary)) return false
+    if (!paneState.adaptations.contains(PrimaryToSecondary)) return false
     if (paneState.adaptations.contains(Adaptation.Pop)) return false
 
     return true
 }
+
+private val PrimaryToSecondary = Swap(
+    from = Primary,
+    to = Secondary
+)
 
 private fun Modifier.fillMaxConstraints() =
     layout { measurable, constraints ->
