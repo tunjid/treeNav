@@ -270,6 +270,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
     }
 }
 
+@Stable
 private class MultiPaneDisplayScene<Pane, Destination : Node>(
     override val entries: List<NavEntry<Destination>>,
     override val previousEntries: List<NavEntry<Destination>>,
