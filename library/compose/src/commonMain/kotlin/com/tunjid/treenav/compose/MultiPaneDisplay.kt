@@ -42,6 +42,8 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.AnimatedPaneScope.Companion.paneScope
+import com.tunjid.treenav.compose.AnimatedPaneScope.Companion.update
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.id
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.paneEnterTransition
@@ -296,19 +298,22 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
         override fun Destination(pane: Pane) {
             val id = panedNavigationState.destinationFor(pane)?.id
             val entry = entries.firstOrNull { it.id == id } ?: return
-
-            val paneState = panedNavigationState.slotFor(pane)
-                ?.let(panedNavigationState::paneStateFor) ?: return
+            val slot = panedNavigationState.slotFor(pane) ?: return
 
             val animatedContentScope = LocalNavAnimatedContentScope.current
 
             val scope = remember {
-                AnimatedPaneScope(
-                    paneState = paneState,
+                panedNavigationState.paneScope(
+                    slot = slot,
                     isPreviewingBack = isPreviewingBack,
                     animatedContentScope = animatedContentScope,
                 )
-            }.also { it.paneState = paneState }
+            }.also {
+                panedNavigationState.update(
+                    animatedPaneScope = it,
+                    slot = slot,
+                )
+            }
 
             CompositionLocalProvider(
                 LocalPaneScope provides scope

@@ -58,13 +58,14 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
  * An implementation of [PaneScope] that supports animations and shared elements
  */
 @Stable
-internal class AnimatedPaneScope<Pane, Destination : Node>(
-    paneState: PaneState<Pane, Destination>,
+internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
+    private val slotPaneState: SlotPaneState<Pane, Destination>,
     val isPreviewingBack: () -> Boolean,
     val animatedContentScope: AnimatedContentScope
 ) : PaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
 
-    override var paneState by mutableStateOf(paneState)
+    override val paneState: PaneState<Pane, Destination>
+        get() = slotPaneState
 
     override val isActive: Boolean by derivedStateOf {
         val isEntering = animatedContentScope.transition.targetState == EnterExitState.Visible
@@ -74,6 +75,56 @@ internal class AnimatedPaneScope<Pane, Destination : Node>(
 
     override val inPredictiveBack: Boolean
         get() = isPreviewingBack()
+
+    companion object {
+        /**
+         * [Slot] based implementation of [PaneState]
+         */
+        @Stable
+        private class SlotPaneState<Pane, Destination : Node>(
+            slot: Slot?,
+            previousDestination: Destination?,
+            currentDestination: Destination?,
+            pane: Pane?,
+            adaptations: Set<Adaptation>,
+        ) : PaneState<Pane, Destination> {
+            var slot: Slot? by mutableStateOf(slot)
+            val previousDestination: Destination? by mutableStateOf(previousDestination)
+            override val currentDestination: Destination? by mutableStateOf(currentDestination)
+            override var pane: Pane? by mutableStateOf(pane)
+            override var adaptations: Set<Adaptation> by mutableStateOf(adaptations)
+        }
+
+        fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.paneScope(
+            slot: Slot,
+            isPreviewingBack: () -> Boolean,
+            animatedContentScope: AnimatedContentScope
+        ) = withPaneAndDestination(slot) { pane, destination ->
+            AnimatedPaneScope(
+                slotPaneState = SlotPaneState(
+                    slot = slot,
+                    currentDestination = destination,
+                    previousDestination = previousPanesToDestinations[pane],
+                    pane = pane,
+                    adaptations = pane?.let(::adaptationsIn) ?: emptySet(),
+                ),
+                isPreviewingBack = isPreviewingBack,
+                animatedContentScope = animatedContentScope
+            )
+        }
+
+        fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.update(
+            animatedPaneScope: AnimatedPaneScope<Pane, Destination>,
+            slot: Slot,
+        ) {
+            withPaneAndDestination(slot) { pane, _ ->
+                animatedPaneScope.slotPaneState.slot = slot
+                animatedPaneScope.slotPaneState.pane = pane
+                animatedPaneScope.slotPaneState.adaptations =
+                    pane?.let(::adaptationsIn) ?: emptySet()
+            }
+        }
+    }
 }
 
 /**
@@ -85,17 +136,6 @@ sealed interface PaneState<Pane, Destination : Node> {
     val pane: Pane?
     val adaptations: Set<Adaptation>
 }
-
-/**
- * [Slot] based implementation of [PaneState]
- */
-internal data class SlotPaneState<Pane, Destination : Node>(
-    val slot: Slot?,
-    val previousDestination: Destination?,
-    override val currentDestination: Destination?,
-    override val pane: Pane?,
-    override val adaptations: Set<Adaptation>,
-) : PaneState<Pane, Destination>
 
 /**
  * A spot taken by an [PaneEntry] that may be moved in from pane to pane.

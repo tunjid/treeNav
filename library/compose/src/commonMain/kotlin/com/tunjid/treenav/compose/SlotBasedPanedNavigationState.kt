@@ -70,18 +70,14 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
         )
     }
 
-    internal fun paneStateFor(
+    internal inline fun <T> withPaneAndDestination(
         slot: Slot,
-    ): PaneState<Pane, Destination> {
+        crossinline block:
+        SlotBasedPanedNavigationState<Pane, Destination>.(pane: Pane?, destination: Destination?) -> T
+    ): T {
         val node = destinationFor(slot)
         val pane = node?.let(::paneFor)
-        return SlotPaneState(
-            slot = slot,
-            currentDestination = node,
-            previousDestination = previousPanesToDestinations[pane],
-            pane = pane,
-            adaptations = pane?.let(::adaptationsIn) ?: emptySet(),
-        )
+        return block(pane, node)
     }
 
     internal fun slotFor(
@@ -115,13 +111,17 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
     ): Set<Adaptation> {
         val swaps = swapAdaptations.filter { pane in it }
         val adaptations = if (swaps.isEmpty()) when (panesToDestinations[pane]?.id) {
-            previousPanesToDestinations[pane]?.id -> setOf(Adaptation.Same)
-            else -> setOf(Adaptation.Change)
+            previousPanesToDestinations[pane]?.id -> SameAdaptations
+            else -> ChangeAdaptations
         }
         else swaps.toSet()
         return if (isPop) adaptations + Adaptation.Pop else adaptations
     }
 }
+
+private val SameAdaptations = setOf(Adaptation.Same)
+private val ChangeAdaptations = setOf(Adaptation.Change)
+
 
 /**
  * A method that adapts changes in navigation to different panes while allowing for them
@@ -209,32 +209,3 @@ internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
     )
 
 }
-
-/**
- * Checks if any of the new routes coming in has any conflicts with those animating out.
- */
-internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.hasConflictingRoutes(): Boolean =
-    panesToDestinations.keys
-        .map(::destinationFor)
-        .any {
-            it?.id?.let(destinationIdsAnimatingOut::contains) == true
-        }
-
-/**
- * Trims unneeded metadata from the [SlotBasedPanedNavigationState]
- */
-internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.prune(): SlotBasedPanedNavigationState<Pane, Destination> =
-    copy(
-        destinationIdsToAdaptiveSlots = destinationIdsToAdaptiveSlots.filter { (routeId) ->
-            if (routeId == null) return@filter false
-            backStackIds.contains(routeId)
-                    || destinationIdsAnimatingOut.contains(routeId)
-                    || previousPanesToDestinations.values.map { it?.id }.toSet().contains(routeId)
-        },
-        previousPanesToDestinations = previousPanesToDestinations.filter { (_, route) ->
-            if (route == null) return@filter false
-            backStackIds.contains(route.id)
-                    || destinationIdsAnimatingOut.contains(route.id)
-                    || previousPanesToDestinations.values.map { it?.id }.toSet().contains(route.id)
-        }
-    )
