@@ -319,8 +319,12 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                 LocalPaneScope provides scope
             ) {
                 with(scope) {
-                    val enterTransition = entry.paneEnterTransition(this)
-                    val exitTransition = entry.paneExitTransition(this)
+                    val enterTransition = remember(scope.isPreviewingBack) {
+                        entry.paneEnterTransition(this)
+                    }
+                    val exitTransition = remember(scope.isPreviewingBack) {
+                        entry.paneExitTransition(this)
+                    }
                     val shouldAnimate = enterTransition != EnterTransition.None
                             || exitTransition != ExitTransition.None
                     Box(
