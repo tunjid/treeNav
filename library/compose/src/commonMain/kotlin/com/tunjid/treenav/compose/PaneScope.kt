@@ -19,6 +19,7 @@ package com.tunjid.treenav.compose
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -41,12 +42,13 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
     val paneState: PaneState<Pane, Destination>
 
     /**
-     * Whether or not this [PaneScope] is active in its current pane. It is active when
-     * the current navigation destination is rendering this pane.
+     * Whether or not this [PaneScope] is active in its current pane. It is active when this pane
+     * matches the current navigation destination or any of its co-displayed panes in a given
+     * scene.
      *
      * This means that during predictive back animations, the outgoing panes, i.e the panes
-     * whose [AnimatedVisibilityScope.transition] report [EnterExitState.Visible] are considered
-     * active.
+     * whose [AnimatedVisibilityScope.transition] have their [Transition.targetState]
+     * NOT reporting [EnterExitState.Visible] are considered active.
      */
     val isActive: Boolean
 
