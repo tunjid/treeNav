@@ -58,11 +58,15 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.round
+import androidx.navigationevent.NavigationEvent
 import com.tunjid.composables.backpreview.BackPreviewState
+import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.demo.common.ui.AppState.Companion.rememberMultiPaneDisplayState
@@ -79,10 +83,12 @@ import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.multiPaneDisplayBackstack
+import com.tunjid.treenav.compose.navigation3.ui.NavigationEventHandler
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
 import com.tunjid.treenav.compose.transforms.Transform
+import com.tunjid.treenav.compose.transforms.paneModifierTransform
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
 import com.tunjid.treenav.requireCurrent
@@ -122,22 +128,20 @@ fun App(
                                     appState.splitLayoutState.size
                                 }
                             ),
-//                            backPreviewTransform(
-//                                isPreviewingBack = derivedStateOf {
-//                                    appState.isPreviewingBack
-//                                },
-//                                navigationStateBackTransform = MultiStackNav::pop,
-//                            ),
                             threePanedMovableSharedElementTransform(
                                 movableSharedElementHostState = movableSharedElementHostState
                             ),
-//                            paneModifierTransform {
-//                                if (paneState.pane == ThreePane.TransientPrimary) Modifier
-//                                    .fillMaxSize()
-//                                    .backPreview(appState.backPreviewState)
-//                                else Modifier
-//                                    .fillMaxSize()
-//                            },
+                            paneModifierTransform {
+                                if (paneState.pane == ThreePane.Primary
+                                    && inPredictiveBack
+                                    && isActive
+                                    && !appState.dragToPopState.isDraggingToPop
+                                ) Modifier
+                                    .fillMaxSize()
+                                    .backPreview(appState.backPreviewState)
+                                else Modifier
+                                    .fillMaxSize()
+                            },
                         )
                     },
                 ),
@@ -163,6 +167,24 @@ fun App(
                         Destination(appState.filteredPaneOrder[index])
                     }
                 )
+            }
+
+            NavigationEventHandler(
+                enabled = { true },
+                passThrough = true,
+            ) { progress ->
+                try {
+                    progress.collect { event ->
+                        appState.backPreviewState.progress = event.progress
+                        appState.backPreviewState.atStart =
+                            event.swipeEdge == NavigationEvent.EDGE_LEFT
+                        appState.backPreviewState.pointerOffset =
+                            Offset(event.touchX, event.touchY).round()
+                    }
+                    appState.backPreviewState.progress = 0f
+                } finally {
+                    appState.backPreviewState.progress = 0f
+                }
             }
         }
     }
@@ -258,10 +280,6 @@ class AppState(
         }
     )
     internal val dragToPopState = DragToPopState()
-
-    internal val isPreviewingBack
-        get() = !backPreviewState.progress.isNaN()
-                || dragToPopState.isDraggingToPop
 
     internal val isMediumScreenWidthOrWider get() = splitLayoutState.size >= SecondaryPaneMinWidthBreakpointDp
 

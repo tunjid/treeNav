@@ -32,6 +32,8 @@ kotlin {
 
                 implementation(compose.components.resources)
 
+                implementation(libs.androidx.navigation.event)
+
                 implementation(libs.jetbrains.compose.runtime)
                 implementation(libs.jetbrains.compose.animation)
                 implementation(libs.jetbrains.compose.material3)

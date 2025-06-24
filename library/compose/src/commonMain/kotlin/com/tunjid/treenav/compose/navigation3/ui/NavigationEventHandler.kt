@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun NavigationEventHandler(
+fun NavigationEventHandler(
     enabled: () -> Boolean = { true },
     passThrough: Boolean = false,
     onBack: suspend (progress: Flow<NavigationEvent>) -> Unit,

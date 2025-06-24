@@ -23,7 +23,7 @@ import androidx.navigationevent.NavigationEventDispatcher
 import androidx.navigationevent.NavigationEventDispatcherOwner
 
 /** The CompositionLocal containing the current [NavigationEventDispatcher]. */
-internal object LocalNavigationEventDispatcherOwner {
+object LocalNavigationEventDispatcherOwner {
     private val LocalNavigationEventDispatcherOwner =
         compositionLocalOf<NavigationEventDispatcherOwner?> { null }
 
