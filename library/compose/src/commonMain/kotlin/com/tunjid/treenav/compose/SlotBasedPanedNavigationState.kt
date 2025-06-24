@@ -109,19 +109,21 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
     fun adaptationsIn(
         pane: Pane,
     ): Set<Adaptation> {
-        val swaps = swapAdaptations.filter { pane in it }
-        val adaptations = if (swaps.isEmpty()) when (panesToDestinations[pane]?.id) {
-            previousPanesToDestinations[pane]?.id -> SameAdaptations
-            else -> ChangeAdaptations
+        val adaptations = when {
+            swapAdaptations.any { pane in it } -> swapAdaptations.filterTo(mutableSetOf()) {
+                pane in it
+            }
+            else -> when (panesToDestinations[pane]?.id) {
+                previousPanesToDestinations[pane]?.id -> SameAdaptations
+                else -> ChangeAdaptations
+            }
         }
-        else swaps.toSet()
         return if (isPop) adaptations + Adaptation.Pop else adaptations
     }
 }
 
 private val SameAdaptations = setOf(Adaptation.Same)
 private val ChangeAdaptations = setOf(Adaptation.Change)
-
 
 /**
  * A method that adapts changes in navigation to different panes while allowing for them
