@@ -108,7 +108,7 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
         ) = withPaneAndDestination(slot) { pane, destination ->
             AnimatedPaneScope(
                 slotPaneState = SlotPaneState(
-                    panedNavigationStateHash = this@paneScope.hashCode(),
+                    panedNavigationStateHash = this@paneScope.identityHash(),
                     slot = slot,
                     currentDestination = destination,
                     previousDestination = previousPanesToDestinations[pane],
@@ -126,7 +126,7 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
         ) {
             withPaneAndDestination(slot) { pane, _ ->
                 val state = animatedPaneScope.slotPaneState
-                val panedNavigationStateHash = this@update.hashCode()
+                val panedNavigationStateHash = this@update.identityHash()
 
                 if (state.slot == slot
                     && state.pane == pane
@@ -159,3 +159,5 @@ sealed interface PaneState<Pane, Destination : Node> {
  */
 @JvmInline
 internal value class Slot internal constructor(val index: Int)
+
+internal expect fun Any.identityHash(): Int
