@@ -21,7 +21,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -65,19 +64,22 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
 internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
     private val slotPaneState: SlotPaneState<Pane, Destination>,
     val isPreviewingBack: () -> Boolean,
+    isInCurrentDestination: Boolean,
     animatedContentScope: AnimatedContentScope
 ) : PaneScope<Pane, Destination>, AnimatedVisibilityScope {
 
-    var animatedContentScope: AnimatedContentScope by mutableStateOf(animatedContentScope)
+    private var animatedContentScope: AnimatedContentScope by mutableStateOf(animatedContentScope)
+
+    private var isInCurrentDestination by mutableStateOf(isInCurrentDestination)
+
+    private val isEntering
+        get() = animatedContentScope.transition.targetState == EnterExitState.Visible
+
+    override val isActive: Boolean
+        get() = if (inPredictiveBack) isInCurrentDestination else isEntering
 
     override val paneState: PaneState<Pane, Destination>
         get() = slotPaneState
-
-    override val isActive: Boolean by derivedStateOf {
-        val isEntering = animatedContentScope.transition.targetState == EnterExitState.Visible
-        if (inPredictiveBack) !isEntering
-        else isEntering
-    }
 
     override val inPredictiveBack: Boolean
         get() = isPreviewingBack()
@@ -112,6 +114,7 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
 
         fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.paneScope(
             slot: Slot,
+            isInCurrentDestination: Boolean,
             isPreviewingBack: () -> Boolean,
             animatedContentScope: AnimatedContentScope
         ) = withPaneAndDestination(slot) { pane, destination ->
@@ -124,6 +127,7 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
                     pane = pane,
                     adaptations = pane?.let(::adaptationsIn) ?: emptySet(),
                 ),
+                isInCurrentDestination = isInCurrentDestination,
                 isPreviewingBack = isPreviewingBack,
                 animatedContentScope = animatedContentScope
             )
@@ -132,25 +136,31 @@ internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
         fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.update(
             animatedPaneScope: AnimatedPaneScope<Pane, Destination>,
             animatedContentScope: AnimatedContentScope,
+            isInCurrentDestination: Boolean,
             slot: Slot,
-        ) {
-            animatedPaneScope.animatedContentScope = animatedContentScope
+        ) = withPaneAndDestination(slot) { pane, _ ->
+            val state = animatedPaneScope.slotPaneState
+            val panedNavigationStateHash = this@update.identityHash()
 
-            withPaneAndDestination(slot) { pane, _ ->
-                val state = animatedPaneScope.slotPaneState
-                val panedNavigationStateHash = this@update.identityHash()
-
-                if (state.slot == slot
-                    && state.pane == pane
-                    && state.lastPanedNavigationStateHash == panedNavigationStateHash
-                ) return@withPaneAndDestination
-
+            if (state.slot == slot
+                && state.pane == pane
+                && state.lastPanedNavigationStateHash == panedNavigationStateHash
+            ) {
                 Snapshot.withMutableSnapshot {
-                    state.slot = slot
-                    state.pane = pane
-                    state.adaptations = pane?.let(::adaptationsIn) ?: emptySet()
-                    state.lastPanedNavigationStateHash = panedNavigationStateHash
+                    animatedPaneScope.animatedContentScope = animatedContentScope
+                    animatedPaneScope.isInCurrentDestination = isInCurrentDestination
                 }
+                return@withPaneAndDestination
+            }
+
+            Snapshot.withMutableSnapshot {
+                animatedPaneScope.animatedContentScope = animatedContentScope
+                animatedPaneScope.isInCurrentDestination = isInCurrentDestination
+
+                state.slot = slot
+                state.pane = pane
+                state.adaptations = pane?.let(::adaptationsIn) ?: emptySet()
+                state.lastPanedNavigationStateHash = panedNavigationStateHash
             }
         }
     }

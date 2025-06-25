@@ -266,7 +266,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                 },
                 scopeContent = content
             ).also {
-                scenes[backstackIds.last()] = it
+                scenes[destination.id] = it
             }
         }
     }
@@ -310,12 +310,14 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                     slot = slot,
                     isPreviewingBack = isPreviewingBack,
                     animatedContentScope = animatedContentScope,
+                    isInCurrentDestination = destination.id == currentPanedNavigationState.backStackIds.last()
                 )
-            }.also {
+            }.also { scope ->
                 panedNavigationState.update(
-                    animatedPaneScope = it,
-                    animatedContentScope = animatedContentScope,
                     slot = slot,
+                    animatedPaneScope = scope,
+                    animatedContentScope = animatedContentScope,
+                    isInCurrentDestination = destination.id == currentPanedNavigationState.backStackIds.last()
                 )
             }
 
@@ -327,6 +329,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                         isActive,
                         inPredictiveBack,
                         panedNavigationState.identityHash(),
+                        animatedContentScope.transition.targetState,
                     ) {
                         val enterTransition = entry.paneEnterTransition(this)
                         val exitTransition = entry.paneExitTransition(this)
