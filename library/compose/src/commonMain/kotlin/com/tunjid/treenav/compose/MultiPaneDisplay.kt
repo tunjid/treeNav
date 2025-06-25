@@ -58,7 +58,6 @@ import com.tunjid.treenav.compose.navigation3.ui.Scene
 import com.tunjid.treenav.compose.navigation3.ui.SceneStrategy
 import com.tunjid.treenav.compose.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.collect
 
 /**
  * Scope that provides context about individual panes [Pane] in an [MultiPaneDisplay].
@@ -160,10 +159,12 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
         )
     }
 
-    val transitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
-        state.transitionSpec(
-            sceneStrategy.scenes.getValue(sceneDestinationKey).multiPaneDisplayScope
-        )
+    val transitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = remember {
+        {
+            state.transitionSpec(
+                sceneStrategy.scenes.getValue(sceneDestinationKey).multiPaneDisplayScope
+            )
+        }
     }
 
     NavDisplay(
@@ -192,12 +193,13 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
     )
 
     NavigationEventHandler(
-        enabled = { true },
+        enabled = AlwaysTrue,
         passThrough = true,
     ) { progress ->
         try {
-            state.backPreviewState.value = true
-            progress.collect()
+            progress.collect {
+                state.backPreviewState.value = true
+            }
             state.backPreviewState.value = false
         } catch (e: CancellationException) {
             state.backPreviewState.value = false
@@ -403,6 +405,8 @@ private fun <Destination : Node, Pane> SlotBasedPanedNavigationState<Pane, Desti
             )
         }
     }
+
+private val AlwaysTrue = { true }
 
 private val AnimatedContentTransitionScope<*>.sceneDestinationKey: String
     get() {
