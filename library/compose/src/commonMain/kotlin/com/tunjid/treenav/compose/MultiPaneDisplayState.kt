@@ -20,6 +20,7 @@ import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import com.tunjid.treenav.Node
@@ -44,6 +45,7 @@ import com.tunjid.treenav.compose.transforms.Transform
  * [Destination] to the panes available.
  * @param destinationContent the transform used to render a [Destination] in its pane.
  */
+@Stable
 class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> internal constructor(
     internal val panes: List<Pane>,
     internal val navigationState: State<NavigationState>,
