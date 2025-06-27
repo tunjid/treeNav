@@ -21,12 +21,14 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.Transition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,8 +44,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.AnimatedPaneScope.Companion.paneScope
-import com.tunjid.treenav.compose.AnimatedPaneScope.Companion.update
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.id
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.paneEnterTransition
@@ -58,6 +58,7 @@ import com.tunjid.treenav.compose.navigation3.ui.Scene
 import com.tunjid.treenav.compose.navigation3.ui.SceneStrategy
 import com.tunjid.treenav.compose.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import kotlinx.coroutines.CancellationException
+import kotlin.jvm.JvmInline
 
 /**
  * Scope that provides context about individual panes [Pane] in an [MultiPaneDisplay].
@@ -216,7 +217,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
     private val content: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : SceneStrategy<Destination> {
 
-    val scenes = mutableMapOf<String, MultiPaneDisplayScene<Pane, Destination>>()
+    val scenes = mutableMapOf<MultiPaneSceneKey, MultiPaneDisplayScene<Pane, Destination>>()
 
     @Composable
     override fun calculateScene(
@@ -247,13 +248,16 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
 
             val mutableEntries = entries.toMutableList()
 
+            val sceneKey = MultiPaneSceneKey(backstackIds)
+
             MultiPaneDisplayScene(
                 backstackIds = backstackIds,
                 destination = destination,
+                sceneKey = sceneKey,
                 slots = slots,
                 isPreviewingBack = isPreviewingBack,
                 panesToDestinations = state.destinationPanes,
-                onSceneDisposed = { scenes.remove(destination.id) },
+                onSceneDisposed = { scenes.remove(sceneKey) },
                 currentPanedNavigationState = currentPanedNavigationState(),
                 entries = entries.filter { it.id in activeIds },
                 // Try to match up NavEntries to state using their id and children.
@@ -266,7 +270,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                 },
                 scopeContent = content
             ).also {
-                scenes[destination.id] = it
+                scenes[sceneKey] = it
             }
         }
     }
@@ -274,6 +278,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
 
 @Stable
 private class MultiPaneDisplayScene<Pane, Destination : Node>(
+    private val sceneKey: MultiPaneSceneKey,
     override val entries: List<NavEntry<Destination>>,
     override val previousEntries: List<NavEntry<Destination>>,
     private val backstackIds: List<String>,
@@ -301,24 +306,26 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
         override fun Destination(pane: Pane) {
             val id = panedNavigationState.destinationFor(pane)?.id
             val entry = entries.firstOrNull { it.id == id } ?: return
-            val slot = panedNavigationState.slotFor(pane) ?: return
+
+            val paneState = remember(panedNavigationState.identityHash()) {
+                panedNavigationState.slotFor(pane)?.let(panedNavigationState::paneStateFor)
+            } ?: return
 
             val animatedContentScope = LocalNavAnimatedContentScope.current
 
             val scope = remember {
-                panedNavigationState.paneScope(
-                    slot = slot,
+                AnimatedPaneScope(
                     isPreviewingBack = isPreviewingBack,
+                    paneState = paneState,
+                    activeState = derivedStateOf {
+                        val targetSceneKey =
+                            animatedContentScope.transition.sceneTargetDestinationKey
+                        sceneKey == targetSceneKey
+                    },
                     animatedContentScope = animatedContentScope,
-                    isInCurrentDestination = destination.id == currentPanedNavigationState.backStackIds.last()
                 )
-            }.also { scope ->
-                panedNavigationState.update(
-                    slot = slot,
-                    animatedPaneScope = scope,
-                    animatedContentScope = animatedContentScope,
-                    isInCurrentDestination = destination.id == currentPanedNavigationState.backStackIds.last()
-                )
+            }.also {
+                it.paneState = paneState
             }
 
             CompositionLocalProvider(
@@ -360,7 +367,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
             panedNavigationState.destinationFor(pane)
     }
 
-    override val key: Any = destination.id
+    override val key: Any = sceneKey
 
     override val content: @Composable () -> Unit = {
 
@@ -409,12 +416,29 @@ private fun <Destination : Node, Pane> SlotBasedPanedNavigationState<Pane, Desti
         }
     }
 
+@JvmInline
+internal value class MultiPaneSceneKey(
+    val ids: List<String>,
+)
+
 private val AlwaysTrue = { true }
 
-private val AnimatedContentTransitionScope<*>.sceneDestinationKey: String
+private val AnimatedContentTransitionScope<*>.sceneDestinationKey: MultiPaneSceneKey
     get() {
         val target = targetState as Pair<*, *>
-        return target.second as String
+        return target.second as MultiPaneSceneKey
+    }
+
+internal val Transition<*>.sceneTargetDestinationKey: MultiPaneSceneKey?
+    get() {
+        val target = parentTransition?.targetState as? Pair<*, *> ?: return null
+        return target.second as MultiPaneSceneKey
+    }
+
+internal val Transition<*>.sceneCurrentDestinationKey: MultiPaneSceneKey?
+    get() {
+        val target = parentTransition?.currentState as? Pair<*, *> ?: return null
+        return target.second as MultiPaneSceneKey
     }
 
 internal val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {

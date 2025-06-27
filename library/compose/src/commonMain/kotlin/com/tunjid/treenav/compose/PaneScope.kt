@@ -21,11 +21,10 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.Snapshot
 import com.tunjid.treenav.Node
 import kotlin.jvm.JvmInline
 
@@ -61,109 +60,35 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
  * An implementation of [PaneScope] that supports animations and shared elements
  */
 @Stable
-internal class AnimatedPaneScope<Pane, Destination : Node> private constructor(
-    private val slotPaneState: SlotPaneState<Pane, Destination>,
+internal class AnimatedPaneScope<Pane, Destination : Node>(
     val isPreviewingBack: () -> Boolean,
-    isInCurrentDestination: Boolean,
-    animatedContentScope: AnimatedContentScope
-) : PaneScope<Pane, Destination>, AnimatedVisibilityScope {
-
-    private var animatedContentScope: AnimatedContentScope by mutableStateOf(animatedContentScope)
-
-    private var isInCurrentDestination by mutableStateOf(isInCurrentDestination)
+    val activeState: State<Boolean>,
+    paneState: PaneState<Pane, Destination>,
+    animatedContentScope: AnimatedContentScope,
+) : PaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
 
     private val isEntering
-        get() = animatedContentScope.transition.targetState == EnterExitState.Visible
+        get() = transition.targetState == EnterExitState.Visible
+
+    override var paneState by mutableStateOf(paneState)
 
     override val isActive: Boolean
-        get() = if (inPredictiveBack) isInCurrentDestination else isEntering
-
-    override val paneState: PaneState<Pane, Destination>
-        get() = slotPaneState
+        get() = when {
+            inPredictiveBack -> !activeState.value
+            // Transition lagging predictive back for the enter state
+            activeState.value && !isEntering -> true
+            // Transition lagging predictive back for the exit state
+            !activeState.value && isEntering -> false
+            // Stabilized, the transition is the source of truth
+            else -> activeState.value
+        }
 
     override val inPredictiveBack: Boolean
-        get() = isPreviewingBack()
-
-    override val transition: Transition<EnterExitState>
-        get() = animatedContentScope.transition
-
-    companion object {
-        /**
-         * [Slot] based implementation of [PaneState]
-         */
-        @Stable
-        private class SlotPaneState<Pane, Destination : Node>(
-            panedNavigationStateHash: Int,
-            slot: Slot?,
-            previousDestination: Destination?,
-            currentDestination: Destination?,
-            pane: Pane?,
-            adaptations: Set<Adaptation>,
-        ) : PaneState<Pane, Destination> {
-            var slot: Slot? by mutableStateOf(slot)
-
-            @Suppress("unused")
-            val previousDestination: Destination? by mutableStateOf(previousDestination)
-
-            override val currentDestination: Destination? by mutableStateOf(currentDestination)
-            override var pane: Pane? by mutableStateOf(pane)
-            override var adaptations: Set<Adaptation> by mutableStateOf(adaptations)
-
-            var lastPanedNavigationStateHash by mutableIntStateOf(panedNavigationStateHash)
+        get() {
+            val currentSize = transition.sceneCurrentDestinationKey?.ids?.size ?: 0
+            val targetSize = transition.sceneTargetDestinationKey?.ids?.size ?: 0
+            return isPreviewingBack() && (targetSize < currentSize)
         }
-
-        fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.paneScope(
-            slot: Slot,
-            isInCurrentDestination: Boolean,
-            isPreviewingBack: () -> Boolean,
-            animatedContentScope: AnimatedContentScope
-        ) = withPaneAndDestination(slot) { pane, destination ->
-            AnimatedPaneScope(
-                slotPaneState = SlotPaneState(
-                    panedNavigationStateHash = this@paneScope.identityHash(),
-                    slot = slot,
-                    currentDestination = destination,
-                    previousDestination = previousPanesToDestinations[pane],
-                    pane = pane,
-                    adaptations = pane?.let(::adaptationsIn) ?: emptySet(),
-                ),
-                isInCurrentDestination = isInCurrentDestination,
-                isPreviewingBack = isPreviewingBack,
-                animatedContentScope = animatedContentScope
-            )
-        }
-
-        fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.update(
-            animatedPaneScope: AnimatedPaneScope<Pane, Destination>,
-            animatedContentScope: AnimatedContentScope,
-            isInCurrentDestination: Boolean,
-            slot: Slot,
-        ) = withPaneAndDestination(slot) { pane, _ ->
-            val state = animatedPaneScope.slotPaneState
-            val panedNavigationStateHash = this@update.identityHash()
-
-            if (state.slot == slot
-                && state.pane == pane
-                && state.lastPanedNavigationStateHash == panedNavigationStateHash
-            ) {
-                Snapshot.withMutableSnapshot {
-                    animatedPaneScope.animatedContentScope = animatedContentScope
-                    animatedPaneScope.isInCurrentDestination = isInCurrentDestination
-                }
-                return@withPaneAndDestination
-            }
-
-            Snapshot.withMutableSnapshot {
-                animatedPaneScope.animatedContentScope = animatedContentScope
-                animatedPaneScope.isInCurrentDestination = isInCurrentDestination
-
-                state.slot = slot
-                state.pane = pane
-                state.adaptations = pane?.let(::adaptationsIn) ?: emptySet()
-                state.lastPanedNavigationStateHash = panedNavigationStateHash
-            }
-        }
-    }
 }
 
 /**
@@ -175,6 +100,17 @@ sealed interface PaneState<Pane, Destination : Node> {
     val pane: Pane?
     val adaptations: Set<Adaptation>
 }
+
+/**
+ * [Slot] based implementation of [PaneState]
+ */
+internal data class SlotPaneState<Pane, Destination : Node>(
+    val slot: Slot?,
+    val previousDestination: Destination?,
+    override val currentDestination: Destination?,
+    override val pane: Pane?,
+    override val adaptations: Set<Adaptation>,
+) : PaneState<Pane, Destination>
 
 /**
  * A spot taken by an [PaneEntry] that may be moved in from pane to pane.

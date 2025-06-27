@@ -70,14 +70,18 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
         )
     }
 
-    internal inline fun <T> withPaneAndDestination(
+    internal fun paneStateFor(
         slot: Slot,
-        crossinline block:
-        SlotBasedPanedNavigationState<Pane, Destination>.(pane: Pane?, destination: Destination?) -> T
-    ): T {
+    ): PaneState<Pane, Destination> {
         val node = destinationFor(slot)
         val pane = node?.let(::paneFor)
-        return block(pane, node)
+        return SlotPaneState(
+            slot = slot,
+            currentDestination = node,
+            previousDestination = previousPanesToDestinations[pane],
+            pane = pane,
+            adaptations = pane?.let(::adaptationsIn) ?: emptySet(),
+        )
     }
 
     internal fun slotFor(
@@ -187,7 +191,7 @@ internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
     }
 
     return SlotBasedPanedNavigationState(
-        backStackIds.let popCheck@{ ids ->
+       isPop = backStackIds.let popCheck@{ ids ->
             if (ids.size >= previous.backStackIds.size) return@popCheck false
             if (ids.isEmpty()) return@popCheck true
 
