@@ -18,8 +18,9 @@ package com.tunjid.treenav.compose
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,11 +39,19 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
     val paneState: PaneState<Pane, Destination>
 
     /**
-     * Whether or not this [PaneScope] is active in its current pane. It is inactive when
-     * it is animating out of its [AnimatedVisibilityScope].
+     * Whether or not this [PaneScope] is active in its current pane. It is active when this pane's
+     * transition matches the pane for the current navigation destination in a given scene.
+     *
+     * This means that during predictive back animations, the outgoing panes, i.e the panes
+     * whose [AnimatedVisibilityScope.transition] have their [Transition.targetState]
+     * NOT reporting [EnterExitState.Visible] are considered active.
      */
     val isActive: Boolean
 
+    /**
+     * Whether or not a predictive back gesture is in progress
+     */
+    val inPredictiveBack: Boolean
 }
 
 /**
@@ -50,14 +59,34 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
  */
 @Stable
 internal class AnimatedPaneScope<Pane, Destination : Node>(
+    val backStatus: () -> BackStatus,
     paneState: PaneState<Pane, Destination>,
-    activeState: State<Boolean>,
-    val animatedContentScope: AnimatedContentScope
+    animatedContentScope: AnimatedContentScope,
 ) : PaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
+
+    private val isEntering
+        get() = transition.targetState == EnterExitState.Visible
 
     override var paneState by mutableStateOf(paneState)
 
-    override val isActive: Boolean by activeState
+    override val isActive: Boolean
+        get() = if (inPredictiveBack) !isEntering else isEntering
+
+    override val inPredictiveBack: Boolean
+        get() {
+            val currentSize = transition.sceneCurrentDestinationKey?.ids?.size ?: 0
+            val targetSize = transition.sceneTargetDestinationKey?.ids?.size ?: 0
+
+            val targetIsPreview = transition.sceneTargetDestinationKey?.isPreviewingBack == true
+
+            val isAnimatingBack = targetSize < currentSize
+
+            return when (backStatus()) {
+                BackStatus.Seeking -> isAnimatingBack && targetIsPreview
+                BackStatus.Completed.Cancelled -> isAnimatingBack && targetIsPreview
+                BackStatus.Completed.Commited -> false
+            }
+        }
 }
 
 /**
@@ -86,3 +115,17 @@ internal data class SlotPaneState<Pane, Destination : Node>(
  */
 @JvmInline
 internal value class Slot internal constructor(val index: Int)
+
+private val Transition<*>.sceneTargetDestinationKey: MultiPaneSceneKey?
+    get() {
+        val target = parentTransition?.targetState as? Pair<*, *> ?: return null
+        return target.second as MultiPaneSceneKey
+    }
+
+private val Transition<*>.sceneCurrentDestinationKey: MultiPaneSceneKey?
+    get() {
+        val target = parentTransition?.currentState as? Pair<*, *> ?: return null
+        return target.second as MultiPaneSceneKey
+    }
+
+internal expect fun Any.identityHash(): Int

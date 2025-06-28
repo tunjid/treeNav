@@ -16,14 +16,17 @@
 
 package com.tunjid.treenav.compose
 
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.transforms.CompoundTransform
-import com.tunjid.treenav.compose.transforms.DestinationTransform
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
+import com.tunjid.treenav.compose.transforms.PaneMappingTransform
 import com.tunjid.treenav.compose.transforms.PaneTransform
-import com.tunjid.treenav.compose.transforms.RenderTransform
-import com.tunjid.treenav.compose.transforms.Transform
+import com.tunjid.treenav.compose.transforms.PaneRenderTransform
 
 /**
  * Class for configuring a [MultiPaneDisplay] for selecting, adapting and placing navigation
@@ -35,18 +38,69 @@ import com.tunjid.treenav.compose.transforms.Transform
  * @param navigationState the navigation state to be adapted into various panes.
  * @param backStackTransform a transform to read the back stack of the navigation state.
  * @param destinationTransform a transform of the [navigationState] to its current destination.
- * @param panesToDestinationsTransform provides the strategy used to adapt the current
+ * @param popTransform a transform of the [navigationState] when back is pressed.
+ * @param onPopped an action to perform when the navigation state has been popped to a new state.
+ * @param destinationPanes provides the strategy used to adapt the current
  * [Destination] to the panes available.
- * @param renderTransform the transform used to render a [Destination] in its pane.
+ * @param destinationContent the transform used to render a [Destination] in its pane.
  */
-class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> internal constructor(
-    val panes: List<Pane>,
-    val navigationState: State<NavigationState>,
-    val backStackTransform: (NavigationState) -> List<Destination>,
-    val destinationTransform: (NavigationState) -> Destination,
-    val panesToDestinationsTransform: @Composable (Destination) -> Map<Pane, Destination?>,
-    val renderTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
-)
+@Stable
+class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> internal constructor(
+    internal val panes: List<Pane>,
+    internal val navigationState: State<NavigationState>,
+    internal val backStackTransform: (NavigationState) -> List<Destination>,
+    internal val destinationTransform: (NavigationState) -> Destination,
+    internal val popTransform: (NavigationState) -> NavigationState,
+    internal val onPopped: (NavigationState) -> Unit,
+    internal val transitionSpec: MultiPaneDisplayScope<Pane, Destination>.() -> ContentTransform,
+    internal val paneEntryProvider: (Destination) -> PaneEntry<Pane, Destination>,
+    internal val destinationPanes: @Composable (Destination) -> Map<Pane, Destination?>,
+    internal val destinationContent: @Composable PaneScope<Pane, Destination>.(PaneEntry<Pane, Destination>, Destination) -> Unit,
+) {
+
+    internal val navEntryProvider = { destination: Destination ->
+        val paneEntry = paneEntryProvider(destination)
+        NavEntry(
+            key = destination,
+            contentKey = destination.id,
+            metadata = mapOf(
+                ID_KEY to destination.id,
+                DESTINATION_KEY to destination,
+                CHILDREN_KEY to destination.children,
+                PANE_ENTER_TRANSITION_KEY to paneEntry.enterTransition,
+                PANE_EXIT_TRANSITION_KEY to paneEntry.exitTransition,
+            ),
+            content = { innerDestination ->
+                destinationContent(localPaneScope(), paneEntry, innerDestination)
+            },
+        )
+    }
+
+    companion object {
+        private const val ID_KEY = "com.tunjid.treenav.compose.id"
+        private const val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
+        private const val CHILDREN_KEY = "com.tunjid.treenav.compose.children"
+        private const val PANE_ENTER_TRANSITION_KEY =
+            "com.tunjid.treenav.compose.pane.enter.transition"
+        private const val PANE_EXIT_TRANSITION_KEY =
+            "com.tunjid.treenav.compose.pane.exit.transition"
+
+        internal val NavEntry<*>.id get() = metadata[ID_KEY] as String
+        internal val NavEntry<*>.children get() = metadata[CHILDREN_KEY]
+
+        @Suppress("UNCHECKED_CAST")
+        internal inline fun <T : Node> NavEntry<*>.destination() =
+            metadata[DESTINATION_KEY] as T
+
+        @Suppress("UNCHECKED_CAST")
+        internal inline val NavEntry<*>.paneEnterTransition
+            get() = metadata[PANE_ENTER_TRANSITION_KEY] as PaneScope<*, *>.() -> EnterTransition
+
+        @Suppress("UNCHECKED_CAST")
+        internal inline val NavEntry<*>.paneExitTransition
+            get() = metadata[PANE_EXIT_TRANSITION_KEY] as PaneScope<*, *>.() -> ExitTransition
+    }
+}
 
 /**
  * Provides an [MultiPaneDisplayState] for configuring a [MultiPaneDisplay] for
@@ -59,82 +113,90 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
  * @param navigationState the navigation state to be adapted into various panes.
  * @param backStackTransform a transform to read the back stack of the navigation state.
  * @param destinationTransform a transform of the [navigationState] to its current destination.
- * @param entryProvider provides the [Transform]s and content needed to render
+ * @param popTransform a transform of the [navigationState] when back is pressed.
+ * @param onPopped an action to perform when the navigation state has been popped to a new state.
+ * @param entryProvider provides the [PaneTransform]s and content needed to render
  * a [Destination] in its pane.
  * @param transforms a list of transforms applied to every [Destination] before it is
  * rendered in its pane. Order matters; they are applied from last to first.
  */
-fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
+fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplayState(
     panes: List<Pane>,
+    transforms: List<PaneTransform<NavigationState, Destination, Pane>>,
     navigationState: State<NavigationState>,
     backStackTransform: (NavigationState) -> List<Destination>,
     destinationTransform: (NavigationState) -> Destination,
+    popTransform: (NavigationState) -> NavigationState,
+    onPopped: (NavigationState) -> Unit,
+    transitionSpec: MultiPaneDisplayScope<Pane, Destination>.() -> ContentTransform = {
+        NoContentTransform
+    },
     entryProvider: (Destination) -> PaneEntry<Pane, Destination>,
-    transforms: List<Transform<Pane, NavigationState, Destination>>,
 ) = transforms.fold(
     initial = MultiPaneDisplayState(
         panes = panes,
         navigationState = navigationState,
         backStackTransform = backStackTransform,
         destinationTransform = destinationTransform,
-        panesToDestinationsTransform = { destination ->
-            entryProvider(destination).paneTransform(destination)
+        popTransform = popTransform,
+        onPopped = onPopped,
+        transitionSpec = transitionSpec,
+        paneEntryProvider = entryProvider,
+        destinationPanes = { destination ->
+            entryProvider(destination).paneMapping(destination)
         },
-        renderTransform = { destination ->
-            val nav = entryProvider(destination)
-            with(nav.renderTransform) {
-                Render(
-                    destination = destination,
-                    previousTransform = nav.content,
-                )
-            }
+        destinationContent = transform@{ paneEntry, destination ->
+            paneEntry.content(this@transform, destination)
         }
     ),
-    operation = MultiPaneDisplayState<Pane, NavigationState, Destination>::plus
+    operation = MultiPaneDisplayState<NavigationState, Destination, Pane>::plus
 )
 
-private operator fun <Pane, NavigationState : Node, Destination : Node>
-        MultiPaneDisplayState<Pane, NavigationState, Destination>.plus(
-    transform: Transform<Pane, NavigationState, Destination>,
-): MultiPaneDisplayState<Pane, NavigationState, Destination> =
-    if (transform is CompoundTransform) transform.transforms.fold(
-        initial = this,
-        operation = MultiPaneDisplayState<Pane, NavigationState, Destination>::plus,
-    )
-    else MultiPaneDisplayState(
+private operator fun <NavigationState : Node, Destination : Node, Pane>
+        MultiPaneDisplayState<NavigationState, Destination, Pane>.plus(
+    transform: PaneTransform<NavigationState, Destination, Pane>,
+): MultiPaneDisplayState<NavigationState, Destination, Pane> =
+    MultiPaneDisplayState(
         panes = panes,
         navigationState = navigationState,
         backStackTransform = backStackTransform,
-        destinationTransform = when (transform) {
-            is DestinationTransform -> { destination ->
-                transform.toDestination(
-                    navigationState = destination,
-                    previousTransform = destinationTransform
-                )
-            }
-
-            else -> destinationTransform
-        },
-        panesToDestinationsTransform = when (transform) {
-            is PaneTransform -> { destination ->
+        popTransform = popTransform,
+        onPopped = onPopped,
+        destinationTransform = destinationTransform,
+        transitionSpec = transitionSpec,
+        paneEntryProvider = paneEntryProvider,
+        destinationPanes = when (transform) {
+            is PaneMappingTransform -> { destination ->
                 transform.toPanesAndDestinations(
                     destination = destination,
-                    previousTransform = panesToDestinationsTransform,
+                    previousTransform = destinationPanes,
                 )
             }
 
-            else -> panesToDestinationsTransform
+            else -> destinationPanes
         },
-        renderTransform = when (transform) {
-            is RenderTransform -> { destination ->
+        destinationContent = when (transform) {
+            is PaneRenderTransform -> { paneEntry, destination ->
                 with(transform) {
                     Render(
                         destination = destination,
-                        previousTransform = renderTransform,
+                        previousTransform = previous@{ innerDestination ->
+                            destinationContent(
+                                this@previous,
+                                paneEntry,
+                                innerDestination,
+                            )
+                        },
                     )
                 }
             }
 
-            else -> renderTransform
+            else -> destinationContent
         },
     )
+
+private val NoContentTransform = ContentTransform(
+    targetContentEnter = EnterTransition.None,
+    initialContentExit = ExitTransition.None,
+    sizeTransform = null,
+)

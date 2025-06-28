@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.navigation3
+package com.tunjid.treenav.compose.navigation3.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalView
+import androidx.navigationevent.NavigationEventDispatcherOwner
+import androidx.navigationevent.findViewTreeNavigationEventDispatcherOwner
 
-/**
- * Entry maintains and stores the key and the content represented by that key. Entries should be
- * created as part of a [NavDisplay.entryProvider](reference/androidx/navigation/NavDisplay).
- *
- * @param key key for this entry
- * @param metadata provides information to the display
- * @param content content for this entry to be displayed when this entry is active
- */
-internal open class NavEntry<T : Any>(
-    open val key: T,
-    open val metadata: Map<String, Any> = emptyMap(),
-    open val content: @Composable (T) -> Unit
-)
+@Composable
+internal actual fun findViewTreeNavigationEventDispatcherOwner(): NavigationEventDispatcherOwner? =
+    LocalView.current.findViewTreeNavigationEventDispatcherOwner()

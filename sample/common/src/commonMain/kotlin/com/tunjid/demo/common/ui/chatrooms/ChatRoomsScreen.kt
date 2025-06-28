@@ -19,7 +19,6 @@ package com.tunjid.demo.common.ui.chatrooms
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,19 +44,19 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.collapsingheader.CollapsingHeaderLayout
 import com.tunjid.composables.collapsingheader.CollapsingHeaderState
+import com.tunjid.demo.common.ui.PaneScaffoldState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
 fun ChatRoomsScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     state: State,
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier,
@@ -68,11 +67,14 @@ fun ChatRoomsScreen(
         state = headerState,
         modifier = modifier,
         headerContent = {
-            Header(headerState)
+            Header(
+                headerState = headerState,
+                paneScaffoldState = paneScaffoldState,
+            )
         },
         body = {
             ChatRooms(
-                movableSharedElementScope = movableSharedElementScope,
+                paneScaffoldState = paneScaffoldState,
                 state = state,
                 onAction = onAction,
             )
@@ -80,21 +82,32 @@ fun ChatRoomsScreen(
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun Header(headerState: CollapsingHeaderState) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .offset {
-                IntOffset(
-                    x = 0,
-                    y = -headerState.translation.roundToInt()
-                )
-            }
-    ) {
+private fun Header(
+    headerState: CollapsingHeaderState,
+    paneScaffoldState: PaneScaffoldState,
+) = with(paneScaffoldState) {
+    Box {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .offset {
+                    IntOffset(
+                        x = 0,
+                        y = -headerState.translation.roundToInt()
+                    )
+                }
+        )
         SampleTopAppBar(
-            title = "Chat Rooms",
+            title = {
+                Text(
+                    modifier = Modifier
+                        .paneSharedElement(rememberSharedContentState("title")),
+                    text = "Chat Rooms",
+                )
+            },
             onBackPressed = null
         )
     }
@@ -102,7 +115,7 @@ private fun Header(headerState: CollapsingHeaderState) {
 
 @Composable
 private fun ChatRooms(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     state: State,
     onAction: (Action) -> Unit
 ) {
@@ -113,15 +126,21 @@ private fun ChatRooms(
             items = state.chatRooms,
             key = ChatRoom::name,
             itemContent = { room ->
+                val participants = room.messages
+                    .map(Message::sender)
+                    .distinct()
+                    .take(3)
                 ChatRoomListItem(
-                    movableSharedElementScope = movableSharedElementScope,
+                    paneScaffoldState = paneScaffoldState,
                     roomName = room.name,
-                    participants = room.messages
-                        .map(Message::sender)
-                        .distinct()
-                        .take(3),
+                    participants = participants,
                     onRoomClicked = {
-                        onAction(Action.Navigation.ToRoom(roomName = it))
+                        onAction(
+                            Action.Navigation.ToRoom(
+                                roomName = it,
+                                participants = participants,
+                            )
+                        )
                     }
                 )
             }
@@ -131,7 +150,7 @@ private fun ChatRooms(
 
 @Composable
 fun ChatRoomListItem(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     roomName: String,
     participants: List<String>,
     modifier: Modifier = Modifier,
@@ -153,7 +172,7 @@ fun ChatRoomListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             ChatRoomParticipants(
-                movableSharedElementScope = movableSharedElementScope,
+                paneScaffoldState = paneScaffoldState,
                 participants = participants,
                 roomName = roomName,
             )
@@ -166,13 +185,13 @@ fun ChatRoomListItem(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChatRoomParticipants(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     participants: List<String>,
     roomName: String,
-) = with(movableSharedElementScope) {
+) = with(paneScaffoldState) {
     FlowRow(
         modifier = Modifier
             .width(64.dp)
@@ -185,7 +204,9 @@ fun ChatRoomParticipants(
     ) {
         participants.forEach { profileName ->
             updatedMovableSharedElementOf(
-                key = "$roomName-${profileName}",
+                sharedContentState = paneScaffoldState.rememberSharedContentState(
+                    key = "$roomName-${profileName}"
+                ),
                 state = ProfilePhotoArgs(
                     profileName = profileName,
                     contentScale = ContentScale.Crop,

@@ -38,17 +38,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.tunjid.composables.collapsingheader.CollapsingHeaderLayout
+import com.tunjid.demo.common.ui.PaneScaffoldState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
 fun ProfileScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     state: State,
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier,
@@ -61,7 +61,7 @@ fun ProfileScreen(
         headerContent = {
             ProfileHeader(
                 state = state,
-                movableSharedElementScope = movableSharedElementScope,
+                paneScaffoldState = paneScaffoldState,
                 onBackPressed = remember(state.profileName) {
                     if (state.profileName != null) return@remember {
                         onAction(Action.Navigation.Pop)
@@ -89,23 +89,30 @@ fun ProfileScreen(
     )
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ProfileHeader(
     state: State,
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     modifier: Modifier = Modifier,
     onBackPressed: (() -> Unit)?,
-) {
+) = with(paneScaffoldState) {
     Box(
         modifier = Modifier.heightIn(min = 400.dp)
     ) {
         ProfilePhoto(
             state = state,
-            movableSharedElementScope = movableSharedElementScope,
+            paneScaffoldState = paneScaffoldState,
             modifier = modifier
         )
         SampleTopAppBar(
-            title = if (state.profileName == null) "Me" else "Profile",
+            title = {
+                Text(
+                    modifier = Modifier
+                        .paneSharedElement(rememberSharedContentState("title")),
+                    text = if (state.profileName == null) "Me" else "Profile",
+                )
+            },
             onBackPressed = onBackPressed,
         )
     }
@@ -115,13 +122,15 @@ private fun ProfileHeader(
 @Composable
 private fun ProfilePhoto(
     state: State,
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     modifier: Modifier = Modifier,
 ) {
     val profileName = state.profileName ?: state.profile?.name
     if (profileName != null) {
-        movableSharedElementScope.updatedMovableSharedElementOf(
-            key = "${state.roomName}-$profileName",
+        paneScaffoldState.updatedMovableSharedElementOf(
+            sharedContentState = paneScaffoldState.rememberSharedContentState(
+                key = "${state.roomName}-$profileName-profile"
+            ),
             state = ProfilePhotoArgs(
                 profileName = profileName,
                 contentScale = ContentScale.Crop,

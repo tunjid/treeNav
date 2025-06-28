@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.navigation3.decorators
+package com.tunjid.treenav.compose
 
-internal fun getIdForKey(key: Any, count: Int): Int = 31 * key.hashCode() + count
+internal actual fun Any.identityHash(): Int =
+    System.identityHashCode(this)

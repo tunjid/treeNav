@@ -24,6 +24,7 @@ kotlin {
                 implementation(project(":library:treenav"))
 
                 implementation(libs.androidx.collection)
+                implementation(libs.androidx.navigation.event)
 
                 implementation(libs.jetbrains.compose.runtime)
                 implementation(libs.jetbrains.compose.foundation)

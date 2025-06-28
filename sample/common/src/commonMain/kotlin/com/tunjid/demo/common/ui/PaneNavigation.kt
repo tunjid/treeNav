@@ -36,6 +36,7 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.tunjid.demo.common.ui.data.SampleDestination
+import com.tunjid.treenav.compose.Adaptation
 import com.tunjid.treenav.current
 
 @Composable
@@ -77,7 +78,9 @@ fun PaneScaffoldState.PaneNavigationRail(
                 boundsTransform = NavigationRailBoundsTransform,
             ),
         visible = canShowNavigationRail,
-        enter = if (canShowNavigationRail) enterTransition else EnterTransition.None,
+        enter = if (canShowNavigationRail
+            && paneState.adaptations.none { it is Adaptation.Swap<*> }
+        ) enterTransition else EnterTransition.None,
         exit = if (canShowNavigationRail) exitTransition else ExitTransition.None,
     ) {
         val appState = LocalAppState.current

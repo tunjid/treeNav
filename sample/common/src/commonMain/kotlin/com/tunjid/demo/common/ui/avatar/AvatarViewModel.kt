@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui.avatar
 
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
 import com.tunjid.demo.common.ui.data.NavigationAction
 import com.tunjid.demo.common.ui.data.NavigationRepository
@@ -31,11 +30,12 @@ import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.pop
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 class AvatarViewModel(
-    coroutineScope: LifecycleCoroutineScope,
+    coroutineScope: CoroutineScope,
     profileRepository: ProfileRepository = ProfileRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
     profileName: String?,

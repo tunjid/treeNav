@@ -26,10 +26,10 @@ import androidx.compose.ui.unit.dp
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.transforms.PaneTransform
-import com.tunjid.treenav.compose.transforms.Transform
+import com.tunjid.treenav.compose.transforms.paneMappingTransform
 
 /**
- * An [Transform] that selectively displays panes for a [ThreePane] layout
+ * An [PaneTransform] that selectively displays panes for a [ThreePane] layout
  * based on the space available determined by the [windowWidthState].
  *
  * @param windowWidthState provides the current width of the display in Dp.
@@ -39,8 +39,8 @@ fun <NavigationState : Node, Destination : Node>
     windowWidthState: State<Dp>,
     secondaryPaneBreakPoint: State<Dp> = mutableStateOf(SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
     tertiaryPaneBreakPoint: State<Dp> = mutableStateOf(TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
-): Transform<ThreePane, NavigationState, Destination> =
-    PaneTransform { destination, previousTransform ->
+): PaneTransform<NavigationState, Destination, ThreePane> =
+    paneMappingTransform { destination, destinationPaneMapper ->
         val showSecondary by remember {
             derivedStateOf { windowWidthState.value >= secondaryPaneBreakPoint.value }
         }
@@ -48,7 +48,7 @@ fun <NavigationState : Node, Destination : Node>
             derivedStateOf { windowWidthState.value >= tertiaryPaneBreakPoint.value }
         }
 
-        val originalMapping = previousTransform(destination)
+        val originalMapping = destinationPaneMapper(destination)
         val primaryNode = originalMapping[ThreePane.Primary]
         mapOf(
             ThreePane.Primary to primaryNode,

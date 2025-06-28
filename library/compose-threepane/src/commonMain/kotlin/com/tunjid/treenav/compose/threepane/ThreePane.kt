@@ -16,16 +16,16 @@
 
 package com.tunjid.treenav.compose.threepane
 
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.Adaptation
 import com.tunjid.treenav.compose.Adaptation.Swap
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.PaneEntry
@@ -41,13 +41,6 @@ enum class ThreePane {
      * actual navigation destination.
      */
     Primary,
-
-    /**
-     * A optional pane for placing content from the [Primary] pane, if a preview of the previous
-     * navigation destinations is occurring. The primary content is rendered here, while
-     * the previous primary content is rendered in the [Primary] pane.
-     */
-    TransientPrimary,
 
     /**
      * An optional pane for displaying a navigation destination alongside the [Primary] pane.
@@ -66,77 +59,33 @@ enum class ThreePane {
      * An optional pane for showing dialogs, or context sheets over existing panes.
      */
     Overlay;
-
-    companion object {
-        val PrimaryToSecondary = Swap(
-            from = Primary,
-            to = Secondary
-        )
-
-        val SecondaryToPrimary = Swap(
-            from = Secondary,
-            to = Primary
-        )
-
-        val PrimaryToTransient = Swap(
-            from = Primary,
-            to = TransientPrimary
-        )
-    }
 }
 
 /**
- * A [PaneEntry] for selectively running animations in [ThreePane] [MultiPaneDisplay]. When:
- * - A navigation destination moves between the [ThreePane.Primary] and [ThreePane.Secondary]
- *     panes, the pane animations are not run to provide a seamless movement experience.
- * - A navigation destination moves between the [ThreePane.Primary] and
- *     [ThreePane.TransientPrimary] panes, the pane animations are not run.
+ * Provides a default [PaneEntry] for selectively running animations in
+ * [ThreePane] [MultiPaneDisplay].
  *
- * @param enterTransition the transition to run for the entering pane when permitted.
- * @param exitTransition the transition to run for the exiting pane when permitted.
- * @param paneMapping the mapping of panes to navigation destinations.
+ * @param enterTransition the [EnterTransition] used when this [PaneEntry] adapts in the display.
+ * @param exitTransition the [ExitTransition] used when this [PaneEntry] adapts in the display.
+ * @param paneMapping the [Destination]s that are shown alongside the [Destination] provided and
+ * which of the [ThreePane]s they should show up in.
  * @param render the Composable for rendering the current destination.
  */
-fun <R : Node> threePaneEntry(
-    enterTransition: PaneScope<ThreePane, R>.() -> EnterTransition = { DefaultFadeIn },
-    exitTransition: PaneScope<ThreePane, R>.() -> ExitTransition = { DefaultFadeOut },
-    paneMapping: @Composable (R) -> Map<ThreePane, R?> = {
-        mapOf(ThreePane.Primary to it)
+fun <Destination : Node> threePaneEntry(
+    enterTransition: PaneScope<ThreePane, Destination>.() -> EnterTransition = {
+        if (canAnimate()) DefaultFadeIn else EnterTransition.None
     },
-    render: @Composable PaneScope<ThreePane, R>.(R) -> Unit,
+    exitTransition: PaneScope<ThreePane, Destination>.() -> ExitTransition = {
+        if (canAnimate()) DefaultFadeOut else ExitTransition.None
+    },
+    paneMapping: @Composable (Destination) -> Map<ThreePane, Destination?> = { destination ->
+        mapOf(ThreePane.Primary to destination)
+    },
+    render: @Composable (PaneScope<ThreePane, Destination>.(Destination) -> Unit),
 ) = PaneEntry(
-    paneTransform = paneMapping,
-    renderTransform = { destination, original ->
-        val state = paneState
-        val shouldAnimate = when (state.pane) {
-            ThreePane.Primary,
-            ThreePane.Secondary,
-                -> when {
-                ThreePane.PrimaryToSecondary in state.adaptations -> false
-                ThreePane.SecondaryToPrimary in state.adaptations -> false
-                else -> true
-            }
-
-            ThreePane.TransientPrimary -> when {
-                ThreePane.PrimaryToTransient in state.adaptations -> false
-                else -> true
-            }
-
-            else -> true
-        }
-        Box(
-            modifier =
-                if (shouldAnimate) Modifier.animateEnterExit(
-                    enter = enterTransition(),
-                    exit = exitTransition()
-                )
-                else Modifier,
-            content = {
-                original(destination)
-            }
-        )
-
-    },
+    enterTransition = enterTransition,
+    exitTransition = exitTransition,
+    paneMapping = paneMapping,
     content = render
 )
 
@@ -151,3 +100,29 @@ private val DefaultFadeIn = fadeIn(
 private val DefaultFadeOut = fadeOut(
     animationSpec = RouteTransitionAnimationSpec,
 )
+
+private fun PaneScope<ThreePane, *>.canAnimate() =
+    when {
+        transition.targetState == EnterExitState.PostExit -> true
+        inPredictiveBack && isActive -> true
+        paneState.adaptations.any { adaptation ->
+            adaptation is Adaptation.Same
+        } -> false
+
+        paneState.adaptations.any { adaptation ->
+            adaptation is Adaptation.Pop || adaptation is Adaptation.Change
+        } && paneState.adaptations.none {
+            it is Swap<*>
+        } -> true
+
+        else -> when (val pane = paneState.pane) {
+            ThreePane.Primary,
+            ThreePane.Secondary,
+            ThreePane.Tertiary -> paneState.adaptations.any { adaptation ->
+                adaptation is Swap<*> && adaptation.from == pane
+            }
+
+            ThreePane.Overlay,
+            null -> true
+        }
+    }

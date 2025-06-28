@@ -36,8 +36,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
-import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.navEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.navEntryDecorator
 
 @Composable
 internal expect fun shouldRemoveViewModelStoreCallback(): () -> Boolean
@@ -90,7 +90,7 @@ internal fun ViewModelStoreNavEntryDecorator(
         }
     }
     return navEntryDecorator(onPop) { entry ->
-        val viewModelStore = storeOwnerProvider.viewModelStoreForKey(entry.key)
+        val viewModelStore = storeOwnerProvider.viewModelStoreForKey(entry.contentKey)
 
         val savedStateRegistryOwner = LocalSavedStateRegistryOwner.current
         val childViewModelStoreOwner = remember {
@@ -123,7 +123,7 @@ internal fun ViewModelStoreNavEntryDecorator(
             }
         }
         CompositionLocalProvider(LocalViewModelStoreOwner provides childViewModelStoreOwner) {
-            entry.content.invoke(entry.key)
+            entry.Content()
         }
     }
 }

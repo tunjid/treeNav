@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui.chatrooms
 
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.ChatsRepository
@@ -31,11 +30,12 @@ import com.tunjid.mutator.coroutines.actionStateFlowMutator
 import com.tunjid.mutator.coroutines.mapToMutation
 import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.treenav.push
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 class ChatRoomsViewModel(
-    coroutineScope: LifecycleCoroutineScope,
+    coroutineScope: CoroutineScope,
     chatsRepository: ChatsRepository = ChatsRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
 ) : ViewModel(coroutineScope),
@@ -72,8 +72,9 @@ sealed class Action(
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data class ToRoom(
             val roomName: String,
+            val participants: List<String>,
         ) : Navigation(), NavigationAction by navigationAction(
-            { push(SampleDestination.Chat(roomName)) }
+            { push(SampleDestination.Chat(roomName, participants)) }
         )
     }
 }

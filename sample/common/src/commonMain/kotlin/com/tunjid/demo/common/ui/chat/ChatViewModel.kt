@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui.chat
 
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.ChatsRepository
@@ -37,20 +36,24 @@ import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
 import com.tunjid.treenav.swap
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 
 class ChatViewModel(
-    coroutineScope: LifecycleCoroutineScope,
+    coroutineScope: CoroutineScope,
     chatsRepository: ChatsRepository = ChatsRepository,
     profileRepository: ProfileRepository = ProfileRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
     chat: SampleDestination.Chat,
 ) : ViewModel(coroutineScope),
     ActionStateMutator<Action, StateFlow<State>> by coroutineScope.actionStateFlowMutator(
-        initialState = State(),
+        initialState = State(
+            roomName = chat.roomName,
+            participants = chat.participants,
+        ),
         inputs = listOf(
             profileRepository.meMutations(),
             chatsRepository.chatRoomMutations(chat),
@@ -65,7 +68,6 @@ class ChatViewModel(
                 keySelector = Action::key
             ) {
                 when (val type = type()) {
-                    is Action.UpdateInPrimaryPane -> type.flow.updateInPrimaryPaneMutations()
                     is Action.Navigation -> navigationRepository.navigationMutations(
                         type.flow
                     )
@@ -105,13 +107,11 @@ private fun chatLoadMutations(
             copy(chats = it)
         }
 
-private fun Flow<Action.UpdateInPrimaryPane>.updateInPrimaryPaneMutations(): Flow<Mutation<State>> =
-    mapToMutation { copy(isInPrimaryPane = it.isInPrimaryPane) }
-
 data class State(
     val me: Profile? = null,
+    val roomName: String,
     val room: ChatRoom? = null,
-    val isInPrimaryPane: Boolean = true,
+    val participants: List<String>,
     val chats: List<MessageItem> = emptyList(),
 )
 
@@ -124,9 +124,6 @@ sealed class Action(
     val key: String,
 ) {
 
-    data class UpdateInPrimaryPane(
-        val isInPrimaryPane: Boolean,
-    ) : Action("UpdateInPrimaryPane")
 
     sealed class Navigation : Action("Navigation"), NavigationAction {
         data object Pop : Navigation(), NavigationAction by navigationAction(

@@ -28,7 +28,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.Adaptation
+import com.tunjid.treenav.compose.Adaptation.Swap
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.PaneScope
@@ -38,24 +41,15 @@ import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScop
 import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.transforms.RenderTransform
-import com.tunjid.treenav.compose.transforms.Transform
+import com.tunjid.treenav.compose.transforms.PaneTransform
+import com.tunjid.treenav.compose.transforms.paneRenderTransform
 
 /**
- * A [Transform] that applies semantics of movable shared elements to
+ * A [PaneTransform] that applies semantics of movable shared elements to
  * [ThreePane] layouts.
  *
  * It is an opinionated implementation that always shows the movable shared element in
- * the [ThreePane.Primary] pane unless:
- *
- * - The [ThreePane.PrimaryToTransient] adaptation is present and a shared element match is
- * found. During this, the movable shared element will be shown in
- * the [ThreePane.TransientPrimary] pane. During this, an empty box will be rendered
- * in the [ThreePane.Primary] pane.
- *
- * - The [ThreePane.PrimaryToTransient] adaptation is present and a shared element match is NOT
- * found. During this, the element will simply be rendered as is in [ThreePane.Primary], but
- * without movable content semantics.
+ * the [ThreePane.Primary] pane.
  *
  * Note: The movable shared element is never rendered in the following panes:
  * - [ThreePane.Secondary]
@@ -68,8 +62,8 @@ import com.tunjid.treenav.compose.transforms.Transform
 fun <NavigationState : Node, Destination : Node>
         threePanedMovableSharedElementTransform(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
-): Transform<ThreePane, NavigationState, Destination> =
-    RenderTransform { destination, previousTransform ->
+): PaneTransform<NavigationState, Destination, ThreePane> =
+    paneRenderTransform { destination, destinationPaneMapper ->
         val delegate = rememberPaneMovableSharedElementScope(
             movableSharedElementHostState = movableSharedElementHostState
         )
@@ -82,7 +76,7 @@ fun <NavigationState : Node, Destination : Node>
             )
         }
 
-        previousTransform(movableSharedElementScope, destination)
+        destinationPaneMapper(movableSharedElementScope, destination)
     }
 
 /**
@@ -128,9 +122,12 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
     override val isActive: Boolean
         get() = delegate.paneScope.isActive
 
+    override val inPredictiveBack: Boolean
+        get() = delegate.paneScope.inPredictiveBack
+
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
-        key: Any,
+        sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
         placeHolderSize: PlaceHolderSize,
         renderInOverlayDuringTransition: Boolean,
@@ -142,27 +139,9 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         null -> throw IllegalArgumentException(
             "Shared elements may only be used in non null panes"
         )
-        // Allow shared elements in the primary or transient primary content only
-        ThreePane.Primary -> when {
-            // Show a blank space for shared elements between the destinations
-            isPreviewingBack && hostState.isCurrentlyShared(key) -> EmptyElement
-            // If previewing and it won't be shared, show the item as is
-            isPreviewingBack -> sharedElement
-            // Share the element
-            else -> delegate.movableSharedElementOf(
-                key = key,
-                boundsTransform = boundsTransform,
-                placeHolderSize = placeHolderSize,
-                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                zIndexInOverlay = zIndexInOverlay,
-                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-                alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-                sharedElement = sharedElement
-            )
-        }
-        // Share the element when in the transient pane
-        ThreePane.TransientPrimary -> delegate.movableSharedElementOf(
-            key = key,
+        // Allow movable shared elements in the primary pane only
+        ThreePane.Primary -> delegate.movableSharedElementOf(
+            sharedContentState = sharedContentState,
             boundsTransform = boundsTransform,
             placeHolderSize = placeHolderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
@@ -172,19 +151,73 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
             sharedElement = sharedElement
         )
 
+        // In the secondary pane allow shared elements only if certain conditions match
+        ThreePane.Secondary -> when {
+            canAnimateSecondary() -> { state, modifier ->
+                with(hostState) {
+                    Box(modifier) {
+                        Box(
+                            Modifier
+                                .fillMaxConstraints()
+                                .sharedElementWithCallerManagedVisibility(
+                                    sharedContentState = sharedContentState,
+                                    visible = false,
+                                    placeHolderSize = placeHolderSize,
+                                    renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                                    zIndexInOverlay = zIndexInOverlay,
+                                    clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                                )
+                        )
+                        (alternateOutgoingSharedElement ?: sharedElement)(
+                            state,
+                            Modifier
+                                .fillMaxConstraints(),
+                        )
+                    }
+                }
+            }
+
+            else -> alternateOutgoingSharedElement ?: sharedElement
+        }
+
         // In the other panes use the element as is
-        ThreePane.Secondary,
         ThreePane.Tertiary,
         ThreePane.Overlay,
             -> alternateOutgoingSharedElement ?: sharedElement
     }
 }
 
-private val PaneScope<ThreePane, *>.isPreviewingBack: Boolean
-    get() = paneState.pane == ThreePane.Primary
-            && paneState.adaptations.contains(ThreePane.PrimaryToTransient)
+private fun PaneScope<ThreePane, *>.canAnimateSecondary(): Boolean {
+    if (inPredictiveBack) return false
+    if (!paneState.adaptations.contains(PrimaryToSecondary)) return false
+    if (paneState.adaptations.contains(Adaptation.Pop)) return false
 
-// An empty element representing blank space
-private val EmptyElement: @Composable (Any?, Modifier) -> Unit = { _, modifier ->
-    Box(modifier)
+    return true
 }
+
+private val PrimaryToSecondary = Swap(
+    from = ThreePane.Primary,
+    to = ThreePane.Secondary
+)
+
+private fun Modifier.fillMaxConstraints() =
+    layout { measurable, constraints ->
+        val placeable = measurable.measure(
+            constraints.copy(
+                minWidth = when {
+                    constraints.hasBoundedWidth -> constraints.maxWidth
+                    else -> constraints.minWidth
+                },
+                minHeight = when {
+                    constraints.hasBoundedHeight -> constraints.maxHeight
+                    else -> constraints.minHeight
+                }
+            )
+        )
+        layout(
+            width = placeable.width,
+            height = placeable.height
+        ) {
+            placeable.place(0, 0)
+        }
+    }

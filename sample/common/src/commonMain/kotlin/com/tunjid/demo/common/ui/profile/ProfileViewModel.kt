@@ -16,9 +16,7 @@
 
 package com.tunjid.demo.common.ui.profile
 
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModel
-import com.tunjid.demo.common.ui.chatrooms.Action.Navigation
 import com.tunjid.demo.common.ui.data.NavigationAction
 import com.tunjid.demo.common.ui.data.NavigationRepository
 import com.tunjid.demo.common.ui.data.Profile
@@ -34,11 +32,12 @@ import com.tunjid.mutator.coroutines.toMutationStream
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.push
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 class ProfileViewModel(
-    coroutineScope: LifecycleCoroutineScope,
+    coroutineScope: CoroutineScope,
     profileRepository: ProfileRepository = ProfileRepository,
     navigationRepository: NavigationRepository = NavigationRepository,
     profileName: String?,

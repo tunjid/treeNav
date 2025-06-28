@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.foundation.layout.size
@@ -47,20 +48,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
+import com.tunjid.demo.common.ui.PaneScaffoldState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.data.Profile
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
+import com.tunjid.treenav.compose.threepane.ThreePane
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun ChatScreen(
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
     state: State,
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier,
@@ -69,10 +72,17 @@ fun ChatScreen(
     Column(
         modifier,
     ) {
+        val isInPrimaryPane = paneScaffoldState.paneState.pane == ThreePane.Primary
         SampleTopAppBar(
-            title = state.room?.name ?: "",
-            onBackPressed = remember(state.isInPrimaryPane) {
-                if (state.isInPrimaryPane) return@remember {
+            title = {
+                ChatTitle(
+                    roomName = state.roomName,
+                    participants = state.participants,
+                    paneScaffoldState = paneScaffoldState
+                )
+            },
+            onBackPressed = remember(isInPrimaryPane) {
+                if (isInPrimaryPane) return@remember {
                     onAction(Action.Navigation.Pop)
                 } else null
             },
@@ -80,16 +90,56 @@ fun ChatScreen(
         Messages(
             me = state.me,
             roomName = state.room?.name,
+            isInPrimaryPane = isInPrimaryPane,
             messages = state.chats,
-            isInPrimaryPane = state.isInPrimaryPane,
             navigateToProfile = onAction,
-            modifier = Modifier.fillMaxSize(),
             scrollState = scrollState,
-            movableSharedElementScope = movableSharedElementScope,
+            modifier = Modifier.fillMaxSize(),
+            paneScaffoldState = paneScaffoldState,
         )
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun ChatTitle(
+    roomName: String,
+    participants: List<String>,
+    paneScaffoldState: PaneScaffoldState
+) = with(paneScaffoldState) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            modifier = Modifier
+                .paneSharedElement(rememberSharedContentState("title")),
+            text = roomName,
+        )
+        Spacer(
+            modifier = Modifier
+                .width(16.dp)
+        )
+        participants.forEachIndexed { index, participant ->
+            updatedMovableSharedElementOf(
+                sharedContentState = paneScaffoldState.rememberSharedContentState(
+                    key = "${roomName}-${participant}"
+                ),
+                state = ProfilePhotoArgs(
+                    profileName = participant,
+                    contentScale = ContentScale.Crop,
+                    cornerRadius = 42.dp,
+                    contentDescription = null,
+                ),
+                modifier = Modifier
+                    .size(24.dp)
+                    .offset(x = index * (-8).dp),
+                sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
+                    ProfilePhoto(args, innerModifier)
+                }
+            )
+        }
+    }
+}
 
 @Composable
 fun Messages(
@@ -100,7 +150,7 @@ fun Messages(
     navigateToProfile: (Action.Navigation.GoToProfile) -> Unit,
     scrollState: LazyListState,
     modifier: Modifier = Modifier,
-    movableSharedElementScope: MovableSharedElementScope,
+    paneScaffoldState: PaneScaffoldState,
 ) {
     Box(modifier = modifier) {
         LazyColumn(
@@ -119,13 +169,13 @@ fun Messages(
 
                 Message(
                     onAuthorClick = navigateToProfile,
-                    roomName = roomName,
                     item = content,
+                    roomName = roomName,
                     isUserMe = content.sender.name == me?.name,
                     isInPrimaryPane = isInPrimaryPane,
                     isFirstMessageByAuthor = isFirstMessageByAuthor,
                     isLastMessageByAuthor = isLastMessageByAuthor,
-                    movableSharedElementScope = movableSharedElementScope,
+                    paneScaffoldState = paneScaffoldState
                 )
             }
         }
@@ -142,7 +192,7 @@ fun Message(
     isInPrimaryPane: Boolean,
     isFirstMessageByAuthor: Boolean,
     isLastMessageByAuthor: Boolean,
-    movableSharedElementScope: MovableSharedElementScope
+    paneScaffoldState: PaneScaffoldState,
 ) {
     val borderColor = if (isUserMe) {
         MaterialTheme.colorScheme.primary
@@ -175,8 +225,10 @@ fun Message(
                         }
                     },
             ) {
-                movableSharedElementScope.updatedMovableSharedElementOf(
-                    key = "$roomName-${item.sender.name}",
+                paneScaffoldState.updatedMovableSharedElementOf(
+                    sharedContentState = paneScaffoldState.rememberSharedContentState(
+                        key = "$roomName-${item.sender.name}-profile"
+                    ),
                     state = ProfilePhotoArgs(
                         profileName = item.sender.name,
                         contentScale = ContentScale.Crop,

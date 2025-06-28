@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.navigation3.decorators
+package com.tunjid.treenav.compose.navigation3.ui
+
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.key
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import com.tunjid.treenav.compose.navigation3.NavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.navEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.NavEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.navEntryDecorator
 
-/** Returns a [MovableContentNavEntryDecorator] that is remembered across recompositions. */
+/** Returns a [SceneSetupNavEntryDecorator] that is remembered across recompositions. */
 @Composable
-internal fun rememberMovableContentNavEntryDecorator(): NavEntryDecorator<Any> = remember {
-    MovableContentNavEntryDecorator()
+internal fun rememberSceneSetupNavEntryDecorator(): NavEntryDecorator<Any> = remember {
+    SceneSetupNavEntryDecorator()
 }
 
 /**
@@ -39,44 +42,40 @@ internal fun rememberMovableContentNavEntryDecorator(): NavEntryDecorator<Any> =
  * This should likely be the first [NavEntryDecorator] to ensure that other [NavEntryDecorator]
  * calls that are stateful are moved properly inside the [movableContentOf].
  */
-private fun MovableContentNavEntryDecorator(): NavEntryDecorator<Any> {
+internal fun SceneSetupNavEntryDecorator(): NavEntryDecorator<Any> {
     val movableContentContentHolderMap: MutableMap<Any, MutableState<@Composable () -> Unit>> =
         mutableMapOf()
     val movableContentHolderMap: MutableMap<Any, @Composable () -> Unit> = mutableMapOf()
-    return navEntryDecorator(
-        onPop = {
-            movableContentHolderMap.remove(it)
-            movableContentContentHolderMap.remove(it)
-        },
-        decorator = { entry ->
-            val key = entry.key
-            movableContentContentHolderMap.getOrPut(key) {
-                key(key) {
-                    remember {
-                        mutableStateOf(
-                            @Composable {
-                                error(
-                                    "Should not be called, this should always be updated in" +
-                                            "DecorateEntry with the real content"
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-            movableContentHolderMap.getOrPut(key) {
-                key(key) {
-                    remember {
-                        movableContentOf {
-                            // In case the key is removed from the backstack while this is still
-                            // being rendered, we remember the MutableState directly to allow
-                            // rendering it while we are animating out.
-                            remember { movableContentContentHolderMap.getValue(key) }.value()
+    return navEntryDecorator { entry ->
+        val key = entry.contentKey
+        movableContentContentHolderMap.getOrPut(key) {
+            key(key) {
+                remember {
+                    mutableStateOf(
+                        @Composable {
+                            error(
+                                "Should not be called, this should always be updated in" +
+                                        "DecorateEntry with the real content"
+                            )
                         }
+                    )
+                }
+            }
+        }
+        movableContentHolderMap.getOrPut(key) {
+            key(key) {
+                remember {
+                    movableContentOf {
+                        // In case the key is removed from the backstack while this is still
+                        // being rendered, we remember the MutableState directly to allow
+                        // rendering it while we are animating out.
+                        remember { movableContentContentHolderMap.getValue(key) }.value()
                     }
                 }
             }
+        }
 
+        if (LocalEntriesToRenderInCurrentScene.current.contains(key)) {
             key(key) {
                 // In case the key is removed from the backstack while this is still
                 // being rendered, we remember the MutableState directly to allow
@@ -85,7 +84,7 @@ private fun MovableContentNavEntryDecorator(): NavEntryDecorator<Any> {
                     movableContentContentHolderMap.getValue(key)
                 }
                 // Update the state holder with the actual entry content
-                movableContentContentHolder.value = { entry.content(key) }
+                movableContentContentHolder.value = { entry.Content() }
                 // In case the key is removed from the backstack while this is still
                 // being rendered, we remember the movableContent directly to allow
                 // rendering it while we are animating out.
@@ -94,5 +93,18 @@ private fun MovableContentNavEntryDecorator(): NavEntryDecorator<Any> {
                 movableContentHolder()
             }
         }
-    )
+    }
 }
+
+/**
+ * The entry keys to render in the current [Scene], in the sense of the target of the animation for
+ * an [androidx.compose.animation.AnimatedContent] that is transitioning between different scenes.
+ */
+internal val LocalEntriesToRenderInCurrentScene: ProvidableCompositionLocal<Set<Any>> =
+    compositionLocalOf {
+        throw IllegalStateException(
+            "Unexpected access to LocalEntriesToRenderInCurrentScene. You should only " +
+                    "access LocalEntriesToRenderInCurrentScene inside a NavEntry passed " +
+                    "to NavDisplay."
+        )
+    }

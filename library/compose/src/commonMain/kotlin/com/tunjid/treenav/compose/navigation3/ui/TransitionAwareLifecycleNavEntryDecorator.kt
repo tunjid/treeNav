@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.navigation3.decorators
+package com.tunjid.treenav.compose.navigation3.ui
 
 
 import androidx.compose.runtime.Composable
@@ -27,29 +27,27 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.tunjid.treenav.compose.navigation3.navEntryDecorator
+import com.tunjid.treenav.compose.navigation3.runtime.navEntryDecorator
+
 
 @Composable
-internal fun transitionAwareLifecycleNavEntryDecorator(
-    backStack: List<Any>,
-    isSettled: @Composable () -> Boolean
-) = navEntryDecorator { entry ->
-    val isInBackStack = entry.key in backStack
-    val settled = isSettled()
-    val maxLifecycle =
-        when {
-            isInBackStack && settled -> Lifecycle.State.RESUMED
-            isInBackStack && !settled -> Lifecycle.State.STARTED
-            else /* !isInBackStack */ -> Lifecycle.State.CREATED
-        }
-    LifecycleOwner(maxLifecycle = maxLifecycle) { entry.content.invoke(entry.key) }
-}
+internal fun transitionAwareLifecycleNavEntryDecorator(backStack: List<Any>, isSettled: Boolean) =
+    navEntryDecorator<Any> { entry ->
+        val isInBackStack = entry.isInBackStack(backStack)
+        val maxLifecycle =
+            when {
+                isInBackStack && isSettled -> Lifecycle.State.RESUMED
+                isInBackStack && !isSettled -> Lifecycle.State.STARTED
+                else /* !isInBackStack */ -> Lifecycle.State.CREATED
+            }
+        LifecycleOwner(maxLifecycle = maxLifecycle) { entry.Content() }
+    }
 
 @Composable
 private fun LifecycleOwner(
     maxLifecycle: Lifecycle.State = Lifecycle.State.RESUMED,
     parentLifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val childLifecycleOwner = remember(parentLifecycleOwner) { ChildLifecycleOwner() }
     // Pass LifecycleEvents from the parent down to the child
@@ -67,9 +65,7 @@ private fun LifecycleOwner(
         childLifecycleOwner.maxLifecycle = maxLifecycle
     }
     // Now install the LifecycleOwner as a composition local
-    CompositionLocalProvider(LocalLifecycleOwner provides childLifecycleOwner) {
-        content.invoke()
-    }
+    CompositionLocalProvider(LocalLifecycleOwner provides childLifecycleOwner) { content.invoke() }
 }
 
 private class ChildLifecycleOwner : LifecycleOwner {
