@@ -50,9 +50,9 @@ internal fun <T : Any> DecoratedNavEntryProvider(
     // to ensure our lambda below takes the correct type
     entryProvider as (T) -> NavEntry<T>
     val entries =
-        backStack.mapIndexed { index, key ->
+        backStack.map { key ->
             val entry = entryProvider.invoke(key)
-            decorateEntry(entry, entryDecorators as List<NavEntryDecorator<T>>)
+            decorateEntry(entry, entryDecorators)
         }
 
     // Provides the entire backstack to the previously wrapped entries
@@ -72,36 +72,30 @@ internal fun <T : Any> DecoratedNavEntryProvider(
 @Composable
 internal fun <T : Any> decorateEntry(
     entry: NavEntry<T>,
-    decorators: List<NavEntryDecorator<T>>,
+    decorators: List<NavEntryDecorator<*>>,
 ): NavEntry<T> {
+    val latestDecorators by rememberUpdatedState(decorators)
     val initial =
         object : NavEntryWrapper<T>(entry) {
             @Composable
             override fun Content() {
                 val localInfo = LocalNavEntryDecoratorLocalInfo.current
                 val idsInComposition = localInfo.idsInComposition
-
-                // store onPop for every decorator that has ever decorated this entry
-                // so that onPop will be called for newly added or removed decorators as well
-                val popCallbacks = remember { LinkedHashSet<(Any) -> Unit>() }
-
                 DisposableEffect(key1 = contentKey) {
                     idsInComposition.add(contentKey)
                     onDispose {
                         val notInComposition = idsInComposition.remove(contentKey)
                         val popped = !localInfo.contentKeys.contains(contentKey)
                         if (popped && notInComposition) {
-
                             // we reverse the scopes before popping to imitate the order
                             // of onDispose calls if each scope/decorator had their own
                             // onDispose
                             // calls for clean up
                             // convert to mutableList first for backwards compat.
-                            popCallbacks.toMutableList().reversed().forEach { it(contentKey) }
+                            latestDecorators.reversed().forEach { it.onPop(contentKey) }
                         }
                     }
                 }
-                decorators.distinct().forEach { decorator -> popCallbacks.add(decorator.onPop) }
                 DecorateNavEntry(entry, decorators)
             }
         }
@@ -128,27 +122,22 @@ internal fun <T : Any> PrepareBackStack(
     // update this backStack so that onDispose has access to the latest backStack to check
     // if an entry has been popped
     val latestBackStack by rememberUpdatedState(entries.map { it.contentKey })
+    val latestDecorators by rememberUpdatedState(decorators)
     latestBackStack.forEach { contentKey ->
         contentKeys.add(contentKey)
-        // store onPop for every decorator has ever decorated this key
-        // so that onPop will be called for newly added or removed decorators as well
-        val popCallbacks = remember(contentKey) { LinkedHashSet<(Any) -> Unit>() }
-        decorators.distinct().forEach { popCallbacks.add(it.onPop) }
 
         DisposableEffect(contentKey) {
             onDispose {
-                val originalRoot = entries.first().contentKey
-                val sameBackStack = originalRoot == latestBackStack.first()
                 val popped =
-                    if (sameBackStack && !latestBackStack.contains(contentKey)) {
+                    if (!latestBackStack.contains(contentKey)) {
                         contentKeys.remove(contentKey)
                     } else false
                 // run onPop callback
                 if (popped && !localInfo.idsInComposition.contains(contentKey)) {
                     // we reverse the order before popping to imitate the order
                     // of onDispose calls if each scope/decorator had their own onDispose
-                    // calls for clean up. convert to mutableList first for backwards compat.
-                    popCallbacks.toMutableList().reversed().forEach { it(contentKey) }
+                    // calls for clean up
+                    latestDecorators.reversed().forEach { it.onPop(contentKey) }
                 }
             }
         }
