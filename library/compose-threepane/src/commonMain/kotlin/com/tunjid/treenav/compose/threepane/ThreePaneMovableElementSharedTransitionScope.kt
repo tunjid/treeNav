@@ -24,7 +24,7 @@ import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneSharedTransitionScope
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.rememberPaneMovableElementSharedTransitionScope
-import com.tunjid.treenav.compose.threepane.transforms.requireThreePaneMovableSharedElementScope
+import com.tunjid.treenav.compose.threepane.panedecorators.requireThreePaneMovableSharedElementScope
 
 /**
  * An interface providing both [MovableSharedElementScope] and [PaneSharedTransitionScope] for
