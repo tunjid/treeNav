@@ -78,8 +78,8 @@ fun <Destination : Node> threePaneEntry(
     exitTransition: PaneScope<ThreePane, Destination>.() -> ExitTransition = {
         if (canAnimate()) DefaultFadeOut else ExitTransition.None
     },
-    paneMapping: @Composable (Destination) -> Map<ThreePane, Destination?> = {
-        mapOf(ThreePane.Primary to it)
+    paneMapping: @Composable (Destination) -> Map<ThreePane, Destination?> = { destination ->
+        mapOf(ThreePane.Primary to destination)
     },
     render: @Composable (PaneScope<ThreePane, Destination>.(Destination) -> Unit),
 ) = PaneEntry(
