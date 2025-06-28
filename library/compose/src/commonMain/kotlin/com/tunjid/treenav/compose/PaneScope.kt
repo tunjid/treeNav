@@ -83,9 +83,9 @@ internal class AnimatedPaneScope<Pane, Destination : Node>(
             val isAnimatingBack = targetSize < currentSize
 
             return when (backStatus()) {
-                BackStatus.InProgress -> isAnimatingBack && targetIsPreview
-                BackStatus.No.Cancelled -> isAnimatingBack && targetIsPreview
-                BackStatus.No.Commited -> false
+                BackStatus.Seeking -> isAnimatingBack && targetIsPreview
+                BackStatus.Completed.Cancelled -> isAnimatingBack && targetIsPreview
+                BackStatus.Completed.Commited -> false
             }
         }
 }

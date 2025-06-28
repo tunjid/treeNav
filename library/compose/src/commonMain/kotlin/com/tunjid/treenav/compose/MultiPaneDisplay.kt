@@ -125,7 +125,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
         }
     }
 
-    val backPreviewState = remember { mutableStateOf<BackStatus>(BackStatus.No.Commited) }
+    val backPreviewState = remember { mutableStateOf<BackStatus>(BackStatus.Completed.Commited) }
 
     val slots = remember {
         List(
@@ -198,11 +198,11 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
     ) { progress ->
         try {
             progress.collect {
-                backPreviewState.value = BackStatus.InProgress
+                backPreviewState.value = BackStatus.Seeking
             }
-            backPreviewState.value = BackStatus.No.Commited
+            backPreviewState.value = BackStatus.Completed.Commited
         } catch (e: CancellationException) {
-            backPreviewState.value = BackStatus.No.Cancelled
+            backPreviewState.value = BackStatus.Completed.Cancelled
         }
     }
 }
@@ -437,10 +437,10 @@ internal class MultiPaneSceneKey(
 }
 
 internal sealed class BackStatus {
-    data object InProgress : BackStatus()
-    sealed class No : BackStatus() {
-        data object Commited : No()
-        data object Cancelled : No()
+    data object Seeking : BackStatus()
+    sealed class Completed : BackStatus() {
+        data object Commited : Completed()
+        data object Cancelled : Completed()
     }
 }
 
