@@ -55,9 +55,9 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
     val destinationIdsAnimatingOut: Set<String>,
 ) {
     companion object {
-        internal fun <T, R : Node> initial(
+        internal fun <Pane, Destination : Node> initial(
             slots: Collection<Slot>,
-        ): SlotBasedPanedNavigationState<T, R> = SlotBasedPanedNavigationState(
+        ): SlotBasedPanedNavigationState<Pane, Destination> = SlotBasedPanedNavigationState(
             isPop = false,
             swapAdaptations = emptySet(),
             panesToDestinations = emptyMap(),
@@ -133,11 +133,11 @@ private val ChangeAdaptations = setOf(Adaptation.Change)
  * A method that adapts changes in navigation to different panes while allowing for them
  * to be animated easily.
  */
-internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
+internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.adaptTo(
     slots: Set<Slot>,
-    panesToDestinations: Map<T, R?>,
+    panesToDestinations: Map<Pane, Destination?>,
     backStackIds: List<String>,
-): SlotBasedPanedNavigationState<T, R> {
+): SlotBasedPanedNavigationState<Pane, Destination> {
     val previous = this
 
     val previouslyUsedSlots = previous.destinationIdsToAdaptiveSlots
@@ -154,7 +154,7 @@ internal fun <T, R : Node> SlotBasedPanedNavigationState<T, R>.adaptTo(
     val unplacedNodeIds = panesToDestinations.values.mapNotNull { it?.id }.toMutableSet()
 
     val nodeIdsToAdaptiveSlots = mutableMapOf<String?, Slot>()
-    val swapAdaptations = mutableSetOf<Adaptation.Swap<T>>()
+    val swapAdaptations = mutableSetOf<Adaptation.Swap<Pane>>()
 
     // Process nodes that swapped panes from old to new
     for ((toPane, toNode) in panesToDestinations.entries) {
