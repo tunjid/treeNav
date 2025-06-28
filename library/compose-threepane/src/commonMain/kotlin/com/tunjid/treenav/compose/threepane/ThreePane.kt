@@ -102,7 +102,7 @@ private val DefaultFadeOut = fadeOut(
 
 private fun PaneScope<ThreePane, *>.canAnimate() =
     when {
-        inPredictiveBack && isActive -> false
+        inPredictiveBack && isActive -> true
         paneState.adaptations.any { adaptation ->
             adaptation is Adaptation.Same
         } -> false

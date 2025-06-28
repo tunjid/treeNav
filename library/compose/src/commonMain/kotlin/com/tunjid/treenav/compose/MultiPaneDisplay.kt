@@ -28,7 +28,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,7 +57,6 @@ import com.tunjid.treenav.compose.navigation3.ui.Scene
 import com.tunjid.treenav.compose.navigation3.ui.SceneStrategy
 import com.tunjid.treenav.compose.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import kotlinx.coroutines.CancellationException
-import kotlin.jvm.JvmInline
 
 /**
  * Scope that provides context about individual panes [Pane] in an [MultiPaneDisplay].
@@ -128,6 +126,8 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
         }
     }
 
+    val backPreviewState = remember { mutableStateOf<BackStatus>(BackStatus.No.Commited) }
+
     val slots = remember {
         List(
             size = state.panes.size,
@@ -155,7 +155,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
             state = state,
             slots = slots,
             currentPanedNavigationState = panedNavigationState::value,
-            isPreviewingBack = state.backPreviewState::value,
+            backStatus = backPreviewState::value,
             content = content,
         )
     }
@@ -199,11 +199,11 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
     ) { progress ->
         try {
             progress.collect {
-                state.backPreviewState.value = true
+                backPreviewState.value = BackStatus.InProgress
             }
-            state.backPreviewState.value = false
+            backPreviewState.value = BackStatus.No.Commited
         } catch (e: CancellationException) {
-            state.backPreviewState.value = false
+            backPreviewState.value = BackStatus.No.Cancelled
         }
     }
 }
@@ -212,7 +212,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
 private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : Node, Pane>(
     private val state: MultiPaneDisplayState<Pane, NavigationState, Destination>,
     private val slots: Set<Slot>,
-    private val isPreviewingBack: () -> Boolean,
+    private val backStatus: () -> BackStatus,
     private val currentPanedNavigationState: () -> SlotBasedPanedNavigationState<Pane, Destination>,
     private val content: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : SceneStrategy<Destination> {
@@ -236,6 +236,8 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
                 backstackIds = backstackIds,
             )
 
+            val panedNavigationState = currentPanedNavigationState()
+
             val destination = state.destinationTransform(currentNavigationState)
 
             val activeIds = destination.children.mapTo(mutableSetOf(), Node::id) + destination.id
@@ -248,17 +250,20 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
 
             val mutableEntries = entries.toMutableList()
 
-            val sceneKey = MultiPaneSceneKey(backstackIds)
+            val sceneKey = MultiPaneSceneKey(
+                ids = backstackIds,
+                isPreviewingBack = backstackIds != panedNavigationState.backStackIds
+            )
 
             MultiPaneDisplayScene(
                 backstackIds = backstackIds,
                 destination = destination,
                 sceneKey = sceneKey,
                 slots = slots,
-                isPreviewingBack = isPreviewingBack,
+                backStatus = backStatus,
                 panesToDestinations = state.destinationPanes,
                 onSceneDisposed = { scenes.remove(sceneKey) },
-                currentPanedNavigationState = currentPanedNavigationState(),
+                currentPanedNavigationState = panedNavigationState,
                 entries = entries.filter { it.id in activeIds },
                 // Try to match up NavEntries to state using their id and children.
                 // Best case is O(n) where the backstack isn't shuffled.
@@ -278,7 +283,7 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
 
 @Stable
 private class MultiPaneDisplayScene<Pane, Destination : Node>(
-    private val sceneKey: MultiPaneSceneKey,
+    sceneKey: MultiPaneSceneKey,
     override val entries: List<NavEntry<Destination>>,
     override val previousEntries: List<NavEntry<Destination>>,
     private val backstackIds: List<String>,
@@ -286,7 +291,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     private val slots: Set<Slot>,
     private val currentPanedNavigationState: SlotBasedPanedNavigationState<Pane, Destination>,
     private val onSceneDisposed: () -> Unit,
-    private val isPreviewingBack: () -> Boolean,
+    private val backStatus: () -> BackStatus,
     private val panesToDestinations: @Composable (Destination) -> Map<Pane, Destination?>,
     private val scopeContent: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : Scene<Destination> {
@@ -297,7 +302,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     val multiPaneDisplayScope = object : MultiPaneDisplayScope<Pane, Destination> {
 
         override val inPredictiveBack: Boolean
-            get() = isPreviewingBack()
+            get() = false
 
         override val panes: Collection<Pane>
             get() = panedNavigationState.panesToDestinations.keys
@@ -315,13 +320,8 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
 
             val scope = remember {
                 AnimatedPaneScope(
-                    isPreviewingBack = isPreviewingBack,
+                    backStatus = backStatus,
                     paneState = paneState,
-                    activeState = derivedStateOf {
-                        val targetSceneKey =
-                            animatedContentScope.transition.sceneTargetDestinationKey
-                        sceneKey == targetSceneKey
-                    },
                     animatedContentScope = animatedContentScope,
                 )
             }.also {
@@ -416,10 +416,34 @@ private fun <Destination : Node, Pane> SlotBasedPanedNavigationState<Pane, Desti
         }
     }
 
-@JvmInline
-internal value class MultiPaneSceneKey(
+internal class MultiPaneSceneKey(
     val ids: List<String>,
-)
+    val isPreviewingBack: Boolean,
+) {
+
+    private val idsHash = ids.hashCode()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as MultiPaneSceneKey
+
+        return ids == other.ids
+    }
+
+    override fun hashCode(): Int {
+        return idsHash
+    }
+}
+
+internal sealed class BackStatus {
+    data object InProgress : BackStatus()
+    sealed class No : BackStatus() {
+        data object Commited : No()
+        data object Cancelled : No()
+    }
+}
 
 private val AlwaysTrue = { true }
 

@@ -22,7 +22,6 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 import com.tunjid.treenav.compose.transforms.PaneTransform
@@ -58,7 +57,6 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
     internal val destinationPanes: @Composable (Destination) -> Map<Pane, Destination?>,
     internal val destinationContent: @Composable PaneScope<Pane, Destination>.(PaneEntry<Pane, Destination>, Destination) -> Unit,
 ) {
-    internal val backPreviewState = mutableStateOf(false)
 
     internal val navEntryProvider = { destination: Destination ->
         val paneEntry = paneEntryProvider(destination)

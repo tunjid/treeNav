@@ -21,7 +21,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -61,8 +60,7 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
  */
 @Stable
 internal class AnimatedPaneScope<Pane, Destination : Node>(
-    val isPreviewingBack: () -> Boolean,
-    val activeState: State<Boolean>,
+    val backStatus: () -> BackStatus,
     paneState: PaneState<Pane, Destination>,
     animatedContentScope: AnimatedContentScope,
 ) : PaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
@@ -73,21 +71,22 @@ internal class AnimatedPaneScope<Pane, Destination : Node>(
     override var paneState by mutableStateOf(paneState)
 
     override val isActive: Boolean
-        get() = when {
-            inPredictiveBack -> !activeState.value
-            // Transition lagging predictive back for the enter state
-            activeState.value && !isEntering -> true
-            // Transition lagging predictive back for the exit state
-            !activeState.value && isEntering -> false
-            // Stabilized, the transition is the source of truth
-            else -> activeState.value
-        }
+        get() = if (inPredictiveBack) !isEntering else isEntering
 
     override val inPredictiveBack: Boolean
         get() {
             val currentSize = transition.sceneCurrentDestinationKey?.ids?.size ?: 0
             val targetSize = transition.sceneTargetDestinationKey?.ids?.size ?: 0
-            return isPreviewingBack() && (targetSize < currentSize)
+
+            val targetIsPreview = transition.sceneTargetDestinationKey?.isPreviewingBack == true
+
+            val isAnimatingBack = targetSize < currentSize
+
+            return when (backStatus()) {
+                BackStatus.InProgress -> isAnimatingBack && targetIsPreview
+                BackStatus.No.Cancelled -> isAnimatingBack && targetIsPreview
+                BackStatus.No.Commited -> false
+            }
         }
 }
 
