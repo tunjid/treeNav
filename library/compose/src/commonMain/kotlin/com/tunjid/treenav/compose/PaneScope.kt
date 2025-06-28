@@ -117,4 +117,16 @@ internal data class SlotPaneState<Pane, Destination : Node>(
 @JvmInline
 internal value class Slot internal constructor(val index: Int)
 
+private val Transition<*>.sceneTargetDestinationKey: MultiPaneSceneKey?
+    get() {
+        val target = parentTransition?.targetState as? Pair<*, *> ?: return null
+        return target.second as MultiPaneSceneKey
+    }
+
+private val Transition<*>.sceneCurrentDestinationKey: MultiPaneSceneKey?
+    get() {
+        val target = parentTransition?.currentState as? Pair<*, *> ?: return null
+        return target.second as MultiPaneSceneKey
+    }
+
 internal expect fun Any.identityHash(): Int

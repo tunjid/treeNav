@@ -21,7 +21,6 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.Transition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -453,19 +452,7 @@ private val AnimatedContentTransitionScope<*>.sceneDestinationKey: MultiPaneScen
         return target.second as MultiPaneSceneKey
     }
 
-internal val Transition<*>.sceneTargetDestinationKey: MultiPaneSceneKey?
-    get() {
-        val target = parentTransition?.targetState as? Pair<*, *> ?: return null
-        return target.second as MultiPaneSceneKey
-    }
-
-internal val Transition<*>.sceneCurrentDestinationKey: MultiPaneSceneKey?
-    get() {
-        val target = parentTransition?.currentState as? Pair<*, *> ?: return null
-        return target.second as MultiPaneSceneKey
-    }
-
-internal val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
+private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     throw IllegalArgumentException(
         "PaneScope should not be read until provided in the composition"
     )
