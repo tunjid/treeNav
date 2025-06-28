@@ -41,11 +41,11 @@ import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScop
 import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.transforms.PaneTransform
-import com.tunjid.treenav.compose.transforms.paneRenderTransform
+import com.tunjid.treenav.compose.panedecorators.PaneDecorator
+import com.tunjid.treenav.compose.panedecorators.paneRenderDecorator
 
 /**
- * A [PaneTransform] that applies semantics of movable shared elements to
+ * A [PaneDecorator] that applies semantics of movable shared elements to
  * [ThreePane] layouts.
  *
  * It is an opinionated implementation that always shows the movable shared element in
@@ -60,10 +60,10 @@ import com.tunjid.treenav.compose.transforms.paneRenderTransform
  * There should be one instance of this per [MultiPaneDisplay].
  */
 fun <NavigationState : Node, Destination : Node>
-        threePanedMovableSharedElementTransform(
+        threePanedMovableSharedElementDecorator(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
-): PaneTransform<NavigationState, Destination, ThreePane> =
-    paneRenderTransform { destination, destinationPaneMapper ->
+): PaneDecorator<NavigationState, Destination, ThreePane> =
+    paneRenderDecorator { destination, destinationPaneMapper ->
         val delegate = rememberPaneMovableSharedElementScope(
             movableSharedElementHostState = movableSharedElementHostState
         )
@@ -82,7 +82,7 @@ fun <NavigationState : Node, Destination : Node>
 /**
  * Requires that this [PaneScope] is a [MovableSharedElementScope] specifically configured for
  * [ThreePane] layouts and returns it. This only succeeds if the [MultiPaneDisplayState] has the
- * [threePanedMovableSharedElementTransform] applied to it.
+ * [threePanedMovableSharedElementDecorator] applied to it.
  *
  * In the case this [PaneScope] is not the [MovableSharedElementScope] requested, an exception
  * will be thrown.
@@ -96,7 +96,7 @@ fun <Destination : Node> PaneScope<
         """
             The current PaneScope (${this::class.qualifiedName}) is not an instance of
             a ThreePaneMovableSharedElementScope. You must configure your ThreePane MultiPaneDisplay with
-            threePanedMovableSharedElementTransform().
+            threePaneAdaptiveDecorator().
         """.trimIndent()
     }
     return this

@@ -25,22 +25,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.transforms.PaneTransform
-import com.tunjid.treenav.compose.transforms.paneMappingTransform
+import com.tunjid.treenav.compose.panedecorators.PaneDecorator
+import com.tunjid.treenav.compose.panedecorators.paneMappingDecorator
 
 /**
- * An [PaneTransform] that selectively displays panes for a [ThreePane] layout
+ * An [PaneDecorator] that selectively displays panes for a [ThreePane] layout
  * based on the space available determined by the [windowWidthState].
  *
  * @param windowWidthState provides the current width of the display in Dp.
  */
 fun <NavigationState : Node, Destination : Node>
-        threePanedAdaptiveTransform(
+        threePaneAdaptiveDecorator(
     windowWidthState: State<Dp>,
     secondaryPaneBreakPoint: State<Dp> = mutableStateOf(SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
     tertiaryPaneBreakPoint: State<Dp> = mutableStateOf(TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
-): PaneTransform<NavigationState, Destination, ThreePane> =
-    paneMappingTransform { destination, destinationPaneMapper ->
+): PaneDecorator<NavigationState, Destination, ThreePane> =
+    paneMappingDecorator { destination, destinationPaneMapper ->
         val showSecondary by remember {
             derivedStateOf { windowWidthState.value >= secondaryPaneBreakPoint.value }
         }
