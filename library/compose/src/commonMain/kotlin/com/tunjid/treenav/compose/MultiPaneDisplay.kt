@@ -33,7 +33,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
@@ -288,17 +287,30 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     private val slots: Set<Slot>,
     private val currentPanedNavigationState: SlotBasedPanedNavigationState<Pane, Destination>,
     private val onSceneDisposed: () -> Unit,
-    private val backStatus: () -> BackStatus,
+    backStatus: () -> BackStatus,
     private val panesToDestinations: @Composable (Destination) -> Map<Pane, Destination?>,
     private val scopeContent: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : Scene<Destination> {
 
-    private var panedNavigationState by mutableStateOf(currentPanedNavigationState)
+    private val panedNavigationState = mutableStateOf(currentPanedNavigationState)
 
     override val key: Any = sceneKey
 
     @Stable
-    val multiPaneDisplayScope = object : MultiPaneDisplayScope<Pane, Destination> {
+    val multiPaneDisplayScope = PaneDestinationMultiPaneDisplayScope(
+        panedNavigationState = panedNavigationState,
+        entries = entries,
+        backStatus = backStatus,
+    )
+
+    @Stable
+    class PaneDestinationMultiPaneDisplayScope<Pane, Destination : Node>(
+        panedNavigationState: State<SlotBasedPanedNavigationState<Pane, Destination>>,
+        private val entries: List<NavEntry<Destination>>,
+        private val backStatus: () -> BackStatus,
+    ) : MultiPaneDisplayScope<Pane, Destination> {
+
+        private val panedNavigationState by panedNavigationState
 
         override val panes: Collection<Pane>
             get() = panedNavigationState.panesToDestinations.keys
@@ -369,7 +381,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
             backStackIds = sceneKey.ids,
             panesToDestinations = panesToDestinations(destination),
             slots = slots,
-        ).also { panedNavigationState = it.value }
+        ).also { panedNavigationState.value = it.value }
 
         multiPaneDisplayScope.scopeContent()
 
