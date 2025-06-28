@@ -295,6 +295,8 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
 
     private var panedNavigationState by mutableStateOf(currentPanedNavigationState)
 
+    override val key: Any = sceneKey
+
     @Stable
     val multiPaneDisplayScope = object : MultiPaneDisplayScope<Pane, Destination> {
 
@@ -360,8 +362,6 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
         override fun destinationIn(pane: Pane): Destination? =
             panedNavigationState.destinationFor(pane)
     }
-
-    override val key: Any = sceneKey
 
     override val content: @Composable () -> Unit = {
 
