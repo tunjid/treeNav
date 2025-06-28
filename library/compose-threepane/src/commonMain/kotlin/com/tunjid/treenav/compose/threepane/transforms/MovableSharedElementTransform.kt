@@ -62,7 +62,7 @@ import com.tunjid.treenav.compose.transforms.paneRenderTransform
 fun <NavigationState : Node, Destination : Node>
         threePanedMovableSharedElementTransform(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
-): PaneTransform<ThreePane, NavigationState, Destination> =
+): PaneTransform<NavigationState, Destination, ThreePane> =
     paneRenderTransform { destination, destinationPaneMapper ->
         val delegate = rememberPaneMovableSharedElementScope(
             movableSharedElementHostState = movableSharedElementHostState

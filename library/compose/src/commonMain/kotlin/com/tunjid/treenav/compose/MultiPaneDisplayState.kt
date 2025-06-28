@@ -45,7 +45,7 @@ import com.tunjid.treenav.compose.transforms.PaneRenderTransform
  * @param destinationContent the transform used to render a [Destination] in its pane.
  */
 @Stable
-class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> internal constructor(
+class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> internal constructor(
     internal val panes: List<Pane>,
     internal val navigationState: State<NavigationState>,
     internal val backStackTransform: (NavigationState) -> List<Destination>,
@@ -120,9 +120,9 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
  * @param transforms a list of transforms applied to every [Destination] before it is
  * rendered in its pane. Order matters; they are applied from last to first.
  */
-fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
+fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplayState(
     panes: List<Pane>,
-    transforms: List<PaneTransform<Pane, NavigationState, Destination>>,
+    transforms: List<PaneTransform<NavigationState, Destination, Pane>>,
     navigationState: State<NavigationState>,
     backStackTransform: (NavigationState) -> List<Destination>,
     destinationTransform: (NavigationState) -> Destination,
@@ -149,13 +149,13 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
             paneEntry.content(this@transform, destination)
         }
     ),
-    operation = MultiPaneDisplayState<Pane, NavigationState, Destination>::plus
+    operation = MultiPaneDisplayState<NavigationState, Destination, Pane>::plus
 )
 
-private operator fun <Pane, NavigationState : Node, Destination : Node>
-        MultiPaneDisplayState<Pane, NavigationState, Destination>.plus(
-    transform: PaneTransform<Pane, NavigationState, Destination>,
-): MultiPaneDisplayState<Pane, NavigationState, Destination> =
+private operator fun <NavigationState : Node, Destination : Node, Pane>
+        MultiPaneDisplayState<NavigationState, Destination, Pane>.plus(
+    transform: PaneTransform<NavigationState, Destination, Pane>,
+): MultiPaneDisplayState<NavigationState, Destination, Pane> =
     MultiPaneDisplayState(
         panes = panes,
         navigationState = navigationState,

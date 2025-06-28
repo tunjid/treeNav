@@ -101,8 +101,8 @@ interface MultiPaneDisplayScope<Pane, Destination : Node> {
  * transforms for each navigation destination shown in the [MultiPaneDisplay].
  */
 @Composable
-fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
-    state: MultiPaneDisplayState<Pane, NavigationState, Destination>,
+fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
+    state: MultiPaneDisplayState<NavigationState, Destination, Pane>,
     modifier: Modifier = Modifier,
     content: @Composable MultiPaneDisplayScope<Pane, Destination>.() -> Unit,
 ) {
@@ -212,8 +212,8 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
 }
 
 @Stable
-private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : Node, Pane>(
-    private val state: MultiPaneDisplayState<Pane, NavigationState, Destination>,
+private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : Node, Pane>(
+    private val state: MultiPaneDisplayState<NavigationState, Destination, Pane>,
     private val slots: Set<Slot>,
     private val backStatus: () -> BackStatus,
     private val currentPanedNavigationState: () -> SlotBasedPanedNavigationState<Pane, Destination>,
@@ -398,7 +398,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     }
 }
 
-private fun <NavigationState : Node> MultiPaneDisplayState<*, NavigationState, *>.findNavigationStateMatching(
+private fun <NavigationState : Node> MultiPaneDisplayState<NavigationState, *, *>.findNavigationStateMatching(
     backstackIds: List<String>,
 ): NavigationState {
     var state = navigationState.value

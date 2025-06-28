@@ -319,15 +319,11 @@ class AppState(
     fun isInteractingWithPanes(): Boolean =
         paneInteractionSourceList.any { it.isActive() }
 
-    fun goBack() {
-        navigationRepository.navigate(MultiStackNav::pop)
-    }
-
     companion object {
         @Composable
         fun AppState.rememberMultiPaneDisplayState(
-            transforms: List<PaneTransform<ThreePane, MultiStackNav, SampleDestination>>,
-        ): MultiPaneDisplayState<ThreePane, MultiStackNav, SampleDestination> {
+            transforms: List<PaneTransform<MultiStackNav, SampleDestination, ThreePane>>,
+        ): MultiPaneDisplayState<MultiStackNav, SampleDestination, ThreePane> {
             val displayState = remember {
                 MultiPaneDisplayState(
                     panes = ThreePane.entries.toList(),

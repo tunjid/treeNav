@@ -39,7 +39,7 @@ fun <NavigationState : Node, Destination : Node>
     windowWidthState: State<Dp>,
     secondaryPaneBreakPoint: State<Dp> = mutableStateOf(SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
     tertiaryPaneBreakPoint: State<Dp> = mutableStateOf(TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
-): PaneTransform<ThreePane, NavigationState, Destination> =
+): PaneTransform<NavigationState, Destination, ThreePane> =
     paneMappingTransform { destination, destinationPaneMapper ->
         val showSecondary by remember {
             derivedStateOf { windowWidthState.value >= secondaryPaneBreakPoint.value }

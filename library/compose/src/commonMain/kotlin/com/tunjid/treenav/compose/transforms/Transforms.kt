@@ -9,13 +9,13 @@ import com.tunjid.treenav.compose.PaneScope
 /**
  * Provides APIs for adjusting what is presented in a [MultiPaneDisplay].
  */
-sealed interface PaneTransform<Pane, in NavigationState : Node, Destination : Node>
+sealed interface PaneTransform<in NavigationState : Node, Destination : Node, Pane>
 
 /**
  * A [PaneTransform] that allows for changing which [Destination] shows in which [Pane].
  */
 internal fun interface PaneMappingTransform<Pane, Destination : Node>
-    : PaneTransform<Pane, Node, Destination> {
+    : PaneTransform<Node, Destination, Pane> {
 
     /**
      * Given the current [Destination], provide what [Destination] to show in a [Pane].
@@ -38,7 +38,7 @@ internal fun interface PaneMappingTransform<Pane, Destination : Node>
  * [PaneScope].
  */
 internal fun interface PaneRenderTransform<Pane, Destination : Node>
-    : PaneTransform<Pane, Node, Destination> {
+    : PaneTransform<Node, Destination, Pane> {
 
     /**
      * Given the current [Destination], and its [PaneScope], compose additional presentation
@@ -67,12 +67,12 @@ internal fun interface PaneRenderTransform<Pane, Destination : Node>
  * - destinationPaneMapper: A lambda that when invoked, returns the pane to destination
  * mapping for the current [Destination] pre-transform that can then be composed with new logic.
  */
-fun <Pane, NavigationState : Node, Destination : Node> paneMappingTransform(
+fun <NavigationState : Node, Destination : Node, Pane> paneMappingTransform(
     mappingTransform: @Composable (
         destination: Destination,
         destinationPaneMapper: @Composable (Destination) -> Map<Pane, Destination?>
     ) -> Map<Pane, Destination?>
-): PaneTransform<Pane, NavigationState, Destination> =
+): PaneTransform<NavigationState, Destination, Pane> =
     PaneMappingTransform { destination, previousTransform ->
         mappingTransform(destination, previousTransform)
     }
@@ -90,7 +90,7 @@ fun <Pane, Destination : Node, NavigationState : Node> paneRenderTransform(
         destination: Destination,
         destinationContent: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit
     ) -> Unit
-): PaneTransform<Pane, NavigationState, Destination> =
+): PaneTransform<NavigationState, Destination, Pane> =
     PaneRenderTransform { destination, previousTransform ->
         renderTransform(destination, previousTransform)
     }
