@@ -24,9 +24,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
-import com.tunjid.treenav.compose.transforms.PaneMappingTransform
-import com.tunjid.treenav.compose.transforms.PaneTransform
-import com.tunjid.treenav.compose.transforms.PaneRenderTransform
+import com.tunjid.treenav.compose.transforms.PaneMappingDecorator
+import com.tunjid.treenav.compose.transforms.PaneDecorator
+import com.tunjid.treenav.compose.transforms.PaneRenderDecorator
 
 /**
  * Class for configuring a [MultiPaneDisplay] for selecting, adapting and placing navigation
@@ -115,14 +115,14 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
  * @param destinationTransform a transform of the [navigationState] to its current destination.
  * @param popTransform a transform of the [navigationState] when back is pressed.
  * @param onPopped an action to perform when the navigation state has been popped to a new state.
- * @param entryProvider provides the [PaneTransform]s and content needed to render
+ * @param entryProvider provides the [PaneDecorator]s and content needed to render
  * a [Destination] in its pane.
- * @param transforms a list of transforms applied to every [Destination] before it is
+ * @param paneDecorators a list of decorators applied to every [Destination] before it is
  * rendered in its pane. Order matters; they are applied from last to first.
  */
 fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplayState(
     panes: List<Pane>,
-    transforms: List<PaneTransform<NavigationState, Destination, Pane>>,
+    paneDecorators: List<PaneDecorator<NavigationState, Destination, Pane>>,
     navigationState: State<NavigationState>,
     backStackTransform: (NavigationState) -> List<Destination>,
     destinationTransform: (NavigationState) -> Destination,
@@ -132,7 +132,7 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplayState(
         NoContentTransform
     },
     entryProvider: (Destination) -> PaneEntry<Pane, Destination>,
-) = transforms.fold(
+) = paneDecorators.fold(
     initial = MultiPaneDisplayState(
         panes = panes,
         navigationState = navigationState,
@@ -154,7 +154,7 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplayState(
 
 private operator fun <NavigationState : Node, Destination : Node, Pane>
         MultiPaneDisplayState<NavigationState, Destination, Pane>.plus(
-    transform: PaneTransform<NavigationState, Destination, Pane>,
+    transform: PaneDecorator<NavigationState, Destination, Pane>,
 ): MultiPaneDisplayState<NavigationState, Destination, Pane> =
     MultiPaneDisplayState(
         panes = panes,
@@ -166,21 +166,21 @@ private operator fun <NavigationState : Node, Destination : Node, Pane>
         transitionSpec = transitionSpec,
         paneEntryProvider = paneEntryProvider,
         destinationPanes = when (transform) {
-            is PaneMappingTransform -> { destination ->
+            is PaneMappingDecorator -> { destination ->
                 transform.toPanesAndDestinations(
                     destination = destination,
-                    previousTransform = destinationPanes,
+                    previousDecorator = destinationPanes,
                 )
             }
 
             else -> destinationPanes
         },
         destinationContent = when (transform) {
-            is PaneRenderTransform -> { paneEntry, destination ->
+            is PaneRenderDecorator -> { paneEntry, destination ->
                 with(transform) {
                     Render(
                         destination = destination,
-                        previousTransform = previous@{ innerDestination ->
+                        previousDecorator = previous@{ innerDestination ->
                             destinationContent(
                                 this@previous,
                                 paneEntry,

@@ -85,10 +85,10 @@ import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHost
 import com.tunjid.treenav.compose.multiPaneDisplayBackstack
 import com.tunjid.treenav.compose.navigation3.ui.NavigationEventHandler
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
-import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
-import com.tunjid.treenav.compose.transforms.PaneTransform
-import com.tunjid.treenav.compose.transforms.paneModifierTransform
+import com.tunjid.treenav.compose.threepane.transforms.threePaneAdaptiveDecorator
+import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementDecorator
+import com.tunjid.treenav.compose.transforms.PaneDecorator
+import com.tunjid.treenav.compose.transforms.paneModifierDecorator
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
 import com.tunjid.treenav.requireCurrent
@@ -117,7 +117,7 @@ fun App(
                 state = appState.rememberMultiPaneDisplayState(
                     remember {
                         listOf(
-                            threePanedAdaptiveTransform(
+                            threePaneAdaptiveDecorator(
                                 secondaryPaneBreakPoint = mutableStateOf(
                                     SecondaryPaneMinWidthBreakpointDp
                                 ),
@@ -128,10 +128,10 @@ fun App(
                                     appState.splitLayoutState.size
                                 }
                             ),
-                            threePanedMovableSharedElementTransform(
+                            threePanedMovableSharedElementDecorator(
                                 movableSharedElementHostState = movableSharedElementHostState
                             ),
-                            paneModifierTransform {
+                            paneModifierDecorator {
                                 if (paneState.pane == ThreePane.Primary
                                     && inPredictiveBack
                                     && isActive
@@ -322,7 +322,7 @@ class AppState(
     companion object {
         @Composable
         fun AppState.rememberMultiPaneDisplayState(
-            transforms: List<PaneTransform<MultiStackNav, SampleDestination, ThreePane>>,
+            transforms: List<PaneDecorator<MultiStackNav, SampleDestination, ThreePane>>,
         ): MultiPaneDisplayState<MultiStackNav, SampleDestination, ThreePane> {
             val displayState = remember {
                 MultiPaneDisplayState(
@@ -345,7 +345,7 @@ class AppState(
                             is SampleDestination.Avatar -> avatarPaneEntry()
                         }
                     },
-                    transforms = transforms,
+                    paneDecorators = transforms,
                 )
             }
             DisposableEffect(Unit) {

@@ -28,10 +28,10 @@ import com.tunjid.treenav.compose.PaneScope
  *
  * @param paneModifier a lambda for specifying the [Modifier] for each [Pane] in a [PaneScope].
  */
-fun <NavigationState : Node, Destination : Node, Pane> paneModifierTransform(
+fun <NavigationState : Node, Destination : Node, Pane> paneModifierDecorator(
     paneModifier: PaneScope<Pane, Destination>.() -> Modifier = { Modifier },
-): PaneTransform<NavigationState, Destination, Pane> =
-    paneRenderTransform { destination, destinationContent ->
+): PaneDecorator<NavigationState, Destination, Pane> =
+    paneRenderDecorator { destination, destinationContent ->
         Box(
             modifier = paneModifier()
         ) {

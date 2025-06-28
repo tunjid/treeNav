@@ -9,13 +9,13 @@ import com.tunjid.treenav.compose.PaneScope
 /**
  * Provides APIs for adjusting what is presented in a [MultiPaneDisplay].
  */
-sealed interface PaneTransform<in NavigationState : Node, Destination : Node, Pane>
+sealed interface PaneDecorator<in NavigationState : Node, Destination : Node, Pane>
 
 /**
- * A [PaneTransform] that allows for changing which [Destination] shows in which [Pane].
+ * A [PaneDecorator] that allows for changing which [Destination] shows in which [Pane].
  */
-internal fun interface PaneMappingTransform<Pane, Destination : Node>
-    : PaneTransform<Node, Destination, Pane> {
+internal fun interface PaneMappingDecorator<Pane, Destination : Node>
+    : PaneDecorator<Node, Destination, Pane> {
 
     /**
      * Given the current [Destination], provide what [Destination] to show in a [Pane].
@@ -23,35 +23,35 @@ internal fun interface PaneMappingTransform<Pane, Destination : Node>
      * back stack of the [MultiPaneDisplayState.navigationState].
      *
      * @param destination the current [Destination] to display.
-     * @param previousTransform a [PaneTransform] that when invoked, returns the pane to destination
+     * @param previousDecorator a [PaneDecorator] that when invoked, returns the pane to destination
      * mapping for the current [Destination] pre-transform that can then be composed with new logic.
      */
     @Composable
     fun toPanesAndDestinations(
         destination: Destination,
-        previousTransform: @Composable (Destination) -> Map<Pane, Destination?>,
+        previousDecorator: @Composable (Destination) -> Map<Pane, Destination?>,
     ): Map<Pane, Destination?>
 }
 
 /**
- * A [PaneTransform] that allows for the rendering semantics of a [Destination] in a given
+ * A [PaneDecorator] that allows for the rendering semantics of a [Destination] in a given
  * [PaneScope].
  */
-internal fun interface PaneRenderTransform<Pane, Destination : Node>
-    : PaneTransform<Node, Destination, Pane> {
+internal fun interface PaneRenderDecorator<Pane, Destination : Node>
+    : PaneDecorator<Node, Destination, Pane> {
 
     /**
      * Given the current [Destination], and its [PaneScope], compose additional presentation
      * logic.
      *
      * @param destination the current [Destination] to display in the provided [PaneScope].
-     * @param previousTransform a [PaneTransform] that when invoked, renders the [Destination]
-     * for the [PaneScope ]pre-transform that can then be composed with new logic.
+     * @param previousDecorator a [PaneDecorator] that when invoked, renders the [Destination]
+     * for the [PaneScope ]pre-decoration that can then be composed with new logic.
      */
     @Composable
     fun PaneScope<Pane, Destination>.Render(
         destination: Destination,
-        previousTransform: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
+        previousDecorator: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
     )
 }
 
@@ -67,30 +67,30 @@ internal fun interface PaneRenderTransform<Pane, Destination : Node>
  * - destinationPaneMapper: A lambda that when invoked, returns the pane to destination
  * mapping for the current [Destination] pre-transform that can then be composed with new logic.
  */
-fun <NavigationState : Node, Destination : Node, Pane> paneMappingTransform(
+fun <NavigationState : Node, Destination : Node, Pane> paneMappingDecorator(
     mappingTransform: @Composable (
         destination: Destination,
-        destinationPaneMapper: @Composable (Destination) -> Map<Pane, Destination?>
+        destinationPaneDecorator: @Composable (Destination) -> Map<Pane, Destination?>
     ) -> Map<Pane, Destination?>
-): PaneTransform<NavigationState, Destination, Pane> =
-    PaneMappingTransform { destination, previousTransform ->
+): PaneDecorator<NavigationState, Destination, Pane> =
+    PaneMappingDecorator { destination, previousTransform ->
         mappingTransform(destination, previousTransform)
     }
 
 /**
- * A [PaneTransform] that allows for adjusting the rendering semantics of a [Destination] in a
+ * A [PaneDecorator] that allows for adjusting the rendering semantics of a [Destination] in a
  * for a given [Pane] in the [PaneScope].
  *
  * @param renderTransform a lambda providing the Composable to render. It has two arguments:
  * - destination: The [Destination] being rendered in the provided [PaneScope].
  * - destinationContent: A lambda that when invoked, renders the [Destination] pre-transform
  */
-fun <Pane, Destination : Node, NavigationState : Node> paneRenderTransform(
+fun <Pane, Destination : Node, NavigationState : Node> paneRenderDecorator(
     renderTransform: @Composable PaneScope<Pane, Destination>.(
         destination: Destination,
         destinationContent: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit
     ) -> Unit
-): PaneTransform<NavigationState, Destination, Pane> =
-    PaneRenderTransform { destination, previousTransform ->
+): PaneDecorator<NavigationState, Destination, Pane> =
+    PaneRenderDecorator { destination, previousTransform ->
         renderTransform(destination, previousTransform)
     }
