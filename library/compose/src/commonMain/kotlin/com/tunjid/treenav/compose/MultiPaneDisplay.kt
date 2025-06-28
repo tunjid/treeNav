@@ -63,8 +63,6 @@ import kotlinx.coroutines.CancellationException
 @Stable
 interface MultiPaneDisplayScope<Pane, Destination : Node> {
 
-    val inPredictiveBack: Boolean
-
     val panes: Collection<Pane>
 
     @Composable
@@ -299,9 +297,6 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
 
     @Stable
     val multiPaneDisplayScope = object : MultiPaneDisplayScope<Pane, Destination> {
-
-        override val inPredictiveBack: Boolean
-            get() = false
 
         override val panes: Collection<Pane>
             get() = panedNavigationState.panesToDestinations.keys
