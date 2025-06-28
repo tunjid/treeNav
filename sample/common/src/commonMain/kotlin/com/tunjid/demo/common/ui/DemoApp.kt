@@ -87,8 +87,8 @@ import com.tunjid.treenav.compose.navigation3.ui.NavigationEventHandler
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.transforms.threePaneAdaptiveDecorator
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementDecorator
-import com.tunjid.treenav.compose.transforms.PaneDecorator
-import com.tunjid.treenav.compose.transforms.paneModifierDecorator
+import com.tunjid.treenav.compose.panedecorators.PaneDecorator
+import com.tunjid.treenav.compose.panedecorators.paneModifierDecorator
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
 import com.tunjid.treenav.requireCurrent

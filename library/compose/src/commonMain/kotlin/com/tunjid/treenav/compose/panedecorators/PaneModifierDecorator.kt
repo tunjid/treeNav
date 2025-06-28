@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.transforms
+package com.tunjid.treenav.compose.panedecorators
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier

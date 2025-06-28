@@ -41,8 +41,8 @@ import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScop
 import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.transforms.PaneDecorator
-import com.tunjid.treenav.compose.transforms.paneRenderDecorator
+import com.tunjid.treenav.compose.panedecorators.PaneDecorator
+import com.tunjid.treenav.compose.panedecorators.paneRenderDecorator
 
 /**
  * A [PaneDecorator] that applies semantics of movable shared elements to

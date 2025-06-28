@@ -1,4 +1,4 @@
-package com.tunjid.treenav.compose.transforms
+package com.tunjid.treenav.compose.panedecorators
 
 import androidx.compose.runtime.Composable
 import com.tunjid.treenav.Node

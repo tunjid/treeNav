@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.transforms.PaneDecorator
-import com.tunjid.treenav.compose.transforms.paneMappingDecorator
+import com.tunjid.treenav.compose.panedecorators.PaneDecorator
+import com.tunjid.treenav.compose.panedecorators.paneMappingDecorator
 
 /**
  * An [PaneDecorator] that selectively displays panes for a [ThreePane] layout

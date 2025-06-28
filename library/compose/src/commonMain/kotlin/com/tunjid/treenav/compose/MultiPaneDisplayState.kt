@@ -24,9 +24,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
-import com.tunjid.treenav.compose.transforms.PaneMappingDecorator
-import com.tunjid.treenav.compose.transforms.PaneDecorator
-import com.tunjid.treenav.compose.transforms.PaneRenderDecorator
+import com.tunjid.treenav.compose.panedecorators.PaneMappingDecorator
+import com.tunjid.treenav.compose.panedecorators.PaneDecorator
+import com.tunjid.treenav.compose.panedecorators.PaneRenderDecorator
 
 /**
  * Class for configuring a [MultiPaneDisplay] for selecting, adapting and placing navigation
