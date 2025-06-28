@@ -255,7 +255,6 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
             )
 
             MultiPaneDisplayScene(
-                backstackIds = backstackIds,
                 destination = destination,
                 sceneKey = sceneKey,
                 slots = slots,
@@ -282,10 +281,9 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
 
 @Stable
 private class MultiPaneDisplayScene<Pane, Destination : Node>(
-    sceneKey: MultiPaneSceneKey,
     override val entries: List<NavEntry<Destination>>,
     override val previousEntries: List<NavEntry<Destination>>,
-    private val backstackIds: List<String>,
+    private val sceneKey: MultiPaneSceneKey,
     private val destination: Destination,
     private val slots: Set<Slot>,
     private val currentPanedNavigationState: SlotBasedPanedNavigationState<Pane, Destination>,
@@ -371,7 +369,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     override val content: @Composable () -> Unit = {
 
         currentPanedNavigationState.rememberUpdatedPanedNavigationState(
-            backStackIds = backstackIds,
+            backStackIds = sceneKey.ids,
             panesToDestinations = panesToDestinations(destination),
             slots = slots,
         ).also { panedNavigationState = it.value }
