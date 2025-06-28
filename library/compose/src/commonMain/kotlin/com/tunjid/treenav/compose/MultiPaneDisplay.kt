@@ -224,7 +224,9 @@ private class MultiPanePaneSceneStrategy<Destination : Node, NavigationState : N
         onBack: (count: Int) -> Unit
     ): Scene<Destination> {
 
-        val backstackIds = entries.map { it.id }
+        val backstackIds = remember(entries.identityHash()) {
+            entries.map { it.id }
+        }
 
         return remember(backstackIds) {
 
