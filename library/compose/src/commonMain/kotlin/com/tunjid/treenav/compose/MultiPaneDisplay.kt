@@ -284,10 +284,10 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     private val backstackIds: List<String>,
     private val destination: Destination,
     private val slots: Set<Slot>,
+    private val currentPanedNavigationState: SlotBasedPanedNavigationState<Pane, Destination>,
+    private val onSceneDisposed: () -> Unit,
     private val isPreviewingBack: () -> Boolean,
     private val panesToDestinations: @Composable (Destination) -> Map<Pane, Destination?>,
-    private val onSceneDisposed: () -> Unit,
-    private val currentPanedNavigationState: SlotBasedPanedNavigationState<Pane, Destination>,
     private val scopeContent: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : Scene<Destination> {
 
