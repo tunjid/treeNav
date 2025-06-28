@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.threepane.transforms
+package com.tunjid.treenav.compose.threepane.panedecorators
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf

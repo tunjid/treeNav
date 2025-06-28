@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.treenav.compose.threepane.transforms
+package com.tunjid.treenav.compose.threepane.panedecorators
 
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterExitState
@@ -60,7 +60,7 @@ import com.tunjid.treenav.compose.panedecorators.paneRenderDecorator
  * There should be one instance of this per [MultiPaneDisplay].
  */
 fun <NavigationState : Node, Destination : Node>
-        threePanedMovableSharedElementDecorator(
+        threePaneMovableSharedElementDecorator(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
 ): PaneDecorator<NavigationState, Destination, ThreePane> =
     paneRenderDecorator { destination, destinationPaneMapper ->
@@ -82,7 +82,7 @@ fun <NavigationState : Node, Destination : Node>
 /**
  * Requires that this [PaneScope] is a [MovableSharedElementScope] specifically configured for
  * [ThreePane] layouts and returns it. This only succeeds if the [MultiPaneDisplayState] has the
- * [threePanedMovableSharedElementDecorator] applied to it.
+ * [threePaneMovableSharedElementDecorator] applied to it.
  *
  * In the case this [PaneScope] is not the [MovableSharedElementScope] requested, an exception
  * will be thrown.
