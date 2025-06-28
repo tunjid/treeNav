@@ -33,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
@@ -106,6 +107,11 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
     content: @Composable MultiPaneDisplayScope<Pane, Destination>.() -> Unit,
 ) {
     val navigationState by state.navigationState
+
+    val backStatusState = remember {
+        mutableStateOf<BackStatus>(BackStatus.Completed.Commited)
+    }
+
     val panesToDestinations = rememberUpdatedState(
         state.destinationPanes(
             state.destinationTransform(navigationState)
@@ -117,12 +123,13 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
             val sameBackStack = currentBackStack == mutableBackStack
             if (sameBackStack) return@let
 
-            mutableBackStack.clear()
-            mutableBackStack.addAll(currentBackStack)
+            Snapshot.withMutableSnapshot {
+                mutableBackStack.clear()
+                mutableBackStack.addAll(currentBackStack)
+                backStatusState.value = BackStatus.Completed.Commited
+            }
         }
     }
-
-    val backPreviewState = remember { mutableStateOf<BackStatus>(BackStatus.Completed.Commited) }
 
     val slots = remember {
         List(
@@ -151,7 +158,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
             state = state,
             slots = slots,
             currentPanedNavigationState = panedNavigationState::value,
-            backStatus = backPreviewState::value,
+            backStatus = backStatusState::value,
             content = content,
         )
     }
@@ -195,11 +202,11 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplay(
     ) { progress ->
         try {
             progress.collect {
-                backPreviewState.value = BackStatus.Seeking
+                backStatusState.value = BackStatus.Seeking
             }
-            backPreviewState.value = BackStatus.Completed.Commited
+            backStatusState.value = BackStatus.Completed.Commited
         } catch (e: CancellationException) {
-            backPreviewState.value = BackStatus.Completed.Cancelled
+            backStatusState.value = BackStatus.Completed.Cancelled
         }
     }
 }
