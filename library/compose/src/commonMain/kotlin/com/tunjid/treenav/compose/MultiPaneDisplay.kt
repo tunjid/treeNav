@@ -294,14 +294,29 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
 
     private val panedNavigationState = mutableStateOf(currentPanedNavigationState)
 
-    override val key: Any = sceneKey
-
     @Stable
     val multiPaneDisplayScope = PaneDestinationMultiPaneDisplayScope(
         panedNavigationState = panedNavigationState,
         entries = entries,
         backStatus = backStatus,
     )
+
+    override val key: Any = sceneKey
+
+    override val content: @Composable () -> Unit = {
+
+        currentPanedNavigationState.rememberUpdatedPanedNavigationState(
+            backStackIds = sceneKey.ids,
+            panesToDestinations = panesToDestinations(destination),
+            slots = slots,
+        ).also { panedNavigationState.value = it.value }
+
+        multiPaneDisplayScope.scopeContent()
+
+        DisposableEffect(Unit) {
+            onDispose(onSceneDisposed)
+        }
+    }
 
     @Stable
     class PaneDestinationMultiPaneDisplayScope<Pane, Destination : Node>(
@@ -373,21 +388,6 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
 
         override fun destinationIn(pane: Pane): Destination? =
             panedNavigationState.destinationFor(pane)
-    }
-
-    override val content: @Composable () -> Unit = {
-
-        currentPanedNavigationState.rememberUpdatedPanedNavigationState(
-            backStackIds = sceneKey.ids,
-            panesToDestinations = panesToDestinations(destination),
-            slots = slots,
-        ).also { panedNavigationState.value = it.value }
-
-        multiPaneDisplayScope.scopeContent()
-
-        DisposableEffect(Unit) {
-            onDispose(onSceneDisposed)
-        }
     }
 }
 
