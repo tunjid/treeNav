@@ -96,7 +96,7 @@ fun <Destination : Node> PaneScope<
         """
             The current PaneScope (${this::class.qualifiedName}) is not an instance of
             a ThreePaneMovableSharedElementScope. You must configure your ThreePane MultiPaneDisplay with
-            threePanedMovableSharedElementTransform().
+            threePaneAdaptiveDecorator().
         """.trimIndent()
     }
     return this
