@@ -39,9 +39,8 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
     val paneState: PaneState<Pane, Destination>
 
     /**
-     * Whether or not this [PaneScope] is active in its current pane. It is active when this pane
-     * matches the current navigation destination or any of its co-displayed panes in a given
-     * scene.
+     * Whether or not this [PaneScope] is active in its current pane. It is active when this pane's
+     * transition matches the pane for the current navigation destination in a given scene.
      *
      * This means that during predictive back animations, the outgoing panes, i.e the panes
      * whose [AnimatedVisibilityScope.transition] have their [Transition.targetState]
