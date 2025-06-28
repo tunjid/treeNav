@@ -16,6 +16,7 @@
 
 package com.tunjid.treenav.compose.threepane
 
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FiniteAnimationSpec
@@ -102,6 +103,7 @@ private val DefaultFadeOut = fadeOut(
 
 private fun PaneScope<ThreePane, *>.canAnimate() =
     when {
+        transition.targetState == EnterExitState.PostExit -> true
         inPredictiveBack && isActive -> true
         paneState.adaptations.any { adaptation ->
             adaptation is Adaptation.Same
