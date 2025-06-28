@@ -41,11 +41,11 @@ import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScop
 import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.transforms.RenderTransform
-import com.tunjid.treenav.compose.transforms.Transform
+import com.tunjid.treenav.compose.transforms.PaneTransform
+import com.tunjid.treenav.compose.transforms.paneRenderTransform
 
 /**
- * A [Transform] that applies semantics of movable shared elements to
+ * A [PaneTransform] that applies semantics of movable shared elements to
  * [ThreePane] layouts.
  *
  * It is an opinionated implementation that always shows the movable shared element in
@@ -62,8 +62,8 @@ import com.tunjid.treenav.compose.transforms.Transform
 fun <NavigationState : Node, Destination : Node>
         threePanedMovableSharedElementTransform(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
-): Transform<ThreePane, NavigationState, Destination> =
-    RenderTransform { destination, previousTransform ->
+): PaneTransform<ThreePane, NavigationState, Destination> =
+    paneRenderTransform { destination, destinationPaneMapper ->
         val delegate = rememberPaneMovableSharedElementScope(
             movableSharedElementHostState = movableSharedElementHostState
         )
@@ -76,7 +76,7 @@ fun <NavigationState : Node, Destination : Node>
             )
         }
 
-        previousTransform(movableSharedElementScope, destination)
+        destinationPaneMapper(movableSharedElementScope, destination)
     }
 
 /**

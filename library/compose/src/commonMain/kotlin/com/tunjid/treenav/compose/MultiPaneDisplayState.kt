@@ -24,9 +24,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
+import com.tunjid.treenav.compose.transforms.PaneMappingTransform
 import com.tunjid.treenav.compose.transforms.PaneTransform
-import com.tunjid.treenav.compose.transforms.RenderTransform
-import com.tunjid.treenav.compose.transforms.Transform
+import com.tunjid.treenav.compose.transforms.PaneRenderTransform
 
 /**
  * Class for configuring a [MultiPaneDisplay] for selecting, adapting and placing navigation
@@ -115,14 +115,14 @@ class MultiPaneDisplayState<Pane, NavigationState : Node, Destination : Node> in
  * @param destinationTransform a transform of the [navigationState] to its current destination.
  * @param popTransform a transform of the [navigationState] when back is pressed.
  * @param onPopped an action to perform when the navigation state has been popped to a new state.
- * @param entryProvider provides the [Transform]s and content needed to render
+ * @param entryProvider provides the [PaneTransform]s and content needed to render
  * a [Destination] in its pane.
  * @param transforms a list of transforms applied to every [Destination] before it is
  * rendered in its pane. Order matters; they are applied from last to first.
  */
 fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
     panes: List<Pane>,
-    transforms: List<Transform<Pane, NavigationState, Destination>>,
+    transforms: List<PaneTransform<Pane, NavigationState, Destination>>,
     navigationState: State<NavigationState>,
     backStackTransform: (NavigationState) -> List<Destination>,
     destinationTransform: (NavigationState) -> Destination,
@@ -154,7 +154,7 @@ fun <Pane, NavigationState : Node, Destination : Node> MultiPaneDisplayState(
 
 private operator fun <Pane, NavigationState : Node, Destination : Node>
         MultiPaneDisplayState<Pane, NavigationState, Destination>.plus(
-    transform: Transform<Pane, NavigationState, Destination>,
+    transform: PaneTransform<Pane, NavigationState, Destination>,
 ): MultiPaneDisplayState<Pane, NavigationState, Destination> =
     MultiPaneDisplayState(
         panes = panes,
@@ -166,7 +166,7 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
         transitionSpec = transitionSpec,
         paneEntryProvider = paneEntryProvider,
         destinationPanes = when (transform) {
-            is PaneTransform -> { destination ->
+            is PaneMappingTransform -> { destination ->
                 transform.toPanesAndDestinations(
                     destination = destination,
                     previousTransform = destinationPanes,
@@ -176,7 +176,7 @@ private operator fun <Pane, NavigationState : Node, Destination : Node>
             else -> destinationPanes
         },
         destinationContent = when (transform) {
-            is RenderTransform -> { paneEntry, destination ->
+            is PaneRenderTransform -> { paneEntry, destination ->
                 with(transform) {
                     Render(
                         destination = destination,

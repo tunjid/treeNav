@@ -30,11 +30,11 @@ import com.tunjid.treenav.compose.PaneScope
  */
 fun <Pane, NavigationState : Node, Destination : Node> paneModifierTransform(
     paneModifier: PaneScope<Pane, Destination>.() -> Modifier = { Modifier },
-): Transform<Pane, NavigationState, Destination> =
-    RenderTransform { destination, previousTransform ->
+): PaneTransform<Pane, NavigationState, Destination> =
+    paneRenderTransform { destination, destinationContent ->
         Box(
             modifier = paneModifier()
         ) {
-            previousTransform(destination)
+            destinationContent(destination)
         }
     }

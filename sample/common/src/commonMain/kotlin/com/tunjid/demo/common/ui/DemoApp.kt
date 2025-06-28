@@ -87,7 +87,7 @@ import com.tunjid.treenav.compose.navigation3.ui.NavigationEventHandler
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.transforms.threePanedAdaptiveTransform
 import com.tunjid.treenav.compose.threepane.transforms.threePanedMovableSharedElementTransform
-import com.tunjid.treenav.compose.transforms.Transform
+import com.tunjid.treenav.compose.transforms.PaneTransform
 import com.tunjid.treenav.compose.transforms.paneModifierTransform
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
@@ -326,7 +326,7 @@ class AppState(
     companion object {
         @Composable
         fun AppState.rememberMultiPaneDisplayState(
-            transforms: List<Transform<ThreePane, MultiStackNav, SampleDestination>>,
+            transforms: List<PaneTransform<ThreePane, MultiStackNav, SampleDestination>>,
         ): MultiPaneDisplayState<ThreePane, MultiStackNav, SampleDestination> {
             val displayState = remember {
                 MultiPaneDisplayState(
