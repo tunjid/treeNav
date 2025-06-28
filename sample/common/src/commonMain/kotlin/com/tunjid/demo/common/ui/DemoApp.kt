@@ -322,7 +322,7 @@ class AppState(
     companion object {
         @Composable
         fun AppState.rememberMultiPaneDisplayState(
-            transforms: List<PaneDecorator<MultiStackNav, SampleDestination, ThreePane>>,
+            paneDecorators: List<PaneDecorator<MultiStackNav, SampleDestination, ThreePane>>,
         ): MultiPaneDisplayState<MultiStackNav, SampleDestination, ThreePane> {
             val displayState = remember {
                 MultiPaneDisplayState(
@@ -345,7 +345,7 @@ class AppState(
                             is SampleDestination.Avatar -> avatarPaneEntry()
                         }
                     },
-                    paneDecorators = transforms,
+                    paneDecorators = paneDecorators,
                 )
             }
             DisposableEffect(Unit) {
