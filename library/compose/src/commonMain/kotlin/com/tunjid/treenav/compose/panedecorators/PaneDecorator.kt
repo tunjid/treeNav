@@ -14,7 +14,7 @@ sealed interface PaneDecorator<in NavigationState : Node, Destination : Node, Pa
 /**
  * A [PaneDecorator] that allows for changing which [Destination] shows in which [Pane].
  */
-internal fun interface PaneMappingDecorator<Pane, Destination : Node>
+internal fun interface PaneMappingDecorator<Destination : Node, Pane>
     : PaneDecorator<Node, Destination, Pane> {
 
     /**
@@ -37,7 +37,7 @@ internal fun interface PaneMappingDecorator<Pane, Destination : Node>
  * A [PaneDecorator] that allows for the rendering semantics of a [Destination] in a given
  * [PaneScope].
  */
-internal fun interface PaneRenderDecorator<Pane, Destination : Node>
+internal fun interface PaneRenderDecorator<Destination : Node, Pane>
     : PaneDecorator<Node, Destination, Pane> {
 
     /**
