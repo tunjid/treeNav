@@ -38,10 +38,12 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
     PaneScope<Pane, Destination>, SharedTransitionScope {
 
     /**
-     * Conceptual equivalent of [SharedTransitionScope.sharedElement], with the exception
-     * of a key being passed instead of [SharedTransitionScope.SharedContentState]. This is because
-     * each [PaneState.pane] may need its own [SharedTransitionScope.SharedContentState] and
-     * will need to be managed by the implementation of this method.
+     * Creates a shared element transition where the shared element is seekable
+     * with the transition with the transition driving the [PaneScope].
+     *
+     * This is a pane specific implementation of [SharedTransitionScope.sharedElement], where
+     * implementations can specify extra logic for how the shared element behaves when
+     * rendered concurrently in multiple panes.
      *
      * @see [SharedTransitionScope.sharedElement].
      */
@@ -50,7 +52,26 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
         boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
         placeHolderSize: PlaceHolderSize = contentSize,
         renderInOverlayDuringTransition: Boolean = true,
-        visible: Boolean? = null,
+        zIndexInOverlay: Float = 0f,
+        clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
+    ): Modifier
+
+    /**
+     * Creates a shared element transition where the shared element is __NOT__ seekable
+     * with the transition. Instead, it always "sticks" to the "active" pane as specified by
+     * [PaneScope.isActive].
+     *
+     * This is a pane specific implementation of [SharedTransitionScope.sharedElement], where
+     * implementations can specify extra logic for how the shared element behaves when
+     * rendered concurrently in multiple panes.
+     *
+     * @see [SharedTransitionScope.sharedElement].
+     */
+    fun Modifier.paneStickySharedElement(
+        sharedContentState: SharedTransitionScope.SharedContentState,
+        boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
+        placeHolderSize: PlaceHolderSize = contentSize,
+        renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
         clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
     ): Modifier

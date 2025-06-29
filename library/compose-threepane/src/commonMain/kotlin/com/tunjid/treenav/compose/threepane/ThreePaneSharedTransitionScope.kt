@@ -25,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneSharedTransitionScope
@@ -69,7 +68,6 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
         boundsTransform: BoundsTransform,
         placeHolderSize: PlaceHolderSize,
         renderInOverlayDuringTransition: Boolean,
-        visible: Boolean?,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
     ): Modifier = when (paneScope.paneState.pane) {
@@ -80,6 +78,35 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
         ThreePane.Primary -> sharedElement(
             sharedContentState = sharedContentState,
             animatedVisibilityScope = paneScope,
+            boundsTransform = boundsTransform,
+            placeHolderSize = placeHolderSize,
+            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+            zIndexInOverlay = zIndexInOverlay,
+            clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+        )
+
+        // In the other panes use the element as is
+        ThreePane.Secondary,
+        ThreePane.Tertiary,
+        ThreePane.Overlay,
+            -> this
+    }
+
+    override fun Modifier.paneStickySharedElement(
+        sharedContentState: SharedTransitionScope.SharedContentState,
+        boundsTransform: BoundsTransform,
+        placeHolderSize: PlaceHolderSize,
+        renderInOverlayDuringTransition: Boolean,
+        zIndexInOverlay: Float,
+        clipInOverlayDuringTransition: OverlayClip
+    ): Modifier = when (paneScope.paneState.pane) {
+        null -> throw IllegalArgumentException(
+            "Shared elements may only be used in non null panes"
+        )
+        // Allow shared elements in the primary or transient primary content only
+        ThreePane.Primary -> sharedElementWithCallerManagedVisibility(
+            sharedContentState = sharedContentState,
+            visible = isActive,
             boundsTransform = boundsTransform,
             placeHolderSize = placeHolderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
