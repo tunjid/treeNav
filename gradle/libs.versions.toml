@@ -17,7 +17,6 @@ androidxTestRules = "1.6.1"
 dokka = "1.8.20"
 jetbrainsCompose = "1.8.2"
 jetbrainsLifecycle = "2.9.1"
-jetbrainsMaterial3Adaptive = "1.0.1"
 junit4 = "4.13.2"
 kotlin = "2.1.20"
 kotlinxCoroutines = "1.10.2"
@@ -60,9 +59,6 @@ jetbrains-compose-ui-util = { group = "org.jetbrains.compose.ui", name = "ui-uti
 jetbrains-compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "jetbrainsCompose" }
 jetbrains-compose-material-icons-core = { group = "org.jetbrains.compose.material", name = "material-icons-core", version.ref = "materialIcons" }
 jetbrains-compose-material-icons-extended = { group = "org.jetbrains.compose.material", name = "material-icons-extended", version.ref = "materialIcons" }
-jetbrains-compose-material3-adaptive-navigation-suite = { group = "org.jetbrains.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "jetbrainsCompose" }
-jetbrains-compose-material3-adaptive = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive", version.ref = "jetbrainsMaterial3Adaptive" }
-jetbrains-compose-material3-adaptive-layout = { group = "org.jetbrains.compose.material3.adaptive", name = "adaptive-layout", version.ref = "jetbrainsMaterial3Adaptive" }
 jetbrains-lifecycle-runtime = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime", version.ref = "jetbrainsLifecycle" }
 jetbrains-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "jetbrainsLifecycle" }
 jetbrains-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "jetbrainsLifecycle" }

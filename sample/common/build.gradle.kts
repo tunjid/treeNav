@@ -45,10 +45,6 @@ kotlin {
                 implementation(libs.jetbrains.lifecycle.viewmodel)
                 implementation(libs.jetbrains.lifecycle.viewmodel.compose)
 
-                implementation(libs.jetbrains.compose.material3.adaptive)
-                implementation(libs.jetbrains.compose.material3.adaptive.layout)
-                implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)
-
                 implementation(libs.jetbrains.compose.material.icons.core)
                 implementation(libs.jetbrains.compose.material.icons.extended)
 
