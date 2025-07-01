@@ -16,7 +16,6 @@
 
 package com.tunjid.treenav.compose
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
@@ -32,15 +31,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.destination
@@ -272,7 +265,7 @@ private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : N
                 panesToDestinations = state.destinationPanes,
                 onSceneDisposed = { scenes.remove(sceneKey) },
                 currentPanedNavigationState = panedNavigationState,
-                allEntries = entries.filter { it.id in activeIds },
+                eligibleSceneEntries = entries.filter { it.id in activeIds },
                 // Try to match up NavEntries to state using their id and children.
                 // Best case is O(n) where the backstack isn't shuffled.
                 previousEntries = poppedBackstack.map { poppedDestination ->
@@ -292,7 +285,7 @@ private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : N
 @Stable
 private class MultiPaneDisplayScene<Pane, Destination : Node>(
     override val previousEntries: List<NavEntry<Destination>>,
-    private val allEntries: List<NavEntry<Destination>>,
+    private val eligibleSceneEntries: List<NavEntry<Destination>>,
     private val sceneKey: MultiPaneSceneKey,
     private val destination: Destination,
     private val slots: Set<Slot>,
@@ -315,11 +308,17 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     override val key: Any = sceneKey
 
     override val entries: List<NavEntry<Destination>>
-        // Since the display may adapt, the actual entries to show are a subset of all eligible
-        // entries that can show.
-        get() = panedNavigationState.value.let { state ->
-            allEntries.filter { navEntry ->
-                state.paneFor(navEntry.destination()) != null
+        get() = when {
+            // Filtering of duplicates is already handled in NavDisplay
+            sceneKey.isPreviewingBack -> eligibleSceneEntries
+            // Since the display may adapt, the actual entries to show are a subset of all eligible
+            // entries that can show.
+            // This is so destinations animating out are shown by the SceneSetupNavEntryDecorator.
+            // Otherwise, they will be removed immediately and not animate.
+            else -> panedNavigationState.value.let { state ->
+                eligibleSceneEntries.filter { navEntry ->
+                    state.paneFor(navEntry.destination()) != null
+                }
             }
         }
 
