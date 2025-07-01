@@ -301,7 +301,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     @Stable
     val multiPaneDisplayScope = PaneDestinationMultiPaneDisplayScope(
         panedNavigationState = panedNavigationState,
-        entries = entries,
+        currentEntries = ::entries,
         backStatus = backStatus,
     )
 
@@ -339,7 +339,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     @Stable
     class PaneDestinationMultiPaneDisplayScope<Pane, Destination : Node>(
         panedNavigationState: State<SlotBasedPanedNavigationState<Pane, Destination>>,
-        private val entries: List<NavEntry<Destination>>,
+        private val currentEntries: () -> List<NavEntry<Destination>>,
         private val backStatus: () -> BackStatus,
     ) : MultiPaneDisplayScope<Pane, Destination> {
 
@@ -351,7 +351,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
         @Composable
         override fun Destination(pane: Pane) {
             val id = panedNavigationState.destinationFor(pane)?.id
-            val entry = entries.firstOrNull { it.id == id } ?: return
+            val entry = currentEntries().firstOrNull { it.id == id } ?: return
 
             val paneState = remember(panedNavigationState.identityHash()) {
                 panedNavigationState.slotFor(pane)?.let(panedNavigationState::paneStateFor)
