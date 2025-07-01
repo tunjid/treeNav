@@ -56,6 +56,7 @@ import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableStickySharedElementOf
 import com.tunjid.treenav.compose.threepane.ThreePane
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -225,7 +226,7 @@ fun Message(
                         }
                     },
             ) {
-                paneScaffoldState.updatedMovableSharedElementOf(
+                paneScaffoldState.updatedMovableStickySharedElementOf(
                     sharedContentState = paneScaffoldState.rememberSharedContentState(
                         key = "$roomName-${item.sender.name}-profile"
                     ),

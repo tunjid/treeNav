@@ -29,13 +29,14 @@ import com.tunjid.demo.common.ui.PaneScaffoldState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.dragToPop
-import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableStickySharedElementOf
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AvatarScreen(
     paneScaffoldState: PaneScaffoldState,
     state: State,
+    @Suppress("UNUSED_PARAMETER")
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -46,7 +47,7 @@ fun AvatarScreen(
             .fillMaxSize()
     ) {
         val profileName = state.profileName ?: state.profile?.name ?: ""
-        paneScaffoldState.updatedMovableSharedElementOf(
+        paneScaffoldState.updatedMovableStickySharedElementOf(
             sharedContentState = paneScaffoldState.rememberSharedContentState(
                 key = "${state.roomName}-$profileName-profile"
             ),

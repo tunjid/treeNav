@@ -43,7 +43,7 @@ import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
+import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableStickySharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
@@ -127,7 +127,7 @@ private fun ProfilePhoto(
 ) {
     val profileName = state.profileName ?: state.profile?.name
     if (profileName != null) {
-        paneScaffoldState.updatedMovableSharedElementOf(
+        paneScaffoldState.updatedMovableStickySharedElementOf(
             sharedContentState = paneScaffoldState.rememberSharedContentState(
                 key = "${state.roomName}-$profileName-profile"
             ),
