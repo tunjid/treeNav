@@ -43,6 +43,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
+import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.destination
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.id
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.paneEnterTransition
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.paneExitTransition
@@ -55,6 +56,7 @@ import com.tunjid.treenav.compose.navigation3.ui.NavigationEventHandler
 import com.tunjid.treenav.compose.navigation3.ui.Scene
 import com.tunjid.treenav.compose.navigation3.ui.SceneStrategy
 import com.tunjid.treenav.compose.navigation3.ui.rememberSceneSetupNavEntryDecorator
+import com.tunjid.treenav.compose.panedecorators.PaneDecorator
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -63,42 +65,44 @@ import kotlinx.coroutines.CancellationException
 @Stable
 interface MultiPaneDisplayScope<Pane, Destination : Node> {
 
+    /**
+     * All possible panes in the [MultiPaneDisplayScope].
+     */
     val panes: Collection<Pane>
 
+    /**
+     * Renders the given [Destination] in the provided [Pane].
+     */
     @Composable
     fun Destination(
         pane: Pane,
     )
 
+    /**
+     * Provides the set of adaptations in the provided [Pane].
+     */
     fun adaptationsIn(
         pane: Pane,
     ): Set<Adaptation>
 
+    /**
+     * Returns the [Destination] in the provided [Pane].
+     */
     fun destinationIn(
         pane: Pane,
     ): Destination?
 }
 
 /**
- * A Display that provides the following for each
- * navigation [Destination] that shows up in its panes:
+ * A Display that adapts the [MultiPaneDisplayState.navigationState] to
+ * the [MultiPaneDisplayState.panes] available depending on the [PaneDecorator]s the
+ * [MultiPaneDisplayState] has been configured with.
  *
- * - A single [SaveableStateHolder] for each navigation [Destination] that shows up in its panes.
- * [SaveableStateHolder.SaveableStateProvider] is keyed on the [Destination]s [Node.id].
- *
- * - A [ViewModelStoreOwner] for each [Destination] via [LocalViewModelStoreOwner].
- * Once present in the navigation tree, a [Destination] will always use the same
- * [ViewModelStoreOwner], regardless of where in the tree it is, until its is removed from the tree.
- * [Destination]s are unique based on their [Node.id].
- *
- * - A [LifecycleOwner] for each [Destination] via [LocalLifecycleOwner]. This [LifecycleOwner]
- * follows the [Lifecycle] of its immediate parent, unless it is animating out or placed in the
- * backstack. This is defined by [PaneScope.isActive], which is a function of the backing
- * [AnimatedContent] for each [Pane] displayed and if the current [Destination]
- * matches [MultiPaneDisplayScope.destinationIn] in the visible [Pane].
  *
  * @param state the driving [MultiPaneDisplayState] that applies adaptive semantics and
- * transforms for each navigation destination shown in the [MultiPaneDisplay].
+ * decorators for each navigation destination shown in the [MultiPaneDisplay].
+ * @param modifier optional [Modifier] for the display.
+ * @param content the content that should be displayed the receiving [MultiPaneDisplayScope].
  */
 @Composable
 fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
@@ -268,7 +272,7 @@ private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : N
                 panesToDestinations = state.destinationPanes,
                 onSceneDisposed = { scenes.remove(sceneKey) },
                 currentPanedNavigationState = panedNavigationState,
-                entries = entries.filter { it.id in activeIds },
+                allEntries = entries.filter { it.id in activeIds },
                 // Try to match up NavEntries to state using their id and children.
                 // Best case is O(n) where the backstack isn't shuffled.
                 previousEntries = poppedBackstack.map { poppedDestination ->
@@ -287,8 +291,8 @@ private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : N
 
 @Stable
 private class MultiPaneDisplayScene<Pane, Destination : Node>(
-    override val entries: List<NavEntry<Destination>>,
     override val previousEntries: List<NavEntry<Destination>>,
+    private val allEntries: List<NavEntry<Destination>>,
     private val sceneKey: MultiPaneSceneKey,
     private val destination: Destination,
     private val slots: Set<Slot>,
@@ -310,8 +314,16 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
 
     override val key: Any = sceneKey
 
-    override val content: @Composable () -> Unit = {
+    override val entries: List<NavEntry<Destination>>
+        // Since the display may adapt, the actual entries to show are a subset of all eligible
+        // entries that can show.
+        get() = panedNavigationState.value.let { state ->
+            allEntries.filter { navEntry ->
+                state.paneFor(navEntry.destination()) != null
+            }
+        }
 
+    override val content: @Composable () -> Unit = {
         currentPanedNavigationState.rememberUpdatedPanedNavigationState(
             backStackIds = sceneKey.ids,
             panesToDestinations = panesToDestinations(destination),
@@ -408,6 +420,9 @@ private fun <NavigationState : Node> MultiPaneDisplayState<NavigationState, *, *
     return state
 }
 
+/**
+ * Keep track of changes to the paned navigation state.
+ */
 @Composable
 private fun <Destination : Node, Pane> SlotBasedPanedNavigationState<Pane, Destination>.rememberUpdatedPanedNavigationState(
     backStackIds: List<String>,
@@ -429,6 +444,12 @@ private fun <Destination : Node, Pane> SlotBasedPanedNavigationState<Pane, Desti
         }
     }
 
+/**
+ * Scene key with a flag if it was created for a predictive back gesture.
+ * NOTE: its equals and hashcode are completely independent of this predictive back flag.
+ * This is to let [NavDisplay] find the appropriate scene to go back to with this key. The
+ * flag is only used internally.
+ */
 internal class MultiPaneSceneKey(
     val ids: List<String>,
     val isPreviewingBack: Boolean,
@@ -447,6 +468,10 @@ internal class MultiPaneSceneKey(
 
     override fun hashCode(): Int {
         return idsHash
+    }
+
+    override fun toString(): String {
+        return "MultiPaneSceneKey(ids = $ids, isPreviewingBack = $isPreviewingBack)"
     }
 }
 
