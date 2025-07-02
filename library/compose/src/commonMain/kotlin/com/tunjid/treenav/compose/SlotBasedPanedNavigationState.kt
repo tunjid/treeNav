@@ -49,10 +49,6 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
      * A set of node ids that may be returned to.
      */
     val backStackIds: List<String>,
-    /**
-     * A set of node ids that are animating out.
-     */
-    val destinationIdsAnimatingOut: Set<String>,
 ) {
     companion object {
         internal fun <Pane, Destination : Node> initial(
@@ -65,7 +61,6 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
                 keySelector = Slot::toString
             ),
             backStackIds = emptyList(),
-            destinationIdsAnimatingOut = emptySet(),
             previousPanesToDestinations = emptyMap(),
         )
     }
@@ -90,10 +85,10 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
         panesToDestinations[pane]?.id
     ]
 
-    private fun paneFor(
-        node: Node,
-    ): Pane? = panesToDestinations.firstNotNullOfOrNull { (pane, paneRoute) ->
-        if (paneRoute?.id == node.id) pane else null
+    internal fun paneFor(
+        destination: Node,
+    ): Pane? = panesToDestinations.firstNotNullOfOrNull { (pane, paneDestination) ->
+        if (paneDestination?.id == destination.id) pane else null
     }
 
     private fun destinationFor(
@@ -211,7 +206,6 @@ internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Dest
         destinationIdsToAdaptiveSlots = nodeIdsToAdaptiveSlots,
         backStackIds = backStackIds,
         panesToDestinations = panesToDestinations,
-        destinationIdsAnimatingOut = previous.destinationIdsAnimatingOut,
     )
 
 }
