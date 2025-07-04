@@ -37,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.treenav.compose.Adaptation
-import com.tunjid.treenav.current
 
 @Composable
 fun PaneScaffoldState.PaneNavigationBar(
@@ -104,7 +103,7 @@ internal fun AppState.PaneNavigationBar(
                         contentDescription = item.title,
                     )
                 },
-                selected = item == currentNavigation.current,
+                selected = isOnCurrentStack(item),
                 onClick = { setTab(item) }
             )
         }
@@ -120,7 +119,7 @@ internal fun AppState.PaneNavigationRail(
     ) {
         SampleDestination.NavTabs.entries.forEach { item ->
             NavigationRailItem(
-                selected = item == currentNavigation.current,
+                selected = isOnCurrentStack(item),
                 icon = {
                     Icon(
                         imageVector = item.icon,
@@ -132,6 +131,9 @@ internal fun AppState.PaneNavigationRail(
         }
     }
 }
+
+private fun AppState.isOnCurrentStack(item: SampleDestination.NavTabs) =
+    item == currentNavigation.stacks[currentNavigation.currentIndex].children.first()
 
 private data object NavigationBarSharedElementKey
 private data object NavigationRailSharedElementKey
