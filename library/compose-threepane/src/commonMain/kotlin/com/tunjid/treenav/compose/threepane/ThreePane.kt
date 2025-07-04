@@ -16,6 +16,7 @@
 
 package com.tunjid.treenav.compose.threepane
 
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -65,40 +66,51 @@ enum class ThreePane {
  * Provides a default [PaneEntry] for selectively running animations in
  * [ThreePane] [MultiPaneDisplay].
  *
- * @param enterTransition the [EnterTransition] used when this [PaneEntry] adapts in the display.
- * @param exitTransition the [ExitTransition] used when this [PaneEntry] adapts in the display.
+ * @param contentTransform the [ContentTransform] used when this [PaneEntry] adapts in the display.
  * @param paneMapping the [Destination]s that are shown alongside the [Destination] provided and
  * which of the [ThreePane]s they should show up in.
  * @param render the Composable for rendering the current destination.
  */
 fun <Destination : Node> threePaneEntry(
-    enterTransition: PaneScope<ThreePane, Destination>.() -> EnterTransition = {
-        if (canAnimate()) DefaultFadeIn else EnterTransition.None
-    },
-    exitTransition: PaneScope<ThreePane, Destination>.() -> ExitTransition = {
-        if (canAnimate()) DefaultFadeOut else ExitTransition.None
+    contentTransform: PaneScope<ThreePane, Destination>.() -> ContentTransform = {
+        DefaultContentTransform.adaptTo(this)
     },
     paneMapping: @Composable (Destination) -> Map<ThreePane, Destination?> = { destination ->
         mapOf(ThreePane.Primary to destination)
     },
     render: @Composable (PaneScope<ThreePane, Destination>.(Destination) -> Unit),
 ) = PaneEntry(
-    enterTransition = enterTransition,
-    exitTransition = exitTransition,
+    contentTransform = contentTransform,
     paneMapping = paneMapping,
     content = render
 )
+
+/**
+ * Returns the [this@adaptTo] provided if the [Adaptation]s in the [PaneScope] will not cause
+ * the animations to look awkward when running. Otherwise, it returns a [ContentTransform] that
+ * contains no animations.
+ */
+fun <Destination : Node> ContentTransform.adaptTo(
+    paneScope: PaneScope<ThreePane, Destination>
+): ContentTransform = if (paneScope.canAnimate()) this else NoContentTransform
+
 
 private val RouteTransitionAnimationSpec: FiniteAnimationSpec<Float> = tween(
     durationMillis = 700
 )
 
-private val DefaultFadeIn = fadeIn(
-    animationSpec = RouteTransitionAnimationSpec,
+private val DefaultContentTransform = ContentTransform(
+    targetContentEnter = fadeIn(
+        animationSpec = RouteTransitionAnimationSpec,
+    ),
+    initialContentExit = fadeOut(
+        animationSpec = RouteTransitionAnimationSpec,
+    )
 )
 
-private val DefaultFadeOut = fadeOut(
-    animationSpec = RouteTransitionAnimationSpec,
+private val NoContentTransform = ContentTransform(
+    targetContentEnter = EnterTransition.None,
+    initialContentExit = ExitTransition.None,
 )
 
 private fun PaneScope<ThreePane, *>.canAnimate() =

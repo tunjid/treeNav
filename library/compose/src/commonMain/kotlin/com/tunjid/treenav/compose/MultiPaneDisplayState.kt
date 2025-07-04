@@ -67,8 +67,7 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
                 ID_KEY to destination.id,
                 DESTINATION_KEY to destination,
                 CHILDREN_KEY to destination.children,
-                PANE_ENTER_TRANSITION_KEY to paneEntry.enterTransition,
-                PANE_EXIT_TRANSITION_KEY to paneEntry.exitTransition,
+                PANE_CONTENT_TRANSFORM_KEY to paneEntry.contentTransform,
             ),
             content = { innerDestination ->
                 destinationContent(localPaneScope(), paneEntry, innerDestination)
@@ -80,10 +79,8 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
         private const val ID_KEY = "com.tunjid.treenav.compose.id"
         private const val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
         private const val CHILDREN_KEY = "com.tunjid.treenav.compose.children"
-        private const val PANE_ENTER_TRANSITION_KEY =
+        private const val PANE_CONTENT_TRANSFORM_KEY =
             "com.tunjid.treenav.compose.pane.enter.transition"
-        private const val PANE_EXIT_TRANSITION_KEY =
-            "com.tunjid.treenav.compose.pane.exit.transition"
 
         internal val NavEntry<*>.id get() = metadata[ID_KEY] as String
         internal val NavEntry<*>.children get() = metadata[CHILDREN_KEY]
@@ -93,12 +90,8 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
             metadata[DESTINATION_KEY] as T
 
         @Suppress("UNCHECKED_CAST")
-        internal inline val NavEntry<*>.paneEnterTransition
-            get() = metadata[PANE_ENTER_TRANSITION_KEY] as PaneScope<*, *>.() -> EnterTransition
-
-        @Suppress("UNCHECKED_CAST")
-        internal inline val NavEntry<*>.paneExitTransition
-            get() = metadata[PANE_EXIT_TRANSITION_KEY] as PaneScope<*, *>.() -> ExitTransition
+        internal inline val NavEntry<*>.paneContentTransform
+            get() = metadata[PANE_CONTENT_TRANSFORM_KEY] as PaneScope<*, *>.() -> ContentTransform
     }
 }
 

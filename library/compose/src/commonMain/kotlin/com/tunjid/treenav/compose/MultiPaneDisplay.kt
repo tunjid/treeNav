@@ -38,8 +38,7 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.destination
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.id
-import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.paneEnterTransition
-import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.paneExitTransition
+import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.paneContentTransform
 import com.tunjid.treenav.compose.navigation3.decorators.rememberViewModelStoreNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
@@ -379,14 +378,14 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                         panedNavigationState.identityHash(),
                         animatedContentScope.transition.targetState,
                     ) {
-                        val enterTransition = entry.paneEnterTransition(this)
-                        val exitTransition = entry.paneExitTransition(this)
-                        val shouldAnimate = enterTransition != EnterTransition.None
-                                || exitTransition != ExitTransition.None
+                        val contentTransform = entry.paneContentTransform(this)
+                        val shouldAnimate =
+                            contentTransform.targetContentEnter != EnterTransition.None
+                                    || contentTransform.initialContentExit != ExitTransition.None
 
                         if (shouldAnimate) Modifier.animateEnterExit(
-                            enterTransition,
-                            exitTransition
+                            enter = contentTransform.targetContentEnter,
+                            exit = contentTransform.initialContentExit,
                         )
                         else Modifier
                     }

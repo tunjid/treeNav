@@ -1,7 +1,7 @@
 package com.tunjid.treenav.compose
 
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import com.tunjid.treenav.Node
@@ -13,13 +13,9 @@ import com.tunjid.treenav.Node
 @Stable
 class PaneEntry<Pane, Destination : Node>(
     /**
-     * The [EnterTransition] used when this [PaneEntry] adapts to its current [Pane].
+     * The [ContentTransform] used when this [PaneEntry] adapts to its current [Pane].
      */
-    internal val enterTransition: PaneScope<Pane, Destination>.() -> EnterTransition,
-    /**
-     * The [ExitTransition] used when this [PaneEntry] adapts to its current [Pane].
-     */
-    internal val exitTransition: PaneScope<Pane, Destination>.() -> ExitTransition,
+    internal val contentTransform: PaneScope<Pane, Destination>.() -> ContentTransform,
     /**
      * Provides the [Destination]s that are shown alongside the [Destination] provided and
      * what [Pane]s they should show up in.
