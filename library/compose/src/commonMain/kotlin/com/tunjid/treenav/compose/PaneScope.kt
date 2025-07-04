@@ -52,6 +52,11 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
      * Whether or not a predictive back gesture is in progress
      */
     val inPredictiveBack: Boolean
+
+    /**
+     * Metadata associated with this [PaneScope] at the creation of its [PaneEntry].
+     */
+    val metadata: Map<String, Any>
 }
 
 /**
@@ -60,6 +65,7 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
 @Stable
 internal class AnimatedPaneScope<Pane, Destination : Node>(
     val backStatus: () -> BackStatus,
+    override val metadata: Map<String, Any>,
     paneState: PaneState<Pane, Destination>,
     animatedContentScope: AnimatedContentScope,
 ) : PaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {

@@ -361,6 +361,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
             val scope = remember {
                 AnimatedPaneScope(
                     backStatus = backStatus,
+                    metadata = entry.metadata,
                     paneState = paneState,
                     animatedContentScope = animatedContentScope,
                 )
