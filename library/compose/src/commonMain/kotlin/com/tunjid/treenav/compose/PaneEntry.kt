@@ -13,6 +13,10 @@ import com.tunjid.treenav.Node
 @Stable
 class PaneEntry<Pane, Destination : Node>(
     /**
+     *  Miscellaneous metadata for the display
+     */
+    val metadata: Map<String, Any> = emptyMap(),
+    /**
      * The [ContentTransform] used when this [PaneEntry] adapts to its current [Pane].
      */
     internal val contentTransform: PaneScope<Pane, Destination>.() -> ContentTransform,

@@ -66,12 +66,14 @@ enum class ThreePane {
  * Provides a default [PaneEntry] for selectively running animations in
  * [ThreePane] [MultiPaneDisplay].
  *
+ * @param metadata iscellaneous metadata for the display
  * @param contentTransform the [ContentTransform] used when this [PaneEntry] adapts in the display.
  * @param paneMapping the [Destination]s that are shown alongside the [Destination] provided and
  * which of the [ThreePane]s they should show up in.
  * @param render the Composable for rendering the current destination.
  */
 fun <Destination : Node> threePaneEntry(
+    metadata: Map<String, Any> = emptyMap(),
     contentTransform: PaneScope<ThreePane, Destination>.() -> ContentTransform = {
         DefaultContentTransform.adaptTo(this)
     },
@@ -80,6 +82,7 @@ fun <Destination : Node> threePaneEntry(
     },
     render: @Composable (PaneScope<ThreePane, Destination>.(Destination) -> Unit),
 ) = PaneEntry(
+    metadata = metadata,
     contentTransform = contentTransform,
     paneMapping = paneMapping,
     content = render

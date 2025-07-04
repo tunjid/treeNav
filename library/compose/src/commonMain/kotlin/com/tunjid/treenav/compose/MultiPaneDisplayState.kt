@@ -63,7 +63,7 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
         NavEntry(
             key = destination,
             contentKey = destination.id,
-            metadata = mapOf(
+            metadata = paneEntry.metadata + mapOf(
                 ID_KEY to destination.id,
                 DESTINATION_KEY to destination,
                 CHILDREN_KEY to destination.children,
