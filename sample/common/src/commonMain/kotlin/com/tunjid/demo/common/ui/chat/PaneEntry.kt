@@ -26,12 +26,14 @@ import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.data.SampleDestination.NavTabs
 import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
+import com.tunjid.demo.common.ui.predictiveBackContentTransform
 import com.tunjid.demo.common.ui.rememberPaneScaffoldState
 import com.tunjid.demo.common.ui.viewModelCoroutineScope
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
-fun chatPaneEntry() = threePaneEntry<SampleDestination>(
+fun chatPaneEntry() = threePaneEntry(
+    contentTransform = predictiveBackContentTransform,
     paneMapping = { destination ->
         mapOf(
             ThreePane.Primary to destination,
