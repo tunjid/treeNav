@@ -113,38 +113,40 @@ fun App(
                 )
             }
 
+            val displayState = appState.rememberMultiPaneDisplayState(
+                remember {
+                    listOf(
+                        threePaneAdaptiveDecorator(
+                            secondaryPaneBreakPoint = mutableStateOf(
+                                SecondaryPaneMinWidthBreakpointDp
+                            ),
+                            tertiaryPaneBreakPoint = mutableStateOf(
+                                TertiaryPaneMinWidthBreakpointDp
+                            ),
+                            windowWidthState = derivedStateOf {
+                                appState.splitLayoutState.size
+                            }
+                        ),
+                        threePaneMovableSharedElementDecorator(
+                            movableSharedElementHostState = movableSharedElementHostState
+                        ),
+                        paneModifierDecorator {
+                            if (paneState.pane == ThreePane.Primary
+                                && inPredictiveBack
+                                && isActive
+                                && !appState.dragToPopState.isDraggingToPop
+                            ) Modifier
+                                .fillMaxSize()
+                                .backPreview(appState.backPreviewState)
+                            else Modifier
+                                .fillMaxSize()
+                        },
+                    )
+                },
+            )
+
             MultiPaneDisplay(
-                state = appState.rememberMultiPaneDisplayState(
-                    remember {
-                        listOf(
-                            threePaneAdaptiveDecorator(
-                                secondaryPaneBreakPoint = mutableStateOf(
-                                    SecondaryPaneMinWidthBreakpointDp
-                                ),
-                                tertiaryPaneBreakPoint = mutableStateOf(
-                                    TertiaryPaneMinWidthBreakpointDp
-                                ),
-                                windowWidthState = derivedStateOf {
-                                    appState.splitLayoutState.size
-                                }
-                            ),
-                            threePaneMovableSharedElementDecorator(
-                                movableSharedElementHostState = movableSharedElementHostState
-                            ),
-                            paneModifierDecorator {
-                                if (paneState.pane == ThreePane.Primary
-                                    && inPredictiveBack
-                                    && isActive
-                                    && !appState.dragToPopState.isDraggingToPop
-                                ) Modifier
-                                    .fillMaxSize()
-                                    .backPreview(appState.backPreviewState)
-                                else Modifier
-                                    .fillMaxSize()
-                            },
-                        )
-                    },
-                ),
+                state = displayState,
                 modifier = Modifier
                     .fillMaxSize(),
             ) {
@@ -170,7 +172,7 @@ fun App(
             }
 
             NavigationEventHandler(
-                enabled = { true },
+                enabled = displayState::canPop,
                 passThrough = true,
             ) { progress ->
                 try {

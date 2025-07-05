@@ -194,7 +194,7 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
     )
 
     NavigationEventHandler(
-        enabled = AlwaysTrue,
+        enabled = state::canPop,
         passThrough = true,
     ) { progress ->
         try {
@@ -494,8 +494,6 @@ internal sealed class BackStatus {
         data object Cancelled : Completed()
     }
 }
-
-private val AlwaysTrue = { true }
 
 private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     throw IllegalArgumentException(

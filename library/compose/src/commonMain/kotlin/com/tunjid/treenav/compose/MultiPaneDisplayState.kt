@@ -75,6 +75,11 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
         )
     }
 
+    /**
+     * Returns true if the navigation state can be popped.
+     */
+    val canPop get() = navigationState.value != backStackTransform(navigationState.value)
+
     companion object {
         private const val ID_KEY = "com.tunjid.treenav.compose.id"
         private const val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
@@ -104,9 +109,11 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
  * possible configurations. The panes should consist of enum class instances, or a sealed class
  * hierarchy of kotlin objects.
  * @param navigationState the navigation state to be adapted into various panes.
- * @param backStackTransform a transform to read the back stack of the navigation state.
+ * @param backStackTransform a transform to read the back stack of the navigation state. The [List]
+ * returned is expected to be immutable.
  * @param destinationTransform a transform of the [navigationState] to its current destination.
- * @param popTransform a transform of the [navigationState] when back is pressed.
+ * @param popTransform a transform of the [navigationState] when back is pressed. It is expected
+ * that the value returned is a difference instance than that in [NavigationState].
  * @param onPopped an action to perform when the navigation state has been popped to a new state.
  * @param entryProvider provides the [PaneDecorator]s and content needed to render
  * a [Destination] in its pane.
