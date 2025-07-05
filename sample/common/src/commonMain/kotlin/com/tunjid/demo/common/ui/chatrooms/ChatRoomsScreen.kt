@@ -38,7 +38,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -194,15 +193,11 @@ fun ChatRoomParticipants(
 ) = with(paneScaffoldState) {
     FlowRow(
         modifier = Modifier
-            .width(64.dp)
-            .rotate(
-                if (participants.size == 2) 45f
-                else 0f
-            ),
+            .width(64.dp),
         horizontalArrangement = Arrangement.Center,
         verticalArrangement = Arrangement.Center,
     ) {
-        participants.forEach { profileName ->
+        participants.forEachIndexed { index, profileName ->
             updatedMovableSharedElementOf(
                 sharedContentState = paneScaffoldState.rememberSharedContentState(
                     key = "$roomName-${profileName}"
@@ -216,11 +211,15 @@ fun ChatRoomParticipants(
                 modifier = Modifier
                     .padding(horizontal = 2.dp)
                     .size(28.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .rotate(
-                        if (participants.size == 2) -45f
-                        else 0f
-                    ),
+                    .offset(
+                        x = if (participants.size == 2 && index == 1) -(4).dp else 0.dp,
+                        y = if (participants.size == 2) when (index) {
+                            0 -> (-7).dp
+                            else -> 7.dp
+                        }
+                        else 0.dp,
+                    )
+                    .clip(RoundedCornerShape(28.dp)),
                 sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
                     ProfilePhoto(args, innerModifier)
                 }
