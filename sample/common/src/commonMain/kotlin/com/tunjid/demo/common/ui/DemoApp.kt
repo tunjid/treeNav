@@ -66,7 +66,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.navigationevent.NavigationEvent
 import com.tunjid.composables.backpreview.BackPreviewState
-import com.tunjid.composables.backpreview.backPreview
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
 import com.tunjid.demo.common.ui.AppState.Companion.rememberMultiPaneDisplayState
@@ -84,11 +83,10 @@ import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.multiPaneDisplayBackstack
 import com.tunjid.treenav.compose.navigation3.ui.NavigationEventHandler
+import com.tunjid.treenav.compose.panedecorators.PaneDecorator
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.panedecorators.threePaneAdaptiveDecorator
 import com.tunjid.treenav.compose.threepane.panedecorators.threePaneMovableSharedElementDecorator
-import com.tunjid.treenav.compose.panedecorators.PaneDecorator
-import com.tunjid.treenav.compose.panedecorators.paneModifierDecorator
 import com.tunjid.treenav.pop
 import com.tunjid.treenav.popToRoot
 import com.tunjid.treenav.requireCurrent
@@ -130,17 +128,6 @@ fun App(
                         threePaneMovableSharedElementDecorator(
                             movableSharedElementHostState = movableSharedElementHostState
                         ),
-                        paneModifierDecorator {
-                            if (paneState.pane == ThreePane.Primary
-                                && inPredictiveBack
-                                && isActive
-                                && !appState.dragToPopState.isDraggingToPop
-                            ) Modifier
-                                .fillMaxSize()
-                                .backPreview(appState.backPreviewState)
-                            else Modifier
-                                .fillMaxSize()
-                        },
                     )
                 },
             )

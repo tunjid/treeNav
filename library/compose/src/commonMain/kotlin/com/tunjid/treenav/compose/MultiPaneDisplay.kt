@@ -18,9 +18,6 @@ package com.tunjid.treenav.compose
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
@@ -37,7 +34,6 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.destination
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.id
-import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.paneContentTransform
 import com.tunjid.treenav.compose.navigation3.decorators.rememberViewModelStoreNavEntryDecorator
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
 import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
@@ -363,32 +359,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
             CompositionLocalProvider(
                 LocalPaneScope provides scope
             ) {
-                with(scope) {
-                    val paneModifier = remember(
-                        isActive,
-                        inPredictiveBack,
-                        panedNavigationState.identityHash(),
-                        animatedContentScope.transition.targetState,
-                    ) {
-                        val contentTransform = entry.paneContentTransform(this)
-                        val shouldAnimate =
-                            contentTransform.targetContentEnter != EnterTransition.None
-                                    || contentTransform.initialContentExit != ExitTransition.None
-
-                        if (shouldAnimate) Modifier.animateEnterExit(
-                            enter = contentTransform.targetContentEnter,
-                            exit = contentTransform.initialContentExit,
-                        )
-                        else Modifier
-                    }
-
-                    Box(
-                        modifier = paneModifier,
-                        content = {
-                            entry.Content()
-                        }
-                    )
-                }
+                entry.Content()
             }
         }
 

@@ -24,6 +24,7 @@ import com.tunjid.demo.common.ui.PaneNavigationBar
 import com.tunjid.demo.common.ui.PaneNavigationRail
 import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
+import com.tunjid.demo.common.ui.predictiveBackContentTransform
 import com.tunjid.demo.common.ui.profile.ProfileScreen
 import com.tunjid.demo.common.ui.profile.ProfileViewModel
 import com.tunjid.demo.common.ui.rememberPaneScaffoldState
@@ -32,6 +33,7 @@ import com.tunjid.treenav.compose.threepane.threePaneEntry
 
 fun mePaneEntry(
 ) = threePaneEntry(
+    contentTransform = predictiveBackContentTransform,
     render = {
         val viewModel = viewModel<ProfileViewModel> {
             ProfileViewModel(
@@ -42,8 +44,8 @@ fun mePaneEntry(
         }
         rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
-                .predictiveBackBackgroundModifier(this)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .predictiveBackBackgroundModifier(this),
             content = {
                 ProfileScreen(
                     paneScaffoldState = this,

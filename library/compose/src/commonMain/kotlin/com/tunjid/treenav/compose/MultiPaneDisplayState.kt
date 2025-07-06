@@ -19,13 +19,16 @@ package com.tunjid.treenav.compose
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
-import com.tunjid.treenav.compose.panedecorators.PaneMappingDecorator
 import com.tunjid.treenav.compose.panedecorators.PaneDecorator
+import com.tunjid.treenav.compose.panedecorators.PaneMappingDecorator
 import com.tunjid.treenav.compose.panedecorators.PaneRenderDecorator
 
 /**
@@ -67,7 +70,6 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
                 ID_KEY to destination.id,
                 DESTINATION_KEY to destination,
                 CHILDREN_KEY to destination.children,
-                PANE_CONTENT_TRANSFORM_KEY to paneEntry.contentTransform,
             ),
             content = { innerDestination ->
                 destinationContent(localPaneScope(), paneEntry, innerDestination)
@@ -84,8 +86,6 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
         private const val ID_KEY = "com.tunjid.treenav.compose.id"
         private const val DESTINATION_KEY = "com.tunjid.treenav.compose.destination"
         private const val CHILDREN_KEY = "com.tunjid.treenav.compose.children"
-        private const val PANE_CONTENT_TRANSFORM_KEY =
-            "com.tunjid.treenav.compose.pane.enter.transition"
 
         internal val NavEntry<*>.id get() = metadata[ID_KEY] as String
         internal val NavEntry<*>.children get() = metadata[CHILDREN_KEY]
@@ -93,10 +93,6 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
         @Suppress("UNCHECKED_CAST")
         internal inline fun <T : Node> NavEntry<*>.destination() =
             metadata[DESTINATION_KEY] as T
-
-        @Suppress("UNCHECKED_CAST")
-        internal inline val NavEntry<*>.paneContentTransform
-            get() = metadata[PANE_CONTENT_TRANSFORM_KEY] as PaneScope<*, *>.() -> ContentTransform
     }
 }
 
@@ -146,7 +142,28 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplayState(
             entryProvider(destination).paneMapping(destination)
         },
         destinationContent = transform@{ paneEntry, destination ->
-            paneEntry.content(this@transform, destination)
+            Box(
+                modifier = remember(
+                    isActive,
+                    inPredictiveBack,
+                    paneState.pane,
+                    transition.targetState,
+                ) {
+                    val contentTransform = paneEntry.contentTransform(this)
+                    val shouldAnimate =
+                        contentTransform.targetContentEnter != EnterTransition.None
+                                || contentTransform.initialContentExit != ExitTransition.None
+
+                    if (shouldAnimate) Modifier.animateEnterExit(
+                        enter = contentTransform.targetContentEnter,
+                        exit = contentTransform.initialContentExit,
+                    )
+                    else Modifier
+                },
+                content = {
+                    paneEntry.content(this@transform, destination)
+                }
+            )
         }
     ),
     operation = MultiPaneDisplayState<NavigationState, Destination, Pane>::plus
