@@ -19,6 +19,7 @@ package com.tunjid.demo.common.ui
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.tunjid.composables.backpreview.backPreview
@@ -36,7 +37,8 @@ fun Modifier.predictiveBackBackgroundModifier(
         && inPredictiveBack
         && isActive
         && !appState.dragToPopState.isDraggingToPop
-    ) backPreview(appState.backPreviewState)
+    ) fillMaxSize()
+        .backPreview(appState.backPreviewState)
     else this@predictiveBackBackgroundModifier
 }
 
