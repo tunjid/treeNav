@@ -50,8 +50,8 @@ fun avatarPaneEntry() = threePaneEntry<SampleDestination>(
         }
         rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
-                .predictiveBackBackgroundModifier(this)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .predictiveBackBackgroundModifier(this),
             containerColor = Color.Transparent,
             content = {
                 AvatarScreen(

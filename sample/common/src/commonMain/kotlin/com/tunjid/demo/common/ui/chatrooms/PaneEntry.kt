@@ -42,8 +42,8 @@ fun chatRoomPaneEntry(
         }
         rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
-                .predictiveBackBackgroundModifier(this)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .predictiveBackBackgroundModifier(this),
             content = {
                 ChatRoomsScreen(
                     paneScaffoldState = this,

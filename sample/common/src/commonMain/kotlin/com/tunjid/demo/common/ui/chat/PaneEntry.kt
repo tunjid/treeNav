@@ -50,8 +50,8 @@ fun chatPaneEntry() = threePaneEntry(
         }
         rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
-                .predictiveBackBackgroundModifier(this)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .predictiveBackBackgroundModifier(this),
             content = {
                 ChatScreen(
                     paneScaffoldState = this,

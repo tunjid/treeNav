@@ -44,8 +44,8 @@ fun mePaneEntry(
         }
         rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
-                .predictiveBackBackgroundModifier(this)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .predictiveBackBackgroundModifier(this),
             content = {
                 ProfileScreen(
                     paneScaffoldState = this,
