@@ -354,14 +354,8 @@ internal class SplitPaneDisplayScope(
 
     private var displayScope by mutableStateOf(displayScope)
 
-    private val paneRenderOrder = listOf(
-        ThreePane.Tertiary,
-        ThreePane.Secondary,
-        ThreePane.Primary,
-    )
-
     internal val filteredPaneOrder by derivedStateOf {
-        paneRenderOrder.filter { displayScope.destinationIn(it) != null }
+        PaneRenderOrder.filter { displayScope.destinationIn(it) != null }
     }
 
     internal val splitLayoutState = SplitLayoutState(
@@ -392,6 +386,12 @@ internal val LocalSplitPaneDisplayScope = staticCompositionLocalOf<SplitPaneDisp
 internal val LocalAppState = staticCompositionLocalOf<AppState> {
     TODO()
 }
+
+private val PaneRenderOrder = listOf(
+    ThreePane.Tertiary,
+    ThreePane.Secondary,
+    ThreePane.Primary,
+)
 
 private val PaneSeparatorActiveWidthDp = 56.dp
 private val PaneSeparatorTouchTargetWidthDp = 16.dp
