@@ -40,14 +40,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.roundToIntSize
 import androidx.compose.ui.zIndex
 import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.treenav.compose.PaneScope
@@ -59,24 +55,23 @@ import kotlinx.coroutines.flow.filterNotNull
 
 @Stable
 class PaneScaffoldState internal constructor(
-    private val appState: AppState,
+    private val splitPaneDisplayScope: SplitPaneDisplayScope,
     threePaneMovableElementSharedTransitionScope: ThreePaneMovableElementSharedTransitionScope<SampleDestination>,
 ) : ThreePaneMovableElementSharedTransitionScope<SampleDestination> by threePaneMovableElementSharedTransitionScope {
 
-    internal val canShowNavigationBar get() = !appState.isMediumScreenWidthOrWider
+    internal val canShowNavigationBar get() = !splitPaneDisplayScope.isMediumScreenWidthOrWider
 
     internal val canShowNavigationRail
-        get() = appState.filteredPaneOrder.firstOrNull() == paneState.pane
-                && appState.isMediumScreenWidthOrWider
+        get() = splitPaneDisplayScope.filteredPaneOrder.firstOrNull() == paneState.pane
+                && splitPaneDisplayScope.isMediumScreenWidthOrWider
 
-    val canUseMovableNavigationBar
+    internal val canUseMovableNavigationBar
         get() = canShowNavigationBar && isActive && paneState.pane == ThreePane.Primary
 
-    val canUseMovableNavigationRail
+    internal val canUseMovableNavigationRail
         get() = canShowNavigationRail && isActive
 
-    internal var scaffoldTargetSize by mutableStateOf(IntSize.Zero)
-    internal var scaffoldCurrentSize by mutableStateOf(IntSize.Zero)
+    internal val hasSiblings get() = splitPaneDisplayScope.filteredPaneOrder.size > 1
 
     internal val defaultContainerColor: Color
         @Composable get() {
@@ -94,12 +89,12 @@ class PaneScaffoldState internal constructor(
 
 @Composable
 fun PaneScope<ThreePane, SampleDestination>.rememberPaneScaffoldState(): PaneScaffoldState {
-    val appState = LocalAppState.current
+    val splitPaneDisplayScope = LocalSplitPaneDisplayScope.current
     val paneMovableElementSharedTransitionScope =
         rememberThreePaneMovableElementSharedTransitionScope()
-    return remember(appState) {
+    return remember(splitPaneDisplayScope, paneMovableElementSharedTransitionScope) {
         PaneScaffoldState(
-            appState = appState,
+            splitPaneDisplayScope = splitPaneDisplayScope,
             threePaneMovableElementSharedTransitionScope = paneMovableElementSharedTransitionScope,
         )
     }
@@ -144,11 +139,8 @@ fun PaneScaffoldState.PaneScaffold(
                         }
                     )
                     .padding(
-                        horizontal = if (appState.filteredPaneOrder.size > 1) 8.dp else 0.dp
-                    )
-                    .onSizeChanged {
-                        scaffoldCurrentSize = it
-                    },
+                        horizontal = if (hasSiblings) 8.dp else 0.dp
+                    ),
                 containerColor = containerColor,
                 topBar = {
                     topBar()
@@ -216,10 +208,7 @@ private inline fun PaneNavigationRailScaffold(
 private fun scaffoldBoundsTransform(
     paneScaffoldState: PaneScaffoldState,
     canAnimatePane: () -> Boolean,
-): BoundsTransform = BoundsTransform { _, targetBounds ->
-    paneScaffoldState.scaffoldTargetSize =
-        targetBounds.size.roundToIntSize()
-
+): BoundsTransform = BoundsTransform { _, _ ->
     when (paneScaffoldState.paneState.pane) {
         ThreePane.Primary,
         ThreePane.Secondary,

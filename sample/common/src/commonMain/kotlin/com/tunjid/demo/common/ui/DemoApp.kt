@@ -46,6 +46,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
@@ -53,6 +54,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
@@ -60,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -110,7 +113,11 @@ fun App(
                     sharedTransitionScope = this
                 )
             }
-
+            val windowWidth = rememberUpdatedState(
+                with(density) {
+                    LocalWindowInfo.current.containerSize.width.toDp()
+                }
+            )
             val displayState = appState.rememberMultiPaneDisplayState(
                 remember {
                     listOf(
@@ -121,9 +128,7 @@ fun App(
                             tertiaryPaneBreakPoint = mutableStateOf(
                                 TertiaryPaneMinWidthBreakpointDp
                             ),
-                            windowWidthState = derivedStateOf {
-                                appState.splitLayoutState.size
-                            }
+                            windowWidthState = windowWidth
                         ),
                         threePaneMovableSharedElementDecorator(
                             movableSharedElementHostState = movableSharedElementHostState
@@ -137,42 +142,55 @@ fun App(
                 modifier = Modifier
                     .fillMaxSize(),
             ) {
-                appState.displayScope = this
-                appState.splitLayoutState.visibleCount = appState.filteredPaneOrder.size
-                SplitLayout(
-                    state = appState.splitLayoutState,
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    itemSeparators = { paneIndex, offset ->
-                        PaneSeparator(
-                            splitLayoutState = appState.splitLayoutState,
-                            interactionSource = appState.paneInteractionSourceAt(paneIndex),
-                            index = paneIndex,
-                            density = density,
-                            xOffset = offset,
-                        )
-                    },
-                    itemContent = { index ->
-                        Destination(appState.filteredPaneOrder[index])
-                    }
-                )
-            }
+                val splitPaneDisplayScope = remember {
+                    SplitPaneDisplayScope(
+                        displayScope = this,
+                        windowWidth = windowWidth,
+                    )
+                }.also {
+                    it.update(
+                        displayScope = this,
+                    )
+                }
 
-            NavigationEventHandler(
-                enabled = displayState::canPop,
-                passThrough = true,
-            ) { progress ->
-                try {
-                    progress.collect { event ->
-                        appState.backPreviewState.progress = event.progress
-                        appState.backPreviewState.atStart =
-                            event.swipeEdge == NavigationEvent.EDGE_LEFT
-                        appState.backPreviewState.pointerOffset =
-                            Offset(event.touchX, event.touchY).round()
+                CompositionLocalProvider(
+                    LocalSplitPaneDisplayScope provides splitPaneDisplayScope
+                ) {
+                    SplitLayout(
+                        state = splitPaneDisplayScope.splitLayoutState,
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        itemSeparators = { paneIndex, offset ->
+                            PaneSeparator(
+                                splitLayoutState = splitPaneDisplayScope.splitLayoutState,
+                                interactionSource = appState.paneInteractionSourceAt(paneIndex),
+                                index = paneIndex,
+                                density = density,
+                                xOffset = offset,
+                            )
+                        },
+                        itemContent = { index ->
+                            Destination(splitPaneDisplayScope.filteredPaneOrder[index])
+                        }
+                    )
+                }
+
+                NavigationEventHandler(
+                    enabled = displayState::canPop,
+                    passThrough = true,
+                ) { progress ->
+                    try {
+                        progress.collect { event ->
+                            appState.backPreviewState.progress = event.progress
+                            appState.backPreviewState.atStart =
+                                event.swipeEdge == NavigationEvent.EDGE_LEFT
+                            appState.backPreviewState.pointerOffset =
+                                Offset(event.touchX, event.touchY).round()
+                        }
+                        appState.backPreviewState.progress = 0f
+                    } finally {
+                        appState.backPreviewState.progress = 0f
                     }
-                    appState.backPreviewState.progress = 0f
-                } finally {
-                    appState.backPreviewState.progress = 0f
                 }
             }
         }
@@ -251,30 +269,12 @@ class AppState(
     )
 
     private val paneInteractionSourceList = mutableStateListOf<MutableInteractionSource>()
-    private val paneRenderOrder = listOf(
-        ThreePane.Tertiary,
-        ThreePane.Secondary,
-        ThreePane.Primary,
-    )
+
 
     val currentNavigation by navigationState
     val backPreviewState = BackPreviewState()
-    val splitLayoutState = SplitLayoutState(
-        orientation = Orientation.Horizontal,
-        maxCount = paneRenderOrder.size,
-        minSize = 10.dp,
-        keyAtIndex = { index ->
-            val indexDiff = paneRenderOrder.size - visibleCount
-            paneRenderOrder[index + indexDiff]
-        }
-    )
+
     internal val dragToPopState = DragToPopState()
-
-    internal val isMediumScreenWidthOrWider get() = splitLayoutState.size >= SecondaryPaneMinWidthBreakpointDp
-
-    internal var displayScope by mutableStateOf<MultiPaneDisplayScope<ThreePane, SampleDestination>?>(
-        null
-    )
 
     internal val movableNavigationBar =
         movableContentOf<Modifier> { modifier ->
@@ -285,10 +285,6 @@ class AppState(
         movableContentOf<Modifier> { modifier ->
             PaneNavigationRail(modifier)
         }
-
-    val filteredPaneOrder: List<ThreePane> by derivedStateOf {
-        paneRenderOrder.filter { displayScope?.destinationIn(it) != null }
-    }
 
     fun setTab(destination: SampleDestination.NavTabs) {
         navigationRepository.navigate {
@@ -348,6 +344,49 @@ class AppState(
             return displayState
         }
     }
+}
+
+@Stable
+internal class SplitPaneDisplayScope(
+    displayScope: MultiPaneDisplayScope<ThreePane, SampleDestination>,
+    private val windowWidth: State<Dp>,
+) {
+
+    private var displayScope by mutableStateOf(displayScope)
+
+    private val paneRenderOrder = listOf(
+        ThreePane.Tertiary,
+        ThreePane.Secondary,
+        ThreePane.Primary,
+    )
+
+    internal val filteredPaneOrder by derivedStateOf {
+        paneRenderOrder.filter { displayScope.destinationIn(it) != null }
+    }
+
+    internal val splitLayoutState = SplitLayoutState(
+        orientation = Orientation.Horizontal,
+        maxCount = filteredPaneOrder.size,
+        initialVisibleCount = filteredPaneOrder.size,
+        minSize = 10.dp,
+        keyAtIndex = { index ->
+            filteredPaneOrder[index]
+        }
+    )
+
+    internal val isMediumScreenWidthOrWider
+        get() = windowWidth.value >= SecondaryPaneMinWidthBreakpointDp
+
+    fun update(
+        displayScope: MultiPaneDisplayScope<ThreePane, SampleDestination>
+    ) {
+        this.displayScope = displayScope
+        splitLayoutState.visibleCount = filteredPaneOrder.size
+    }
+}
+
+internal val LocalSplitPaneDisplayScope = staticCompositionLocalOf<SplitPaneDisplayScope> {
+    TODO()
 }
 
 internal val LocalAppState = staticCompositionLocalOf<AppState> {
