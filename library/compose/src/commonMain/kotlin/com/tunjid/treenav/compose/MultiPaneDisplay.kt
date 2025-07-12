@@ -53,9 +53,9 @@ import kotlinx.coroutines.CancellationException
 interface MultiPaneDisplayScope<Pane, Destination : Node> {
 
     /**
-     * All possible panes in the [MultiPaneDisplayScope].
+     * Provides the pane navigation state for the [MultiPaneDisplay].
      */
-    val panes: Collection<Pane>
+    val paneNavigationState: PaneNavigationState<Pane, Destination>
 
     /**
      * Renders the given [Destination] in the provided [Pane].
@@ -64,20 +64,6 @@ interface MultiPaneDisplayScope<Pane, Destination : Node> {
     fun Destination(
         pane: Pane,
     )
-
-    /**
-     * Provides the set of adaptations in the provided [Pane].
-     */
-    fun adaptationsIn(
-        pane: Pane,
-    ): Set<Adaptation>
-
-    /**
-     * Returns the [Destination] in the provided [Pane].
-     */
-    fun destinationIn(
-        pane: Pane,
-    ): Destination?
 }
 
 /**
@@ -130,7 +116,7 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
     }
 
     val initialPanedNavigationState = remember {
-        SlotBasedPanedNavigationState.initial<Pane, Destination>(slots = slots)
+        SlotBasedPaneNavigationState.initial<Pane, Destination>(slots = slots)
             .adaptTo(
                 slots = slots,
                 panesToDestinations = panesToDestinations.value,
@@ -209,7 +195,7 @@ private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : N
     private val state: MultiPaneDisplayState<NavigationState, Destination, Pane>,
     private val slots: Set<Slot>,
     private val backStatus: () -> BackStatus,
-    private val currentPanedNavigationState: () -> SlotBasedPanedNavigationState<Pane, Destination>,
+    private val currentPanedNavigationState: () -> SlotBasedPaneNavigationState<Pane, Destination>,
     private val content: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : SceneStrategy<Destination> {
 
@@ -280,7 +266,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     private val sceneKey: MultiPaneSceneKey,
     private val destination: Destination,
     private val slots: Set<Slot>,
-    private val currentPanedNavigationState: SlotBasedPanedNavigationState<Pane, Destination>,
+    private val currentPanedNavigationState: SlotBasedPaneNavigationState<Pane, Destination>,
     backStatus: () -> BackStatus,
     private val panesToDestinations: @Composable (Destination) -> Map<Pane, Destination?>,
     private val scopeContent: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
@@ -324,23 +310,20 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
 
     @Stable
     class PaneDestinationMultiPaneDisplayScope<Pane, Destination : Node>(
-        panedNavigationState: State<SlotBasedPanedNavigationState<Pane, Destination>>,
+        panedNavigationState: State<SlotBasedPaneNavigationState<Pane, Destination>>,
         private val currentEntries: () -> List<NavEntry<Destination>>,
         private val backStatus: () -> BackStatus,
     ) : MultiPaneDisplayScope<Pane, Destination> {
 
-        private val panedNavigationState by panedNavigationState
-
-        override val panes: Collection<Pane>
-            get() = panedNavigationState.panesToDestinations.keys
+        override val paneNavigationState by panedNavigationState
 
         @Composable
         override fun Destination(pane: Pane) {
-            val id = panedNavigationState.destinationFor(pane)?.id
+            val id = paneNavigationState.destinationIn(pane)?.id
             val entry = currentEntries().firstOrNull { it.id == id } ?: return
 
-            val paneState = remember(panedNavigationState.identityHash()) {
-                panedNavigationState.slotFor(pane)?.let(panedNavigationState::paneStateFor)
+            val paneState = remember(paneNavigationState.identityHash()) {
+                paneNavigationState.slotFor(pane)?.let(paneNavigationState::paneStateFor)
             } ?: return
 
             val animatedContentScope = LocalNavAnimatedContentScope.current
@@ -350,6 +333,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                     backStatus = backStatus,
                     paneState = paneState,
                     animatedContentScope = animatedContentScope,
+                    navigationState = { paneNavigationState },
                 )
             }.also {
                 it.paneState = paneState
@@ -361,35 +345,21 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                 entry.Content()
             }
         }
-
-        override fun adaptationsIn(pane: Pane): Set<Adaptation> =
-            panedNavigationState.adaptationsIn(pane)
-
-        override fun destinationIn(pane: Pane): Destination? =
-            panedNavigationState.destinationFor(pane)
     }
 }
 
 @Stable
 private class NonRenderingMultiPaneDisplayScope<Pane, Destination : Node>(
-    panedNavigationState: State<SlotBasedPanedNavigationState<Pane, Destination>>,
+    panedNavigationState: State<SlotBasedPaneNavigationState<Pane, Destination>>,
 ) : MultiPaneDisplayScope<Pane, Destination> {
 
-    private val panedNavigationState by panedNavigationState
-
-    override val panes: Collection<Pane>
-        get() = panedNavigationState.panesToDestinations.keys
+    override val paneNavigationState by panedNavigationState
 
     @Composable
     override fun Destination(pane: Pane) = throw IllegalStateException(
         "This MultiPaneDisplayScope cannot render panes"
     )
 
-    override fun adaptationsIn(pane: Pane): Set<Adaptation> =
-        panedNavigationState.adaptationsIn(pane)
-
-    override fun destinationIn(pane: Pane): Destination? =
-        panedNavigationState.destinationFor(pane)
 }
 
 private fun <NavigationState : Node> MultiPaneDisplayState<NavigationState, *, *>.findNavigationStateMatching(
@@ -406,11 +376,11 @@ private fun <NavigationState : Node> MultiPaneDisplayState<NavigationState, *, *
  * Keep track of changes to the paned navigation state.
  */
 @Composable
-private fun <Destination : Node, Pane> SlotBasedPanedNavigationState<Pane, Destination>.rememberUpdatedPanedNavigationState(
+private fun <Destination : Node, Pane> SlotBasedPaneNavigationState<Pane, Destination>.rememberUpdatedPanedNavigationState(
     backStackIds: List<String>,
     panesToDestinations: Map<Pane, Destination?>,
     slots: Set<Slot>
-): State<SlotBasedPanedNavigationState<Pane, Destination>> =
+): State<SlotBasedPaneNavigationState<Pane, Destination>> =
     remember {
         mutableStateOf(this)
     }.also {

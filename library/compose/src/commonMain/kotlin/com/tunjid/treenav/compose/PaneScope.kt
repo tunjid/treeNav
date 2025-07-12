@@ -34,6 +34,11 @@ import kotlin.jvm.JvmInline
 interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
 
     /**
+     * Provides the pane navigation state that created this [PaneScope].
+     */
+    val paneNavigationState: PaneNavigationState<Pane, Destination>
+
+    /**
      * Provides information about the adaptive context that created this [PaneScope].
      */
     val paneState: PaneState<Pane, Destination>
@@ -60,12 +65,16 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
 @Stable
 internal class AnimatedPaneScope<Pane, Destination : Node>(
     val backStatus: () -> BackStatus,
+    val navigationState: () -> PaneNavigationState<Pane, Destination>,
     paneState: PaneState<Pane, Destination>,
     animatedContentScope: AnimatedContentScope,
 ) : PaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
 
     private val isEntering
         get() = transition.targetState == EnterExitState.Visible
+
+    override val paneNavigationState: PaneNavigationState<Pane, Destination>
+        get() = navigationState()
 
     override var paneState by mutableStateOf(paneState)
 

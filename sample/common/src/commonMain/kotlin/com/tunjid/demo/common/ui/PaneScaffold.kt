@@ -55,15 +55,15 @@ import kotlinx.coroutines.flow.filterNotNull
 
 @Stable
 class PaneScaffoldState internal constructor(
-    private val splitPaneDisplayScope: SplitPaneDisplayScope,
+    private val splitPaneState: SplitPaneState,
     threePaneMovableElementSharedTransitionScope: ThreePaneMovableElementSharedTransitionScope<SampleDestination>,
 ) : ThreePaneMovableElementSharedTransitionScope<SampleDestination> by threePaneMovableElementSharedTransitionScope {
 
-    internal val canShowNavigationBar get() = !splitPaneDisplayScope.isMediumScreenWidthOrWider
+    internal val canShowNavigationBar get() = !splitPaneState.isMediumScreenWidthOrWider
 
     internal val canShowNavigationRail
-        get() = splitPaneDisplayScope.filteredPaneOrder.firstOrNull() == paneState.pane
-                && splitPaneDisplayScope.isMediumScreenWidthOrWider
+        get() = splitPaneState.filteredPaneOrder.firstOrNull() == paneState.pane
+                && splitPaneState.isMediumScreenWidthOrWider
 
     internal val canUseMovableNavigationBar
         get() = canShowNavigationBar && isActive && paneState.pane == ThreePane.Primary
@@ -71,7 +71,7 @@ class PaneScaffoldState internal constructor(
     internal val canUseMovableNavigationRail
         get() = canShowNavigationRail && isActive
 
-    internal val hasSiblings get() = splitPaneDisplayScope.filteredPaneOrder.size > 1
+    internal val hasSiblings get() = splitPaneState.filteredPaneOrder.size > 1
 
     internal val defaultContainerColor: Color
         @Composable get() {
@@ -89,12 +89,12 @@ class PaneScaffoldState internal constructor(
 
 @Composable
 fun PaneScope<ThreePane, SampleDestination>.rememberPaneScaffoldState(): PaneScaffoldState {
-    val splitPaneDisplayScope = LocalSplitPaneDisplayScope.current
+    val splitPaneDisplayScope = LocalSplitPaneState.current
     val paneMovableElementSharedTransitionScope =
         rememberThreePaneMovableElementSharedTransitionScope()
     return remember(splitPaneDisplayScope, paneMovableElementSharedTransitionScope) {
         PaneScaffoldState(
-            splitPaneDisplayScope = splitPaneDisplayScope,
+            splitPaneState = splitPaneDisplayScope,
             threePaneMovableElementSharedTransitionScope = paneMovableElementSharedTransitionScope,
         )
     }

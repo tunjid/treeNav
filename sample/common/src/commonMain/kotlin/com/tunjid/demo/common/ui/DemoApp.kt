@@ -81,8 +81,8 @@ import com.tunjid.demo.common.ui.me.mePaneEntry
 import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
 import com.tunjid.treenav.compose.MultiPaneDisplay
-import com.tunjid.treenav.compose.MultiPaneDisplayScope
 import com.tunjid.treenav.compose.MultiPaneDisplayState
+import com.tunjid.treenav.compose.PaneNavigationState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.multiPaneDisplayBackstack
 import com.tunjid.treenav.compose.navigation3.ui.NavigationEventHandler
@@ -142,27 +142,27 @@ fun App(
                 modifier = Modifier
                     .fillMaxSize(),
             ) {
-                val splitPaneDisplayScope = remember {
-                    SplitPaneDisplayScope(
-                        displayScope = this,
+                val splitPaneState = remember {
+                    SplitPaneState(
+                        paneNavigationState = paneNavigationState,
                         windowWidth = windowWidth,
                     )
                 }.also {
                     it.update(
-                        displayScope = this,
+                        paneNavigationState = paneNavigationState,
                     )
                 }
 
                 CompositionLocalProvider(
-                    LocalSplitPaneDisplayScope provides splitPaneDisplayScope
+                    LocalSplitPaneState provides splitPaneState
                 ) {
                     SplitLayout(
-                        state = splitPaneDisplayScope.splitLayoutState,
+                        state = splitPaneState.splitLayoutState,
                         modifier = Modifier
                             .fillMaxSize(),
                         itemSeparators = { paneIndex, offset ->
                             PaneSeparator(
-                                splitLayoutState = splitPaneDisplayScope.splitLayoutState,
+                                splitLayoutState = splitPaneState.splitLayoutState,
                                 interactionSource = appState.paneInteractionSourceAt(paneIndex),
                                 index = paneIndex,
                                 density = density,
@@ -170,7 +170,7 @@ fun App(
                             )
                         },
                         itemContent = { index ->
-                            Destination(splitPaneDisplayScope.filteredPaneOrder[index])
+                            Destination(splitPaneState.filteredPaneOrder[index])
                         }
                     )
                 }
@@ -347,15 +347,15 @@ class AppState(
 }
 
 @Stable
-internal class SplitPaneDisplayScope(
-    displayScope: MultiPaneDisplayScope<ThreePane, SampleDestination>,
+internal class SplitPaneState(
+    paneNavigationState: PaneNavigationState<ThreePane, SampleDestination>,
     private val windowWidth: State<Dp>,
 ) {
 
-    private var displayScope by mutableStateOf(displayScope)
+    private var paneNavigationState by mutableStateOf(paneNavigationState)
 
     internal val filteredPaneOrder by derivedStateOf {
-        PaneRenderOrder.filter { displayScope.destinationIn(it) != null }
+        PaneRenderOrder.filter { paneNavigationState.destinationIn(it) != null }
     }
 
     internal val splitLayoutState = SplitLayoutState(
@@ -372,19 +372,19 @@ internal class SplitPaneDisplayScope(
         get() = windowWidth.value >= SecondaryPaneMinWidthBreakpointDp
 
     fun update(
-        displayScope: MultiPaneDisplayScope<ThreePane, SampleDestination>
+        paneNavigationState: PaneNavigationState<ThreePane, SampleDestination>
     ) {
-        this.displayScope = displayScope
+        this.paneNavigationState = paneNavigationState
         splitLayoutState.visibleCount = filteredPaneOrder.size
     }
 }
 
-internal val LocalSplitPaneDisplayScope = staticCompositionLocalOf<SplitPaneDisplayScope> {
-    TODO()
+internal val LocalSplitPaneState = staticCompositionLocalOf<SplitPaneState> {
+    throw IllegalStateException("LocalSplitPaneState not set")
 }
 
 internal val LocalAppState = staticCompositionLocalOf<AppState> {
-    TODO()
+    throw IllegalStateException("LocalAppState not set")
 }
 
 private val PaneRenderOrder = listOf(
