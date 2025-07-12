@@ -36,6 +36,7 @@ import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
+import com.tunjid.treenav.compose.PaneNavigationState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
@@ -112,6 +113,9 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
 
     override val sharedTransitionScope: SharedTransitionScope
         get() = delegate.sharedTransitionScope
+
+    override val paneNavigationState: PaneNavigationState<ThreePane, Destination>
+        get() = delegate.paneScope.paneNavigationState
 
     override val transition: Transition<EnterExitState>
         get() = delegate.paneScope.transition

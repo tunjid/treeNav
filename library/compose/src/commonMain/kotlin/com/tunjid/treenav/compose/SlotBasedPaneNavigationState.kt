@@ -20,11 +20,33 @@ import androidx.compose.runtime.Immutable
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Adaptation.Change.contains
 
+interface PaneNavigationState<Pane, Destination : Node> {
+
+    /**
+     * The id of the [Destination] that produced this [PaneNavigationState].
+     */
+    val destinationId: String
+
+    /**
+     * Provides the set of adaptations in the provided [Pane].
+     */
+    fun adaptationsIn(
+        pane: Pane,
+    ): Set<Adaptation>
+
+    /**
+     * Returns the [Destination] in the provided [Pane].
+     */
+    fun destinationIn(
+        pane: Pane,
+    ): Destination?
+}
+
 /**
  * Data structure for managing navigation as it adapts to various layout configurations
  */
 @Immutable
-internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
+internal data class SlotBasedPaneNavigationState<Pane, Destination : Node>(
     /**
      * True if this navigation change is as a result of popping the backStack.
      */
@@ -49,11 +71,11 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
      * A set of node ids that may be returned to.
      */
     val backStackIds: List<String>,
-) {
+) : PaneNavigationState<Pane, Destination> {
     companion object {
         internal fun <Pane, Destination : Node> initial(
             slots: Collection<Slot>,
-        ): SlotBasedPanedNavigationState<Pane, Destination> = SlotBasedPanedNavigationState(
+        ): SlotBasedPaneNavigationState<Pane, Destination> = SlotBasedPaneNavigationState(
             isPop = false,
             swapAdaptations = emptySet(),
             panesToDestinations = emptyMap(),
@@ -65,10 +87,13 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
         )
     }
 
+    override val destinationId: String
+        get() = backStackIds.last()
+
     internal fun paneStateFor(
         slot: Slot,
     ): PaneState<Pane, Destination> {
-        val node = destinationFor(slot)
+        val node = destinationIn(slot)
         val pane = node?.let(::paneFor)
         return SlotPaneState(
             slot = slot,
@@ -91,7 +116,7 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
         if (paneDestination?.id == destination.id) pane else null
     }
 
-    private fun destinationFor(
+    private fun destinationIn(
         slot: Slot,
     ): Destination? = destinationIdsToAdaptiveSlots.firstNotNullOfOrNull { (nodeId, nodeSlot) ->
         if (nodeSlot == slot) panesToDestinations.firstNotNullOfOrNull { (_, node) ->
@@ -101,17 +126,18 @@ internal data class SlotBasedPanedNavigationState<Pane, Destination : Node>(
         else null
     }
 
-    fun destinationFor(
+    override fun destinationIn(
         pane: Pane,
     ): Destination? = panesToDestinations[pane]
 
-    fun adaptationsIn(
+    override fun adaptationsIn(
         pane: Pane,
     ): Set<Adaptation> {
         val adaptations = when {
             swapAdaptations.any { pane in it } -> swapAdaptations.filterTo(mutableSetOf()) {
                 pane in it
             }
+
             else -> when (panesToDestinations[pane]?.id) {
                 previousPanesToDestinations[pane]?.id -> SameAdaptations
                 else -> ChangeAdaptations
@@ -128,11 +154,11 @@ private val ChangeAdaptations = setOf(Adaptation.Change)
  * A method that adapts changes in navigation to different panes while allowing for them
  * to be animated easily.
  */
-internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Destination>.adaptTo(
+internal fun <Pane, Destination : Node> SlotBasedPaneNavigationState<Pane, Destination>.adaptTo(
     slots: Set<Slot>,
     panesToDestinations: Map<Pane, Destination?>,
     backStackIds: List<String>,
-): SlotBasedPanedNavigationState<Pane, Destination> {
+): SlotBasedPaneNavigationState<Pane, Destination> {
     val previous = this
 
     val previouslyUsedSlots = previous.destinationIdsToAdaptiveSlots
@@ -185,8 +211,8 @@ internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Dest
         nodeIdsToAdaptiveSlots[nodeId] = availableSlots.first().also(availableSlots::remove)
     }
 
-    return SlotBasedPanedNavigationState(
-       isPop = backStackIds.let popCheck@{ ids ->
+    return SlotBasedPaneNavigationState(
+        isPop = backStackIds.let popCheck@{ ids ->
             if (ids.size >= previous.backStackIds.size) return@popCheck false
             if (ids.isEmpty()) return@popCheck true
 
@@ -201,7 +227,7 @@ internal fun <Pane, Destination : Node> SlotBasedPanedNavigationState<Pane, Dest
             else -> swapAdaptations
         },
         previousPanesToDestinations = previous.panesToDestinations.keys.associateWith(
-            valueSelector = previous::destinationFor
+            valueSelector = previous::destinationIn
         ),
         destinationIdsToAdaptiveSlots = nodeIdsToAdaptiveSlots,
         backStackIds = backStackIds,

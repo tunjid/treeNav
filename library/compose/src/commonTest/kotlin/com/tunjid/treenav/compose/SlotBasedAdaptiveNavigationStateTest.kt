@@ -43,7 +43,7 @@ enum class TestPane {
 
 class SlotBasedAdaptiveNavigationStateTest {
 
-    private lateinit var subject: SlotBasedPanedNavigationState<TestPane, TestNode>
+    private lateinit var subject: SlotBasedPaneNavigationState<TestPane, TestNode>
     private lateinit var panes: List<TestPane>
     private lateinit var slots: Set<Slot>
 
@@ -52,7 +52,7 @@ class SlotBasedAdaptiveNavigationStateTest {
     fun setup() {
         panes = TestPane.entries.toList()
         slots = List(size = panes.size, init = ::Slot).toSet()
-        subject = SlotBasedPanedNavigationState.initial(
+        subject = SlotBasedPaneNavigationState.initial(
             slots = slots
         )
     }
@@ -67,7 +67,7 @@ class SlotBasedAdaptiveNavigationStateTest {
         )
             .apply {
                 assertEquals(
-                    expected = destinationFor(TestPane.One),
+                    expected = destinationIn(TestPane.One),
                     actual = TestNode(name = "A"),
                 )
                 assertEquals(
@@ -95,7 +95,7 @@ class SlotBasedAdaptiveNavigationStateTest {
             .apply {
                 // Primary
                 assertEquals(
-                    expected = destinationFor(TestPane.One),
+                    expected = destinationIn(TestPane.One),
                     actual = TestNode(name = "A")
                 )
                 assertEquals(
@@ -109,7 +109,7 @@ class SlotBasedAdaptiveNavigationStateTest {
 
                 // Secondary
                 assertEquals(
-                    expected = destinationFor(TestPane.Two),
+                    expected = destinationIn(TestPane.Two),
                     actual = TestNode(name = "B")
                 )
                 assertEquals(
@@ -123,7 +123,7 @@ class SlotBasedAdaptiveNavigationStateTest {
 
                 // Tertiary
                 assertEquals(
-                    expected = destinationFor(TestPane.Three),
+                    expected = destinationIn(TestPane.Three),
                     actual = TestNode(name = "C")
                 )
                 assertEquals(
@@ -155,7 +155,7 @@ class SlotBasedAdaptiveNavigationStateTest {
             .apply {
                 assertEquals(
                     expected = TestNode(name = "A"),
-                    actual = destinationFor(TestPane.One),
+                    actual = destinationIn(TestPane.One),
                 )
                 assertEquals(
                     expected = setOf(Adaptation.Same),
@@ -191,7 +191,7 @@ class SlotBasedAdaptiveNavigationStateTest {
                 // Primary
                 assertEquals(
                     expected = TestNode(name = "A"),
-                    actual = destinationFor(TestPane.One),
+                    actual = destinationIn(TestPane.One),
                 )
                 assertEquals(
                     expected = setOf(Adaptation.Same),
@@ -205,7 +205,7 @@ class SlotBasedAdaptiveNavigationStateTest {
                 // Secondary
                 assertEquals(
                     expected = TestNode(name = "B"),
-                    actual = destinationFor(TestPane.Two),
+                    actual = destinationIn(TestPane.Two),
                 )
                 assertEquals(
                     expected = setOf(Adaptation.Same),
@@ -219,7 +219,7 @@ class SlotBasedAdaptiveNavigationStateTest {
                 // Tertiary
                 assertEquals(
                     expected = TestNode(name = "C"),
-                    actual = destinationFor(TestPane.Three),
+                    actual = destinationIn(TestPane.Three),
                 )
                 assertEquals(
                     expected = setOf(Adaptation.Same),
@@ -255,7 +255,7 @@ class SlotBasedAdaptiveNavigationStateTest {
                 // Primary
                 assertEquals(
                     expected = TestNode(name = "B"),
-                    actual = destinationFor(TestPane.One),
+                    actual = destinationIn(TestPane.One),
                 )
                 assertEquals(
                     expected = setOf(
@@ -272,7 +272,7 @@ class SlotBasedAdaptiveNavigationStateTest {
                 // Secondary
                 assertEquals(
                     expected = TestNode(name = "C"),
-                    actual = destinationFor(TestPane.Two),
+                    actual = destinationIn(TestPane.Two),
                 )
                 assertEquals(
                     expected = setOf(
@@ -289,7 +289,7 @@ class SlotBasedAdaptiveNavigationStateTest {
                 // Tertiary
                 assertEquals(
                     expected = TestNode(name = "A"),
-                    actual = destinationFor(TestPane.Three),
+                    actual = destinationIn(TestPane.Three),
                 )
                 assertEquals(
                     expected = setOf(
@@ -325,11 +325,11 @@ class SlotBasedAdaptiveNavigationStateTest {
                 // Destination assertions
                 assertEquals(
                     expected = TestNode(name = "B"),
-                    actual = destinationFor(TestPane.One),
+                    actual = destinationIn(TestPane.One),
                 )
                 assertEquals(
                     expected = TestNode(name = "A"),
-                    actual = destinationFor(TestPane.Two),
+                    actual = destinationIn(TestPane.Two),
                 )
 
                 // Adaptation assertions
@@ -395,11 +395,11 @@ class SlotBasedAdaptiveNavigationStateTest {
                 // Destination assertions
                 assertEquals(
                     expected = TestNode(name = "A"),
-                    actual = destinationFor(TestPane.One),
+                    actual = destinationIn(TestPane.One),
                 )
                 assertEquals(
                     expected = TestNode(name = "B"),
-                    actual = destinationFor(TestPane.Three),
+                    actual = destinationIn(TestPane.Three),
                 )
 
                 // Adaptation assertions
@@ -445,11 +445,11 @@ class SlotBasedAdaptiveNavigationStateTest {
                 // Destination assertions
                 assertEquals(
                     expected = TestNode(name = "C"),
-                    actual = destinationFor(TestPane.One),
+                    actual = destinationIn(TestPane.One),
                 )
                 assertEquals(
                     expected = TestNode(name = "A"),
-                    actual = destinationFor(TestPane.Three),
+                    actual = destinationIn(TestPane.Three),
                 )
 
                 // Adaptation assertions
@@ -502,15 +502,15 @@ class SlotBasedAdaptiveNavigationStateTest {
                 // Destination assertions
                 assertEquals(
                     expected = TestNode(name = "C"),
-                    actual = destinationFor(TestPane.One),
+                    actual = destinationIn(TestPane.One),
                 )
                 assertEquals(
                     expected = TestNode(name = "D"),
-                    actual = destinationFor(TestPane.Two),
+                    actual = destinationIn(TestPane.Two),
                 )
                 assertEquals(
                     expected = TestNode(name = "A"),
-                    actual = destinationFor(TestPane.Three),
+                    actual = destinationIn(TestPane.Three),
                 )
 
                 // Adaptation assertions
@@ -585,7 +585,7 @@ class SlotBasedAdaptiveNavigationStateTest {
             }
     }
 
-    private fun SlotBasedPanedNavigationState<TestPane, TestNode>.testAdaptTo(
+    private fun SlotBasedPaneNavigationState<TestPane, TestNode>.testAdaptTo(
         navState: StackNav,
         panesToDestinations: Map<TestPane, TestNode?>,
     ) = adaptTo(
