@@ -17,7 +17,6 @@
 package com.tunjid.treenav.compose
 
 import androidx.compose.animation.BoundsTransform
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.animation.core.Spring.StiffnessMediumLow
@@ -32,14 +31,12 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 
 @Stable
- internal object Defaults {
+internal object Defaults {
 
     val EmptyElement: @Composable (Any?, Modifier) -> Unit = { _, _ -> }
 
-    @ExperimentalSharedTransitionApi
     val DefaultBoundsTransform = BoundsTransform { _, _ -> DefaultSpring }
 
-    @ExperimentalSharedTransitionApi
     val ParentClip: OverlayClip =
         object : OverlayClip {
             override fun getClipPath(

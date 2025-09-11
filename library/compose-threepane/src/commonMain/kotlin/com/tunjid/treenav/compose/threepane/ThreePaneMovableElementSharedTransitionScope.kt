@@ -16,7 +16,6 @@
 
 package com.tunjid.treenav.compose.threepane
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.runtime.Composable
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.PaneMovableElementSharedTransitionScope
@@ -42,7 +41,7 @@ typealias ThreePaneMovableElementSharedTransitionScope<Destination> =
  * If one is not provided, one is retrieved from this [PaneScope] using
  * [requireThreePaneMovableSharedElementScope].
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
 fun <Destination : Node> PaneScope<
         ThreePane,

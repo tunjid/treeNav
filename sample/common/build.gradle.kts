@@ -32,7 +32,9 @@ kotlin {
 
                 implementation(compose.components.resources)
 
-                implementation(libs.androidx.navigation.event)
+                implementation(libs.navigation.runtime)
+                implementation(libs.navigation.multiplatform.ui)
+                implementation(libs.navigation.event.multiplatform.compose)
 
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.animation)
@@ -44,6 +46,7 @@ kotlin {
                 implementation(libs.lifecycle.multiplatform.runtime.compose)
                 implementation(libs.lifecycle.multiplatform.viewmodel)
                 implementation(libs.lifecycle.multiplatform.viewmodel.compose)
+                implementation(libs.lifecycle.multiplatform.viewmodel.navigation3)
 
                 implementation(libs.compose.multiplatform.material.icons.core)
                 implementation(libs.compose.multiplatform.material.icons.extended)

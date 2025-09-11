@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,94 +28,131 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
+import androidx.navigationevent.DirectNavigationEventInput
 import androidx.navigationevent.NavigationEvent
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.composables.dragtodismiss.dragToDismiss
-import com.tunjid.treenav.compose.navigation3.ui.LocalNavigationEventDispatcherOwner
+import com.tunjid.composables.dragtodismiss.rememberUpdatedDragToDismissState
+import com.tunjid.treenav.compose.NavigationEventStatus
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlin.math.min
 
+
 @Stable
-internal class DragToPopState {
-    var isDraggingToPop by mutableStateOf(false)
-    internal val dragToDismissState = DragToDismissState(
-        enabled = false,
-    )
-}
+class DragToPopState private constructor(
+    private val dismissThresholdSquared: Float,
+    private val dragToDismissState: DragToDismissState,
+    private val input: DirectNavigationEventInput,
+) {
 
-@Composable
-fun Modifier.dragToPop(): Modifier {
-    val state = LocalAppState.current
-    val dragToPopState = state.dragToPopState
+    private val channel = Channel<NavigationEventStatus>()
+    private var dismissOffset by mutableStateOf<IntOffset?>(null)
 
-    val density = LocalDensity.current
-    val dismissThreshold = remember { with(density) { 200.dp.toPx().let { it * it } } }
+    suspend fun awaitEvents() {
+        channel.consumeAsFlow()
+            .collectLatest { status ->
+                when (status) {
+                    NavigationEventStatus.Completed.Cancelled -> {
+                        input.backCancelled()
+                    }
 
-    val dispatcher = checkNotNull(
-        LocalNavigationEventDispatcherOwner.current?.navigationEventDispatcher
-    )
-    LaunchedEffect(Unit) {
-        snapshotFlow {
-            state.dragToPopState.dragToDismissState.offset
-        }
-            .collectLatest {
-                if (state.dragToPopState.isDraggingToPop) {
-                    dispatcher.dispatchOnProgressed(
-                        state.dragToPopState.dragToDismissState.navigationEvent(
-                            min(
-                                a = 1f,
-                                b = state.dragToPopState.dragToDismissState.offset.getDistanceSquared() / dismissThreshold,
+                    NavigationEventStatus.Completed.Commited -> {
+                        input.backCompleted()
+                    }
+
+                    NavigationEventStatus.Seeking -> {
+                        input.backStarted(dragToDismissState.navigationEvent(progress = 0f))
+
+                        snapshotFlow(dragToDismissState::offset).collectLatest {
+                            input.backProgressed(
+                                dragToDismissState.navigationEvent(
+                                    min(
+                                        a = dragToDismissState.offset.getDistanceSquared() / dismissThresholdSquared,
+                                        b = 1f,
+                                    )
+                                )
                             )
-                        )
-                    )
+                        }
+                    }
                 }
             }
     }
 
-    DisposableEffect(dragToPopState) {
-        dragToPopState.dragToDismissState.enabled = true
-        onDispose { dragToPopState.dragToDismissState.enabled = false }
-    }
-    // TODO: This should not be necessary. Figure out why a frame renders with
-    //  an offset of zero while the content in the transient primary container
-    //  is still visible.
-    val dragToDismissOffset by rememberUpdatedStateIf(
-        value = dragToPopState.dragToDismissState.offset.round(),
-        predicate = {
-            it != IntOffset.Zero
-        }
-    )
+    companion object {
+        fun Modifier.dragToPop(
+            dragToPopState: DragToPopState,
+        ): Modifier = dragToDismiss(
+            state = dragToPopState.dragToDismissState,
+            shouldDismiss = { offset, _ ->
+                offset.getDistanceSquared() > dragToPopState.dismissThresholdSquared
+            },
+            // Enable back preview
+            onStart = {
+                dragToPopState.channel.trySend(NavigationEventStatus.Seeking)
+            },
+            onCancelled = cancelled@{ hasResetOffset ->
+                if (hasResetOffset) return@cancelled
+                dragToPopState.channel.trySend(NavigationEventStatus.Completed.Cancelled)
+            },
+            onDismissed = {
+                dragToPopState.dismissOffset = dragToPopState.dragToDismissState.offset.round()
+                dragToPopState.channel.trySend(NavigationEventStatus.Completed.Commited)
+            }
+        )
+            .offset {
+                dragToPopState.dismissOffset ?: dragToPopState.dragToDismissState.offset.round()
+            }
 
-    return dragToDismiss(
-        state = state.dragToPopState.dragToDismissState,
-        dragThresholdCheck = { offset, _ ->
-            offset.getDistanceSquared() > dismissThreshold
-        },
-        // Enable back preview
-        onStart = {
-            state.dragToPopState.isDraggingToPop = true
-            dispatcher.dispatchOnStarted(
-                state.dragToPopState.dragToDismissState.navigationEvent(0f)
+        @Composable
+        fun rememberDragToPopState(
+            dismissThreshold: Dp = 200.dp
+        ): DragToPopState {
+
+            val floatDismissThreshold = with(LocalDensity.current) {
+                dismissThreshold.toPx().let { it * it }
+            }
+
+            val dragToDismissState = rememberUpdatedDragToDismissState()
+
+            val dispatcher = checkNotNull(
+                LocalNavigationEventDispatcherOwner.current
+                    ?.navigationEventDispatcher
             )
-        },
-        onCancelled = {
-            // Dismiss back preview
-            state.dragToPopState.isDraggingToPop = false
-            dispatcher.dispatchOnCancelled()
-        },
-        onDismissed = {
-            // Dismiss back preview
-            state.dragToPopState.isDraggingToPop = false
+            val input = remember(dispatcher) {
+                DirectNavigationEventInput()
+            }
 
-            // Pop navigation
-            dispatcher.dispatchOnCompleted()
+            DisposableEffect(dispatcher) {
+                dispatcher.addInput(input)
+                onDispose {
+                    dispatcher.removeInput(input)
+                }
+            }
+
+            val dragToPopState = remember(dragToDismissState, input) {
+                DragToPopState(
+                    dismissThresholdSquared = floatDismissThreshold,
+                    dragToDismissState = dragToDismissState,
+                    input = input
+                )
+            }
+
+            LaunchedEffect(dragToPopState) {
+                dragToPopState.awaitEvents()
+            }
+
+            return dragToPopState
         }
-    )
-        .offset { dragToDismissOffset }
+    }
 }
+
 
 private fun DragToDismissState.navigationEvent(
     progress: Float
@@ -124,14 +160,5 @@ private fun DragToDismissState.navigationEvent(
     touchX = offset.x,
     touchY = offset.y,
     progress = progress,
-    swipeEdge = NavigationEvent.EDGE_LEFT,
+    swipeEdge = NavigationEvent.EDGE_NONE,
 )
-
-@Composable
-private inline fun <T> rememberUpdatedStateIf(
-    value: T,
-    predicate: (T) -> Boolean,
-): State<T> = remember {
-    mutableStateOf(value)
-}.also { if (predicate(value)) it.value = value }
-

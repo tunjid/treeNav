@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui.profile
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -88,7 +87,7 @@ fun ProfileScreen(
     )
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
 private fun ProfileHeader(
     state: State,
@@ -117,7 +116,7 @@ private fun ProfileHeader(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
 private fun ProfilePhoto(
     state: State,

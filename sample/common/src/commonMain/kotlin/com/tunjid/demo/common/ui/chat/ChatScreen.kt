@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalTime::class)
+
 package com.tunjid.demo.common.ui.chat
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -58,10 +59,10 @@ import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableSharedElementOf
 import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableStickySharedElementOf
 import com.tunjid.treenav.compose.threepane.ThreePane
-import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @Composable
 fun ChatScreen(
@@ -102,7 +103,7 @@ fun ChatScreen(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
 private fun ChatTitle(
     roomName: String,
@@ -184,7 +185,7 @@ fun Messages(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
 fun Message(
     onAuthorClick: (Action.Navigation.GoToProfile) -> Unit,

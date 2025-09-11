@@ -17,10 +17,8 @@
 package com.tunjid.treenav.compose.threepane
 
 import androidx.compose.animation.BoundsTransform
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
@@ -36,7 +34,7 @@ import com.tunjid.treenav.compose.PaneSharedTransitionScope
  * @param sharedTransitionScope the [SharedTransitionScope] to be delegated to for core
  * shared transition APIs.
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
 fun <Destination : Node> PaneScope<
         ThreePane,
@@ -51,22 +49,19 @@ fun <Destination : Node> PaneScope<
         )
     }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
-    ExperimentalSharedTransitionApi::class
-) constructor(
+private class ThreePaneSharedTransitionScope<Destination : Node>(
     val paneScope: PaneScope<ThreePane, Destination>,
     val sharedTransitionScope: SharedTransitionScope,
 ) : PaneSharedTransitionScope<ThreePane, Destination>,
     PaneScope<ThreePane, Destination> by paneScope,
     SharedTransitionScope by sharedTransitionScope {
 
-    @OptIn(ExperimentalSharedTransitionApi::class)
+
     override fun Modifier.paneSharedElement(
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
@@ -79,7 +74,7 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
             sharedContentState = sharedContentState,
             animatedVisibilityScope = paneScope,
             boundsTransform = boundsTransform,
-            placeHolderSize = placeHolderSize,
+            placeholderSize = placeholderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
@@ -95,7 +90,7 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
     override fun Modifier.paneStickySharedElement(
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip
@@ -108,7 +103,7 @@ private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
             sharedContentState = sharedContentState,
             visible = isActive,
             boundsTransform = boundsTransform,
-            placeHolderSize = placeHolderSize,
+            placeholderSize = placeholderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,

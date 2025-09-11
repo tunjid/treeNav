@@ -17,7 +17,6 @@
 package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.BoundsTransform
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateBounds
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.snap
@@ -100,8 +99,6 @@ fun PaneScope<ThreePane, SampleDestination>.rememberPaneScaffoldState(): PaneSca
     }
 }
 
-
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun PaneScaffoldState.PaneScaffold(
     modifier: Modifier = Modifier,
@@ -203,8 +200,6 @@ private inline fun PaneNavigationRailScaffold(
     )
 }
 
-
-@OptIn(ExperimentalSharedTransitionApi::class)
 private fun scaffoldBoundsTransform(
     paneScaffoldState: PaneScaffoldState,
     canAnimatePane: () -> Boolean,

@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui.chatrooms
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
@@ -81,7 +80,6 @@ fun ChatRoomsScreen(
     )
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun Header(
     headerState: CollapsingHeaderState,
@@ -184,7 +182,6 @@ fun ChatRoomListItem(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChatRoomParticipants(
     paneScaffoldState: PaneScaffoldState,

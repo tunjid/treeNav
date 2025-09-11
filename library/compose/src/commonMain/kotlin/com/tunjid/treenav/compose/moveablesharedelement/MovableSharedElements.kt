@@ -2,11 +2,9 @@ package com.tunjid.treenav.compose.moveablesharedelement
 
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
+import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.ContentSize
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -21,7 +19,7 @@ import com.tunjid.treenav.compose.PaneScope
  * Creates movable shared elements that may be shared amongst different [PaneScope]
  * instances.
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Stable
 interface MovableSharedElementScope {
 
@@ -39,7 +37,7 @@ interface MovableSharedElementScope {
      * @param sharedContentState The shared element key to identify the movable shared element.
      * @param boundsTransform Allows for customizing the animation for the bounds of
      * the [sharedElement].
-     * @param placeHolderSize Allows for adjusting the reported size to the parent layout during
+     * @param placeholderSize Allows for adjusting the reported size to the parent layout during
      * the transition.
      * @param renderInOverlayDuringTransition Is true by default. In some rare use cases, there may
      * be no clipping or layer transform (fade, scale, etc) in the application that prevents
@@ -59,11 +57,11 @@ interface MovableSharedElementScope {
      *
      * @see [SharedTransitionScope.sharedElement]
      */
-    @OptIn(ExperimentalSharedTransitionApi::class)
+
     fun <T> movableSharedElementOf(
         sharedContentState: SharedContentState,
         boundsTransform: BoundsTransform,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
@@ -84,7 +82,7 @@ interface MovableSharedElementScope {
      * @param sharedContentState The shared element key to identify the movable shared element.
      * @param boundsTransform Allows for customizing the animation for the bounds of
      * the [sharedElement].
-     * @param placeHolderSize Allows for adjusting the reported size to the parent layout during
+     * @param placeholderSize Allows for adjusting the reported size to the parent layout during
      * the transition.
      * @param renderInOverlayDuringTransition Is true by default. In some rare use cases, there may
      * be no clipping or layer transform (fade, scale, etc) in the application that prevents
@@ -104,11 +102,11 @@ interface MovableSharedElementScope {
      *
      * @see [SharedTransitionScope.sharedElement]
      */
-    @OptIn(ExperimentalSharedTransitionApi::class)
+
     fun <T> movableStickySharedElementOf(
         sharedContentState: SharedContentState,
         boundsTransform: BoundsTransform,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
@@ -126,7 +124,7 @@ interface MovableSharedElementScope {
  * @param sharedContentState The shared element key to identify the movable shared element.
  * @param boundsTransform Allows for customizing the animation for the bounds of
  * the [sharedElement].
- * @param placeHolderSize Allows for adjusting the reported size to the parent layout during
+ * @param placeholderSize Allows for adjusting the reported size to the parent layout during
  * the transition.
  * @param renderInOverlayDuringTransition Is true by default. In some rare use cases, there may
  * be no clipping or layer transform (fade, scale, etc) in the application that prevents
@@ -144,14 +142,14 @@ interface MovableSharedElementScope {
  * @param sharedElement A factory function to create the movable shared element if it does not
  * currently exist.
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
 fun <T> MovableSharedElementScope.UpdatedMovableSharedElementOf(
     sharedContentState: SharedContentState,
     state: T,
     modifier: Modifier = Modifier,
     boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
-    placeHolderSize: PlaceHolderSize = contentSize,
+    placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
@@ -160,7 +158,7 @@ fun <T> MovableSharedElementScope.UpdatedMovableSharedElementOf(
 ) = movableSharedElementOf(
     sharedContentState = sharedContentState,
     boundsTransform = boundsTransform,
-    placeHolderSize = placeHolderSize,
+    placeholderSize = placeholderSize,
     renderInOverlayDuringTransition = renderInOverlayDuringTransition,
     zIndexInOverlay = zIndexInOverlay,
     clipInOverlayDuringTransition = clipInOverlayDuringTransition,
@@ -180,7 +178,7 @@ fun <T> MovableSharedElementScope.UpdatedMovableSharedElementOf(
  * @param sharedContentState The shared element key to identify the movable shared element.
  * @param boundsTransform Allows for customizing the animation for the bounds of
  * the [sharedElement].
- * @param placeHolderSize Allows for adjusting the reported size to the parent layout during
+ * @param placeholderSize Allows for adjusting the reported size to the parent layout during
  * the transition.
  * @param renderInOverlayDuringTransition Is true by default. In some rare use cases, there may
  * be no clipping or layer transform (fade, scale, etc) in the application that prevents
@@ -198,14 +196,14 @@ fun <T> MovableSharedElementScope.UpdatedMovableSharedElementOf(
  * @param sharedElement A factory function to create the movable shared element if it does not
  * currently exist.
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
 fun <T> MovableSharedElementScope.UpdatedMovableStickySharedElementOf(
     sharedContentState: SharedContentState,
     state: T,
     modifier: Modifier = Modifier,
     boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
-    placeHolderSize: PlaceHolderSize = contentSize,
+    placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
@@ -214,7 +212,7 @@ fun <T> MovableSharedElementScope.UpdatedMovableStickySharedElementOf(
 ) = movableStickySharedElementOf(
     sharedContentState = sharedContentState,
     boundsTransform = boundsTransform,
-    placeHolderSize = placeHolderSize,
+    placeholderSize = placeholderSize,
     renderInOverlayDuringTransition = renderInOverlayDuringTransition,
     zIndexInOverlay = zIndexInOverlay,
     clipInOverlayDuringTransition = clipInOverlayDuringTransition,
@@ -245,7 +243,7 @@ fun <Pane, Destination : Node> PaneScope<Pane, Destination>.rememberPaneMovableS
  * Other implementations of [MovableSharedElementScope] may delegate to this for their own
  * movable shared element implementations.
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Stable
 class PaneMovableSharedElementScope<Pane, Destination : Node> internal constructor(
     private val currentPaneScope: () -> PaneScope<Pane, Destination>,
@@ -257,11 +255,11 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
 
     val paneScope get() = currentPaneScope()
 
-    @OptIn(ExperimentalSharedTransitionApi::class)
+
     override fun <T> movableSharedElementOf(
         sharedContentState: SharedContentState,
         boundsTransform: BoundsTransform,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
@@ -273,7 +271,7 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
                 modifier = modifier,
                 sharedContentState = sharedContentState,
                 animatedVisibilityScope = paneScope,
-                placeHolderSize = placeHolderSize,
+                placeholderSize = placeholderSize,
                 renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                 zIndexInOverlay = zIndexInOverlay,
                 clipInOverlayDuringTransition = clipInOverlayDuringTransition,
@@ -293,11 +291,10 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
     }
 
 
-    @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableStickySharedElementOf(
         sharedContentState: SharedContentState,
         boundsTransform: BoundsTransform,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
@@ -308,7 +305,7 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
             SharedElementWithCallerManagedVisibility(
                 modifier = modifier,
                 sharedContentState = sharedContentState,
-                placeHolderSize = placeHolderSize,
+                placeholderSize = placeholderSize,
                 renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                 zIndexInOverlay = zIndexInOverlay,
                 clipInOverlayDuringTransition = clipInOverlayDuringTransition,

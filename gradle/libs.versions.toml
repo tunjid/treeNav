@@ -1,28 +1,28 @@
 [versions]
-androidGradlePlugin = "8.9.2"
+androidGradlePlugin = "8.10.1"
 androidxActivity = "1.9.2"
-activity-compose = "1.12.0-alpha02"
+activity-compose = "1.12.0-beta01"
 androidxAppCompat = "1.7.1"
 androidxBenchmark = "1.4.1"
 androidxCore = "1.17.0"
 androidxCollection = "1.5.0"
-androidxCompose = "1.7.0"
 androidxPaging = "3.3.2"
+androidxSavedState = "1.3.4"
 androidxTestCore = "1.6.1"
 androidxTestExt = "1.2.1"
 androidxTestRunner = "1.6.2"
 androidxTestRules = "1.6.1"
 dokka = "1.8.20"
-compose = "1.8.3"
-composeMultiplatform = "1.8.2"
-composeMultiplatformMaterial3 = "1.8.2"
-lifecycleMultiplatform = "2.9.1"
+compose = "1.10.0-rc01"
+composeMultiplatform = "1.10.0-rc01"
+composeMultiplatformMaterial3 = "1.10.0-alpha05"
+lifecycleMultiplatform = "2.10.0-alpha06"
 junit4 = "4.13.2"
-kotlin = "2.2.20"
+kotlin = "2.2.21"
 kotlinxCoroutines = "1.10.2"
 kotlinxDatetime = "0.7.1"
 tunjidStateHolder = "1.1.0"
-tunjidComposables = "0.0.19"
+tunjidComposables = "0.0.23"
 junit = "4.13.2"
 runner = "1.0.2"
 espressoCore = "3.0.2"
@@ -30,10 +30,10 @@ appcompatV7 = "28.0.0"
 googleMaterial = "1.13.0"
 materialIcons = "1.7.3"
 mavenPublish = "0.34.0"
-navigationEventCompose = "1.0.0-alpha01"
-navigationEvent = "1.0.0-alpha02"
-navigation3 = "1.0.0-alpha10"
-savedstate-multiplatform = "1.3.4"
+navigationEventComposeMultiplatform = "1.0.0-rc01"
+navigation3 = "1.0.0"
+navigation3Multiplatform = "1.0.0-alpha06"
+savedstateMultiplatform = "1.4.0"
 
 [libraries]
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -43,9 +43,6 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity-compose" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 androidx-collection = { group = "androidx.collection", name = "collection", version.ref = "androidxCollection" }
-androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
-androidx-navigation-event = { group = "androidx.navigationevent", name = "navigationevent", version.ref = "navigationEvent" }
-androidx-navigation-event-compose = { group = "org.jetbrains.androidx.navigationevent", name = "navigationevent-compose", version.ref = "navigationEventCompose" }
 compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "compose" }
 compose-multiplatform-animation = { group = "org.jetbrains.compose.animation", name = "animation", version.ref = "composeMultiplatform" }
 compose-multiplatform-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "composeMultiplatform" }
@@ -67,9 +64,13 @@ lifecycle-multiplatform-runtime = { group = "org.jetbrains.androidx.lifecycle", 
 lifecycle-multiplatform-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleMultiplatform" }
 lifecycle-multiplatform-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycleMultiplatform" }
 lifecycle-multiplatform-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleMultiplatform" }
+lifecycle-multiplatform-viewmodel-navigation3 = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "lifecycleMultiplatform" }
 lifecycle-multiplatform-viewmodel-savedstate = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycleMultiplatform" }
-savedstate-multiplatform-savedstate = { group = "org.jetbrains.androidx.savedstate", name = "savedstate", version.ref = "savedstate-multiplatform" }
-savedstate-multiplatform-compose = { group = "org.jetbrains.androidx.savedstate", name = "savedstate-compose", version.ref = "savedstate-multiplatform" }
+navigation-event-multiplatform-compose = { group = "org.jetbrains.androidx.navigationevent", name = "navigationevent-compose", version.ref = "navigationEventComposeMultiplatform" }
+navigation-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
+navigation-multiplatform-ui = { group = "org.jetbrains.androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3Multiplatform" }
+savedstate-multiplatform-savedstate = { group = "org.jetbrains.androidx.savedstate", name = "savedstate", version.ref = "savedstateMultiplatform" }
+savedstate-multiplatform-compose = { group = "org.jetbrains.androidx.savedstate", name = "savedstate-compose", version.ref = "savedstateMultiplatform" }
 
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }

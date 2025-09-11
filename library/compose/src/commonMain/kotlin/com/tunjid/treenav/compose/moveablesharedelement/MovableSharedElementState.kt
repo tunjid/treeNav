@@ -1,6 +1,5 @@
 package com.tunjid.treenav.compose.moveablesharedelement
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -12,7 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Stable
 internal class MovableSharedElementState<State>(
     sharedContentState: SharedTransitionScope.SharedContentState,

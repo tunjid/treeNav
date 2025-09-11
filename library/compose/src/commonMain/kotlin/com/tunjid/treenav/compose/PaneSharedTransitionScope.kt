@@ -17,11 +17,9 @@
 package com.tunjid.treenav.compose
 
 import androidx.compose.animation.BoundsTransform
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
+import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.ContentSize
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
@@ -32,7 +30,6 @@ import com.tunjid.treenav.Node
  * shared element behavior when shared elements move in between [Pane]s during the
  * transition.
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 interface PaneSharedTransitionScope<Pane, Destination : Node> :
     PaneScope<Pane, Destination>, SharedTransitionScope {
@@ -50,7 +47,7 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
     fun Modifier.paneSharedElement(
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
-        placeHolderSize: PlaceHolderSize = contentSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
         clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
@@ -70,7 +67,7 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
     fun Modifier.paneStickySharedElement(
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
-        placeHolderSize: PlaceHolderSize = contentSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
         clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,

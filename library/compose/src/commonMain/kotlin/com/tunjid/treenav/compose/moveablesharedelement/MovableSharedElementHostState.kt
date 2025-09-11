@@ -1,10 +1,10 @@
 package com.tunjid.treenav.compose.moveablesharedelement
 
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
+import androidx.compose.animation.SharedTransitionScope.PlaceholderSize
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -19,7 +19,7 @@ import com.tunjid.treenav.compose.MultiPaneDisplay
 /**
  * State for managing movable shared elements within a single [MultiPaneDisplay].
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Stable
 class MovableSharedElementHostState<Pane, Destination : Node>(
     val sharedTransitionScope: SharedTransitionScope,
@@ -83,42 +83,44 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
         }
     }
 
-    @OptIn(ExperimentalSharedTransitionApi::class)
+
     @Composable
     inline fun <Pane, Destination : Node> MovableSharedElementHostState<Pane, Destination>.SharedElement(
         modifier: Modifier,
         sharedContentState: SharedContentState,
         animatedVisibilityScope: AnimatedVisibilityScope,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
         crossinline content: @Composable MovableSharedElementHostState<Pane, Destination>.() -> Unit,
     ) {
         Box(modifier) {
+            val visible = animatedVisibilityScope.transition.targetState == EnterExitState.Visible
             Box(
                 Modifier
                     .sharedElement(
                         sharedContentState = sharedContentState,
                         animatedVisibilityScope = animatedVisibilityScope,
-                        placeHolderSize = placeHolderSize,
+                        placeholderSize = placeholderSize,
                         renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                         zIndexInOverlay = zIndexInOverlay,
                         clipInOverlayDuringTransition = clipInOverlayDuringTransition,
                     )
                     .fillSharedElement()
             ) {
-                content()
+                if (visible) content()
             }
+            if (!visible) content()
         }
     }
 
-    @OptIn(ExperimentalSharedTransitionApi::class)
+
     @Composable
     inline fun <Pane, Destination : Node> MovableSharedElementHostState<Pane, Destination>.SharedElementWithCallerManagedVisibility(
         modifier: Modifier,
         sharedContentState: SharedContentState,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
@@ -132,7 +134,7 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
                     .sharedElementWithCallerManagedVisibility(
                         sharedContentState = sharedContentState,
                         visible = visible,
-                        placeHolderSize = placeHolderSize,
+                        placeholderSize = placeholderSize,
                         renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                         zIndexInOverlay = zIndexInOverlay,
                         clipInOverlayDuringTransition = clipInOverlayDuringTransition,
