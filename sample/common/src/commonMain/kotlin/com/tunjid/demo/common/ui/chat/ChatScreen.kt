@@ -58,9 +58,10 @@ import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
 import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableStickySharedElementOf
 import com.tunjid.treenav.compose.threepane.ThreePane
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
 
 @Composable
 fun ChatScreen(
@@ -281,6 +282,7 @@ fun AuthorAndTextMessage(
     }
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun AuthorNameTimestamp(
     item: MessageItem
@@ -340,6 +342,7 @@ fun ChatMessage(
     )
 }
 
+@OptIn(ExperimentalTime::class)
 fun Instant.toTimestamp(): String {
     // Convert Instant to LocalDateTime in the system's default time zone
     val localDateTime = this.toLocalDateTime(TimeZone.currentSystemDefault())

@@ -26,16 +26,15 @@ kotlin {
                 implementation(libs.androidx.collection)
                 implementation(libs.androidx.navigation.event)
 
-                implementation(libs.jetbrains.compose.runtime)
-                implementation(libs.jetbrains.compose.foundation)
-                implementation(libs.jetbrains.compose.foundation.layout)
+                implementation(libs.compose.multiplatform.runtime)
+                implementation(libs.compose.multiplatform.foundation)
+                implementation(libs.compose.multiplatform.foundation.layout)
 
-                implementation(libs.jetbrains.lifecycle.runtime)
-                implementation(libs.jetbrains.lifecycle.runtime.compose)
-                implementation(libs.jetbrains.lifecycle.viewmodel)
-                implementation(libs.jetbrains.lifecycle.viewmodel.compose)
+                implementation(libs.lifecycle.multiplatform.runtime)
+                implementation(libs.lifecycle.multiplatform.runtime.compose)
+                implementation(libs.lifecycle.multiplatform.viewmodel)
+                implementation(libs.lifecycle.multiplatform.viewmodel.compose)
 
-//                implementation(libs.androidx.navigation3)
                 implementation(libs.jetbrains.savedstate.compose)
 
             }
