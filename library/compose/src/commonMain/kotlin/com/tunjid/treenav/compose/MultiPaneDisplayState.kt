@@ -80,7 +80,7 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
     /**
      * Returns true if the navigation state can be popped.
      */
-    val canPop get() = navigationState.value != backStackTransform(navigationState.value)
+    val canPop get() = navigationState.value != popTransform(navigationState.value)
 
     companion object {
         private const val ID_KEY = "com.tunjid.treenav.compose.id"
