@@ -18,7 +18,8 @@ package com.tunjid.demo.common.ui.data
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.datetime.Instant
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 data class ChatData(
     val chatRooms: Map<String, ChatRoom>,
@@ -30,7 +31,7 @@ data class ChatRoom(
     val messages: List<Message>
 )
 
-data class Message(
+data class Message @OptIn(ExperimentalTime::class) constructor(
     val sender: String,
     val timestamp: Instant,
     val content: String
@@ -68,6 +69,7 @@ object ProfileRepository {
 }
 
 
+@OptIn(ExperimentalTime::class)
 private val chatData = ChatData(
     chatRooms = mapOf(
         "SDK Design" to ChatRoom(
