@@ -55,8 +55,8 @@ import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.data.Profile
-import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
-import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableStickySharedElementOf
+import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableSharedElementOf
+import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableStickySharedElementOf
 import com.tunjid.treenav.compose.threepane.ThreePane
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
@@ -122,7 +122,7 @@ private fun ChatTitle(
                 .width(16.dp)
         )
         participants.forEachIndexed { index, participant ->
-            updatedMovableSharedElementOf(
+            UpdatedMovableSharedElementOf(
                 sharedContentState = paneScaffoldState.rememberSharedContentState(
                     key = "${roomName}-${participant}"
                 ),
@@ -227,7 +227,7 @@ fun Message(
                         }
                     },
             ) {
-                paneScaffoldState.updatedMovableStickySharedElementOf(
+                paneScaffoldState.UpdatedMovableStickySharedElementOf(
                     sharedContentState = paneScaffoldState.rememberSharedContentState(
                         key = "$roomName-${item.sender.name}-profile"
                     ),

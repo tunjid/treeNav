@@ -86,7 +86,7 @@ sealed class Action(
 
         data class ToAvatar(
             val profileName: String,
-            val roomName: String,
+            val roomName: String?,
         ) : Navigation(), NavigationAction by navigationAction(
             { push(SampleDestination.Avatar(profileName = profileName, roomName = roomName)) }
         )

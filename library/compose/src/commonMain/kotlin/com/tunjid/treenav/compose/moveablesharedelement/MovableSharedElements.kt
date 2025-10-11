@@ -8,19 +8,15 @@ import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Defaults
-import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.PaneScope
 
 /**
@@ -152,7 +148,7 @@ interface MovableSharedElementScope {
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
+fun <T> MovableSharedElementScope.UpdatedMovableSharedElementOf(
     sharedContentState: SharedContentState,
     state: T,
     modifier: Modifier = Modifier,
@@ -178,7 +174,7 @@ fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
 )
 
 /**
- * Convenience method for [MovableSharedElementScope.updatedMovableStickySharedElementOf] that
+ * Convenience method for [MovableSharedElementScope.UpdatedMovableStickySharedElementOf] that
  * invokes the movable shared element with the latest values of [state] and [modifier].
  *
  * @see [MovableSharedElementScope.movableStickySharedElementOf].
@@ -206,7 +202,7 @@ fun <T> MovableSharedElementScope.updatedMovableSharedElementOf(
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun <T> MovableSharedElementScope.updatedMovableStickySharedElementOf(
+fun <T> MovableSharedElementScope.UpdatedMovableStickySharedElementOf(
     sharedContentState: SharedContentState,
     state: T,
     modifier: Modifier = Modifier,
@@ -230,56 +226,6 @@ fun <T> MovableSharedElementScope.updatedMovableStickySharedElementOf(
     state,
     modifier,
 )
-
-/**
- * State for managing movable shared elements within a single [MultiPaneDisplay].
- */
-@OptIn(ExperimentalSharedTransitionApi::class)
-@Stable
-class MovableSharedElementHostState<Pane, Destination : Node>(
-    val sharedTransitionScope: SharedTransitionScope,
-) : SharedTransitionScope by sharedTransitionScope {
-
-    private val keysToMovableSharedElements =
-        mutableStateMapOf<Any, MovableSharedElementState<*>>()
-
-    /**
-     * Returns true is a given shared element under a given key is currently being shared.
-     */
-    fun isCurrentlyShared(key: Any): Boolean =
-        keysToMovableSharedElements.contains(key)
-
-    /**
-     * Returns true if a movable shared element has its shared element match found.
-     *
-     * @see [SharedContentState.isMatchFound]
-     */
-    fun isMatchFound(key: Any): Boolean =
-        keysToMovableSharedElements[key]?.sharedContentState?.isMatchFound == true
-
-    /**
-     * Provides a movable shared element that can be rendered in a given [PaneScope].
-     * It is the callers responsibility to perform other verifications on the ability
-     * of the calling [PaneScope] to render the movable shared element.
-     */
-    @Suppress("UnusedReceiverParameter")
-    fun <S> MovableSharedElementScope.createOrUpdateSharedElement(
-        sharedContentState: SharedContentState,
-        sharedElement: @Composable (S, Modifier) -> Unit,
-    ): @Composable (S, Modifier) -> Unit {
-        val movableSharedElementState =
-            keysToMovableSharedElements.getOrPut(sharedContentState.key) {
-                MovableSharedElementState(
-                    sharedContentState = sharedContentState,
-                    sharedElement = sharedElement,
-                    onRemoved = { keysToMovableSharedElements.remove(sharedContentState.key) }
-                )
-            }.also { it.sharedContentState = sharedContentState }
-
-        // Can't really guarantee that the caller will use the same key for the right type
-        return movableSharedElementState.moveableSharedElement
-    }
-}
 
 @Composable
 fun <Pane, Destination : Node> PaneScope<Pane, Destination>.rememberPaneMovableSharedElementScope(
@@ -322,26 +268,26 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit = { state, modifier ->
         with(movableSharedElementHostState) {
-            Box(
-                modifier
-                    .sharedElement(
+            SharedElement(
+                modifier = modifier,
+                sharedContentState = sharedContentState,
+                animatedVisibilityScope = paneScope,
+                placeHolderSize = placeHolderSize,
+                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                zIndexInOverlay = zIndexInOverlay,
+                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                content = {
+                    MovableSharedElement(
                         sharedContentState = sharedContentState,
-                        animatedVisibilityScope = paneScope,
-                        boundsTransform = boundsTransform,
-                        placeHolderSize = placeHolderSize,
-                        renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                        zIndexInOverlay = zIndexInOverlay,
-                        clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                        state = state,
+                        useMovableContent = {
+                            paneScope.transition.targetState == EnterExitState.Visible
+                        },
+                        sharedElement = sharedElement,
+                        alternateOutgoingSharedElement = alternateOutgoingSharedElement
                     )
-            ) {
-                MovableElement(
-                    sharedContentState = sharedContentState,
-                    state = state,
-                    isVisible = { paneScope.transition.targetState == EnterExitState.Visible },
-                    sharedElement = sharedElement,
-                    alternateOutgoingSharedElement = alternateOutgoingSharedElement
-                )
-            }
+                }
+            )
         }
     }
 
@@ -356,85 +302,26 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
         clipInOverlayDuringTransition: OverlayClip,
         alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
         sharedElement: @Composable (T, Modifier) -> Unit
-    ): @Composable (T, Modifier) -> Unit = { state, modifier ->
-        with(movableSharedElementHostState) {
-            Box(
-                modifier
-                    .sharedElementWithCallerManagedVisibility(
+    ): @Composable (T, Modifier) -> Unit = with(movableSharedElementHostState) {
+        { state, modifier ->
+            SharedElementWithCallerManagedVisibility(
+                modifier = modifier,
+                sharedContentState = sharedContentState,
+                placeHolderSize = placeHolderSize,
+                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                zIndexInOverlay = zIndexInOverlay,
+                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                isVisible = { paneScope.isActive },
+                content = {
+                    MovableSharedElement(
                         sharedContentState = sharedContentState,
-                        visible = paneScope.isActive,
-                        boundsTransform = boundsTransform,
-                        placeHolderSize = placeHolderSize,
-                        renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                        zIndexInOverlay = zIndexInOverlay,
-                        clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                        state = state,
+                        useMovableContent = { paneScope.isActive },
+                        alternateOutgoingSharedElement = alternateOutgoingSharedElement,
+                        sharedElement = sharedElement
                     )
-            ) {
-                MovableElement(
-                    sharedContentState = sharedContentState,
-                    state = state,
-                    isVisible = { paneScope.isActive },
-                    sharedElement = sharedElement,
-                    alternateOutgoingSharedElement = alternateOutgoingSharedElement
-                )
-            }
-        }
-    }
-
-    @Composable
-    private inline fun <T> PaneMovableSharedElementScope<Pane, Destination>.MovableElement(
-        sharedContentState: SharedContentState,
-        state: T,
-        isVisible: () -> Boolean,
-        noinline sharedElement: @Composable (T, Modifier) -> Unit,
-        noinline alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?
-    ) = with(movableSharedElementHostState) {
-        when {
-            isVisible() ->
-                createOrUpdateSharedElement(
-                    sharedContentState = sharedContentState,
-                    sharedElement = sharedElement
-                )(state, Modifier.fillMaxConstraints())
-
-            // This pane state is be transitioning out. Check if it should be displayed without
-            // shared element semantics.
-            else -> when {
-                // The element is being shared in its new destination, stop showing it
-                // in the in active one
-                movableSharedElementHostState.isCurrentlyShared(sharedContentState.key)
-                        && movableSharedElementHostState.isMatchFound(sharedContentState.key) -> Defaults.EmptyElement(
-                    state,
-                    Modifier.fillMaxConstraints()
-                )
-                // The element is not being shared in its new destination, allow it run its exit
-                // transition
-                else -> (alternateOutgoingSharedElement ?: sharedElement)(
-                    state,
-                    Modifier.fillMaxConstraints()
-                )
-            }
+                },
+            )
         }
     }
 }
-
-private fun Modifier.fillMaxConstraints() =
-    layout { measurable, constraints ->
-        val placeable = measurable.measure(
-            constraints.copy(
-                minWidth = when {
-                    constraints.hasBoundedWidth -> constraints.maxWidth
-                    else -> constraints.minWidth
-                },
-                minHeight = when {
-                    constraints.hasBoundedHeight -> constraints.maxHeight
-                    else -> constraints.minHeight
-                }
-            )
-        )
-        layout(
-            width = placeable.width,
-            height = placeable.height
-        ) {
-            placeable.place(0, 0)
-        }
-    }
