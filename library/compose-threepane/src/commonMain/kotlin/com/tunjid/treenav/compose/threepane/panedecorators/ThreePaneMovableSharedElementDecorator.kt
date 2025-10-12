@@ -177,6 +177,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                     content = {
                         PlainElement(
                             state = state,
+                            modifier = Modifier.fillSharedElement(),
                             content = alternateOutgoingSharedElement ?: sharedElement,
                         )
                     }
@@ -186,6 +187,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                 ThreePane.Overlay,
                     -> PlainElement(
                     state = state,
+                    modifier = modifier,
                     content = alternateOutgoingSharedElement ?: sharedElement,
                 )
             }
@@ -243,12 +245,14 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                         content = {
                             PlainElement(
                                 state = state,
+                                modifier = Modifier.fillSharedElement(),
                                 content = alternateOutgoingSharedElement ?: sharedElement,
                             )
                         },
                     )
                     else -> PlainElement(
                         state = state,
+                        modifier = modifier,
                         content = alternateOutgoingSharedElement ?: sharedElement,
                     )
                 }
@@ -256,6 +260,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                 ThreePane.Overlay
                 -> PlainElement(
                     state = state,
+                    modifier = modifier,
                     content = alternateOutgoingSharedElement ?: sharedElement,
                 )
             }
@@ -263,13 +268,14 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
     }
 
     @Composable
-    private inline fun <T> MovableSharedElementHostState<*, *>.PlainElement(
+    private inline fun <T> PlainElement(
         state: T,
+        modifier: Modifier,
         crossinline content: @Composable (T, Modifier) -> Unit,
     ) {
         content(
             state,
-            Modifier.fillSharedElement(),
+            modifier,
         )
     }
 }
