@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.navigationevent.NavigationEvent
 import androidx.navigationevent.NavigationEventCallback
 import kotlinx.coroutines.CancellationException
@@ -61,7 +62,10 @@ fun NavigationEventHandler(
         navEventCallBack.onBackScope = navEventScope
     }
 
-    LaunchedEffect(enabled) { navEventCallBack.setIsEnabled(enabled()) }
+    LaunchedEffect(enabled) {
+        navEventCallBack.setIsEnabled(enabled())
+        snapshotFlow { enabled() }.collect(navEventCallBack::setIsEnabled)
+    }
 
     val navEventDispatcher =
         checkNotNull(LocalNavigationEventDispatcherOwner.current) {

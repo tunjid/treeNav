@@ -35,7 +35,7 @@ kotlin {
                 implementation(libs.lifecycle.multiplatform.viewmodel)
                 implementation(libs.lifecycle.multiplatform.viewmodel.compose)
 
-                implementation(libs.jetbrains.savedstate.compose)
+                implementation(libs.savedstate.multiplatform.compose)
 
             }
         }
