@@ -8,7 +8,6 @@ androidxCore = "1.17.0"
 androidxCollection = "1.5.0"
 androidxCompose = "1.7.0"
 androidxPaging = "3.3.2"
-androidxSavedState = "1.3.4"
 androidxTestCore = "1.6.1"
 androidxTestExt = "1.2.1"
 androidxTestRunner = "1.6.2"
@@ -34,6 +33,7 @@ mavenPublish = "0.34.0"
 navigationEventCompose = "1.0.0-alpha01"
 navigationEvent = "1.0.0-alpha02"
 navigation3 = "1.0.0-alpha10"
+savedstate-multiplatform = "1.3.4"
 
 [libraries]
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -68,8 +68,8 @@ lifecycle-multiplatform-runtime-compose = { group = "org.jetbrains.androidx.life
 lifecycle-multiplatform-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycleMultiplatform" }
 lifecycle-multiplatform-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleMultiplatform" }
 lifecycle-multiplatform-viewmodel-savedstate = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycleMultiplatform" }
-jetbrains-savedstate-savedstate = { group = "org.jetbrains.androidx.savedstate", name = "savedstate", version.ref = "androidxSavedState" }
-jetbrains-savedstate-compose = { group = "org.jetbrains.androidx.savedstate", name = "savedstate-compose", version.ref = "androidxSavedState" }
+savedstate-multiplatform-savedstate = { group = "org.jetbrains.androidx.savedstate", name = "savedstate", version.ref = "savedstate-multiplatform" }
+savedstate-multiplatform-compose = { group = "org.jetbrains.androidx.savedstate", name = "savedstate-compose", version.ref = "savedstate-multiplatform" }
 
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
