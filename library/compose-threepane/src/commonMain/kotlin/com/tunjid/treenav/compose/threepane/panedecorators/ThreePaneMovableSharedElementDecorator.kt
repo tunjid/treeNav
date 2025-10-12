@@ -204,51 +204,61 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         sharedElement: @Composable (T, Modifier) -> Unit
     ): @Composable (T, Modifier) -> Unit = with(hostState) {
         { state, modifier ->
-            SharedElementWithCallerManagedVisibility(
-                modifier = modifier,
-                sharedContentState = sharedContentState,
-                placeHolderSize = placeHolderSize,
-                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                zIndexInOverlay = zIndexInOverlay,
-                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-                isVisible = {
-                    when (paneState.pane) {
-                        null -> throw IllegalArgumentException(
-                            "Shared elements may only be used in non null panes"
-                        )
-                        // Allow movable shared elements in the primary pane only
-                        ThreePane.Primary -> delegate.paneScope.isActive
-                        ThreePane.Secondary,
-                        ThreePane.Tertiary,
-                        ThreePane.Overlay,
-                            -> false
-                    }
-                },
-                content = {
-                    when (paneState.pane) {
-                        null -> throw IllegalArgumentException(
-                            "Shared elements may only be used in non null panes"
-                        )
-                        // Allow movable shared elements in the primary pane only
-                        ThreePane.Primary -> MovableSharedElement(
+            when(paneState.pane) {
+                null -> throw IllegalArgumentException(
+                    "Shared elements may only be used in non null panes"
+                )
+                ThreePane.Primary -> SharedElementWithCallerManagedVisibility(
+                    modifier = modifier,
+                    sharedContentState = sharedContentState,
+                    placeHolderSize = placeHolderSize,
+                    renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                    zIndexInOverlay = zIndexInOverlay,
+                    clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                    // Allow movable shared elements in the primary pane only
+                    isVisible = {
+                        delegate.paneScope.isActive
+                    },
+                    content = {
+                        MovableSharedElement(
                             sharedContentState = sharedContentState,
                             state = state,
                             useMovableContent = { delegate.paneScope.isActive },
                             alternateOutgoingSharedElement = alternateOutgoingSharedElement,
                             sharedElement = sharedElement
                         )
-
-                        // In the other panes use the element as is
-                        ThreePane.Secondary,
-                        ThreePane.Tertiary,
-                        ThreePane.Overlay,
-                            -> PlainElement(
-                            state = state,
-                            content = alternateOutgoingSharedElement ?: sharedElement,
-                        )
-                    }
-                },
-            )
+                    },
+                )
+                ThreePane.Secondary -> when {
+                    canAnimateSecondary() -> SharedElementWithCallerManagedVisibility(
+                        modifier = modifier,
+                        sharedContentState = sharedContentState,
+                        placeHolderSize = placeHolderSize,
+                        renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                        zIndexInOverlay = zIndexInOverlay,
+                        clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                        isVisible = {
+                            false
+                        },
+                        content = {
+                            PlainElement(
+                                state = state,
+                                content = alternateOutgoingSharedElement ?: sharedElement,
+                            )
+                        },
+                    )
+                    else -> PlainElement(
+                        state = state,
+                        content = alternateOutgoingSharedElement ?: sharedElement,
+                    )
+                }
+                ThreePane.Tertiary,
+                ThreePane.Overlay
+                -> PlainElement(
+                    state = state,
+                    content = alternateOutgoingSharedElement ?: sharedElement,
+                )
+            }
         }
     }
 
