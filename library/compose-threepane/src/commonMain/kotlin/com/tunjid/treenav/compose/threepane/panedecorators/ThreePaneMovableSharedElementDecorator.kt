@@ -23,27 +23,25 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.animation.core.Transition
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Adaptation
 import com.tunjid.treenav.compose.Adaptation.Swap
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayState
+import com.tunjid.treenav.compose.PaneNavigationState
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
-import com.tunjid.treenav.compose.PaneNavigationState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
-import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.panedecorators.PaneDecorator
 import com.tunjid.treenav.compose.panedecorators.paneRenderDecorator
+import com.tunjid.treenav.compose.threepane.ThreePane
 
 /**
  * A [PaneDecorator] that applies semantics of movable shared elements to
@@ -139,37 +137,61 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         clipInOverlayDuringTransition: OverlayClip,
         alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
         sharedElement: @Composable (T, Modifier) -> Unit,
-    ): @Composable (T, Modifier) -> Unit = when (paneState.pane) {
-        null -> throw IllegalArgumentException(
-            "Shared elements may only be used in non null panes"
-        )
-        // Allow movable shared elements in the primary pane only
-        ThreePane.Primary -> delegate.movableSharedElementOf(
-            sharedContentState = sharedContentState,
-            boundsTransform = boundsTransform,
-            placeHolderSize = placeHolderSize,
-            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-            zIndexInOverlay = zIndexInOverlay,
-            clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-            alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-            sharedElement = sharedElement
-        )
+    ): @Composable (T, Modifier) -> Unit = with(hostState) {
+        { state, modifier ->
+            when (paneState.pane) {
+                null -> throw IllegalArgumentException(
+                    "Shared elements may only be used in non null panes"
+                )
+                // Allow movable shared elements in the primary pane only
+                ThreePane.Primary -> SharedElement(
+                    modifier = modifier,
+                    sharedContentState = sharedContentState,
+                    animatedVisibilityScope = delegate.paneScope,
+                    placeHolderSize = placeHolderSize,
+                    renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                    zIndexInOverlay = zIndexInOverlay,
+                    clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                    content = {
+                        MovableSharedElement(
+                            sharedContentState = sharedContentState,
+                            state = state,
+                            useMovableContent = {
+                                delegate.paneScope.transition.targetState == EnterExitState.Visible
+                            },
+                            sharedElement = sharedElement,
+                            alternateOutgoingSharedElement = alternateOutgoingSharedElement
+                        )
+                    }
+                )
 
-        // In the secondary pane allow shared elements only if certain conditions match
-        ThreePane.Secondary -> secondaryPaneSharedElement(
-            sharedContentState = sharedContentState,
-            placeHolderSize = placeHolderSize,
-            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-            zIndexInOverlay = zIndexInOverlay,
-            clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-            alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-            sharedElement = sharedElement
-        )
-
-        // In the other panes use the element as is
-        ThreePane.Tertiary,
-        ThreePane.Overlay,
-            -> alternateOutgoingSharedElement ?: sharedElement
+                // In the secondary pane allow shared elements only if certain conditions match
+                ThreePane.Secondary -> SharedElementWithCallerManagedVisibility(
+                    modifier = modifier,
+                    sharedContentState = sharedContentState,
+                    placeHolderSize = placeHolderSize,
+                    renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                    zIndexInOverlay = zIndexInOverlay,
+                    clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                    isVisible = { false },
+                    content = {
+                        PlainElement(
+                            state = state,
+                            modifier = Modifier.fillSharedElement(),
+                            content = alternateOutgoingSharedElement ?: sharedElement,
+                        )
+                    }
+                )
+                // In the other panes use the element as is
+                ThreePane.Tertiary,
+                ThreePane.Overlay,
+                    -> PlainElement(
+                    state = state,
+                    modifier = modifier,
+                    content = alternateOutgoingSharedElement ?: sharedElement,
+                )
+            }
+        }
     }
 
     @OptIn(ExperimentalSharedTransitionApi::class)
@@ -182,73 +204,79 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         clipInOverlayDuringTransition: OverlayClip,
         alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
         sharedElement: @Composable (T, Modifier) -> Unit
-    ): @Composable (T, Modifier) -> Unit = when (paneState.pane) {
-        null -> throw IllegalArgumentException(
-            "Shared elements may only be used in non null panes"
-        )
-        // Allow movable shared elements in the primary pane only
-        ThreePane.Primary -> delegate.movableStickySharedElementOf(
-            sharedContentState = sharedContentState,
-            boundsTransform = boundsTransform,
-            placeHolderSize = placeHolderSize,
-            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-            zIndexInOverlay = zIndexInOverlay,
-            clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-            alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-            sharedElement = sharedElement
-        )
-
-        // In the secondary pane allow shared elements only if certain conditions match
-        ThreePane.Secondary -> secondaryPaneSharedElement(
-            sharedContentState = sharedContentState,
-            placeHolderSize = placeHolderSize,
-            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-            zIndexInOverlay = zIndexInOverlay,
-            clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-            alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-            sharedElement = sharedElement
-        )
-
-        // In the other panes use the element as is
-        ThreePane.Tertiary,
-        ThreePane.Overlay,
-            -> alternateOutgoingSharedElement ?: sharedElement
-    }
-
-    private fun <T> secondaryPaneSharedElement(
-        sharedContentState: SharedTransitionScope.SharedContentState,
-        placeHolderSize: PlaceHolderSize,
-        renderInOverlayDuringTransition: Boolean,
-        zIndexInOverlay: Float,
-        clipInOverlayDuringTransition: OverlayClip,
-        alternateOutgoingSharedElement: @Composable ((T, Modifier) -> Unit)?,
-        sharedElement: @Composable (T, Modifier) -> Unit
-    ) = when {
-        canAnimateSecondary() -> { state, modifier ->
-            with(hostState) {
-                Box(modifier) {
-                    Box(
-                        Modifier
-                            .fillMaxConstraints()
-                            .sharedElementWithCallerManagedVisibility(
-                                sharedContentState = sharedContentState,
-                                visible = false,
-                                placeHolderSize = placeHolderSize,
-                                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                                zIndexInOverlay = zIndexInOverlay,
-                                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+    ): @Composable (T, Modifier) -> Unit = with(hostState) {
+        { state, modifier ->
+            when(paneState.pane) {
+                null -> throw IllegalArgumentException(
+                    "Shared elements may only be used in non null panes"
+                )
+                ThreePane.Primary -> SharedElementWithCallerManagedVisibility(
+                    modifier = modifier,
+                    sharedContentState = sharedContentState,
+                    placeHolderSize = placeHolderSize,
+                    renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                    zIndexInOverlay = zIndexInOverlay,
+                    clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                    // Allow movable shared elements in the primary pane only
+                    isVisible = {
+                        delegate.paneScope.isActive
+                    },
+                    content = {
+                        MovableSharedElement(
+                            sharedContentState = sharedContentState,
+                            state = state,
+                            useMovableContent = { delegate.paneScope.isActive },
+                            alternateOutgoingSharedElement = alternateOutgoingSharedElement,
+                            sharedElement = sharedElement
+                        )
+                    },
+                )
+                ThreePane.Secondary -> when {
+                    canAnimateSecondary() -> SharedElementWithCallerManagedVisibility(
+                        modifier = modifier,
+                        sharedContentState = sharedContentState,
+                        placeHolderSize = placeHolderSize,
+                        renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                        zIndexInOverlay = zIndexInOverlay,
+                        clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+                        isVisible = {
+                            false
+                        },
+                        content = {
+                            PlainElement(
+                                state = state,
+                                modifier = Modifier.fillSharedElement(),
+                                content = alternateOutgoingSharedElement ?: sharedElement,
                             )
+                        },
                     )
-                    (alternateOutgoingSharedElement ?: sharedElement)(
-                        state,
-                        Modifier
-                            .fillMaxConstraints(),
+                    else -> PlainElement(
+                        state = state,
+                        modifier = modifier,
+                        content = alternateOutgoingSharedElement ?: sharedElement,
                     )
                 }
+                ThreePane.Tertiary,
+                ThreePane.Overlay
+                -> PlainElement(
+                    state = state,
+                    modifier = modifier,
+                    content = alternateOutgoingSharedElement ?: sharedElement,
+                )
             }
         }
+    }
 
-        else -> alternateOutgoingSharedElement ?: sharedElement
+    @Composable
+    private inline fun <T> PlainElement(
+        state: T,
+        modifier: Modifier,
+        crossinline content: @Composable (T, Modifier) -> Unit,
+    ) {
+        content(
+            state,
+            modifier,
+        )
     }
 }
 
@@ -264,25 +292,3 @@ private val PrimaryToSecondary = Swap(
     from = ThreePane.Primary,
     to = ThreePane.Secondary
 )
-
-private fun Modifier.fillMaxConstraints() =
-    layout { measurable, constraints ->
-        val placeable = measurable.measure(
-            constraints.copy(
-                minWidth = when {
-                    constraints.hasBoundedWidth -> constraints.maxWidth
-                    else -> constraints.minWidth
-                },
-                minHeight = when {
-                    constraints.hasBoundedHeight -> constraints.maxHeight
-                    else -> constraints.minHeight
-                }
-            )
-        )
-        layout(
-            width = placeable.width,
-            height = placeable.height
-        ) {
-            placeable.place(0, 0)
-        }
-    }

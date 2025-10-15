@@ -50,7 +50,7 @@ import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableSharedElementOf
+import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableSharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
@@ -198,7 +198,7 @@ fun ChatRoomParticipants(
         verticalArrangement = Arrangement.Center,
     ) {
         participants.forEachIndexed { index, profileName ->
-            updatedMovableSharedElementOf(
+            UpdatedMovableSharedElementOf(
                 sharedContentState = paneScaffoldState.rememberSharedContentState(
                     key = "$roomName-${profileName}"
                 ),

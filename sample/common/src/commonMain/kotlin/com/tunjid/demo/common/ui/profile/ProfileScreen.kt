@@ -43,7 +43,7 @@ import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.treenav.compose.moveablesharedelement.updatedMovableStickySharedElementOf
+import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableStickySharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
@@ -77,9 +77,8 @@ fun ProfileScreen(
                         )
                     }
                     .clickable {
-                        state.profileName ?: return@clickable
-                        state.roomName ?: return@clickable
-                        onAction(Action.Navigation.ToAvatar(state.profileName, state.roomName))
+                        val profileName = state.profile?.name ?: return@clickable
+                        onAction(Action.Navigation.ToAvatar(profileName, state.roomName))
                     }
             )
         },
@@ -127,7 +126,7 @@ private fun ProfilePhoto(
 ) {
     val profileName = state.profileName ?: state.profile?.name
     if (profileName != null) {
-        paneScaffoldState.updatedMovableStickySharedElementOf(
+        paneScaffoldState.UpdatedMovableStickySharedElementOf(
             sharedContentState = paneScaffoldState.rememberSharedContentState(
                 key = "${state.roomName}-$profileName-profile"
             ),

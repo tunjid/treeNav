@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 
 @Stable
-internal object Defaults {
+ internal object Defaults {
 
     val EmptyElement: @Composable (Any?, Modifier) -> Unit = { _, _ -> }
 

@@ -84,8 +84,8 @@ sealed interface SampleDestination : Node {
 
         override val children: List<Node>
             get() = listOfNotNull(
-                roomName?.let(::Chat),
-                roomName?.let { NavTabs.ChatRooms }
+                roomName?.let(::Chat) ?: NavTabs.Me,
+                roomName?.let { NavTabs.ChatRooms },
             )
     }
 }

@@ -35,7 +35,10 @@ fun avatarPaneEntry() = threePaneEntry<SampleDestination>(
         check(destination is SampleDestination.Avatar)
         mapOf(
             ThreePane.Primary to destination,
-            ThreePane.Secondary to destination.roomName?.let(SampleDestination::Chat),
+            ThreePane.Secondary to (
+                    destination.roomName?.let(SampleDestination::Chat)
+                        ?: NavTabs.Me
+                    ),
             ThreePane.Tertiary to destination.roomName?.let { NavTabs.ChatRooms },
         )
     },
