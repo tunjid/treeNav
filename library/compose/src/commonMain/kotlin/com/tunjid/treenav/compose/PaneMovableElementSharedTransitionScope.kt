@@ -50,7 +50,7 @@ fun <Pane, Destination : Node> rememberPaneMovableElementSharedTransitionScope(
     paneSharedTransitionScope: PaneSharedTransitionScope<Pane, Destination>,
     movableSharedElementScope: MovableSharedElementScope,
 ): PaneMovableElementSharedTransitionScope<Pane, Destination> {
-    return remember {
+    return remember(paneSharedTransitionScope, movableSharedElementScope) {
         DelegatingPaneMovableElementSharedTransitionScope(
             paneSharedTransitionScope = paneSharedTransitionScope,
             movableSharedElementScope = movableSharedElementScope,
