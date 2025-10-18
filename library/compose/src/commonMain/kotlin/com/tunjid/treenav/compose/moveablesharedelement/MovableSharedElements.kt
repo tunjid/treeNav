@@ -230,7 +230,7 @@ fun <T> MovableSharedElementScope.UpdatedMovableStickySharedElementOf(
 @Composable
 fun <Pane, Destination : Node> PaneScope<Pane, Destination>.rememberPaneMovableSharedElementScope(
     movableSharedElementHostState: MovableSharedElementHostState<Pane, Destination>
-) = remember {
+) = remember(this, movableSharedElementHostState) {
     PaneMovableSharedElementScope(
         paneScope = this,
         movableSharedElementHostState = movableSharedElementHostState

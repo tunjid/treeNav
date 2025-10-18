@@ -44,7 +44,7 @@ fun <Destination : Node> PaneScope<
         >.rememberPaneSharedTransitionScope(
     sharedTransitionScope: SharedTransitionScope,
 ): PaneSharedTransitionScope<ThreePane, Destination> =
-    remember {
+    remember(this, sharedTransitionScope) {
         ThreePaneSharedTransitionScope(
             paneScope = this,
             sharedTransitionScope = sharedTransitionScope
