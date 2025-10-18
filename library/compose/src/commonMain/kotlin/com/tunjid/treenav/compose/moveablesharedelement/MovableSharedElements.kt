@@ -10,10 +10,8 @@ import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companio
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Defaults
@@ -230,16 +228,19 @@ fun <T> MovableSharedElementScope.UpdatedMovableStickySharedElementOf(
 @Composable
 fun <Pane, Destination : Node> PaneScope<Pane, Destination>.rememberPaneMovableSharedElementScope(
     movableSharedElementHostState: MovableSharedElementHostState<Pane, Destination>
-) = remember(this, movableSharedElementHostState) {
-    PaneMovableSharedElementScope(
-        paneScope = this,
-        movableSharedElementHostState = movableSharedElementHostState
-    )
+): PaneMovableSharedElementScope<Pane, Destination> {
+    val updatedPaneScope = rememberUpdatedState(this)
+    return remember(movableSharedElementHostState) {
+        PaneMovableSharedElementScope(
+            currentPaneScope = updatedPaneScope::value,
+            movableSharedElementHostState = movableSharedElementHostState
+        )
+    }
 }
 
 /**
  * An implementation of [MovableSharedElementScope] that ensures shared elements are only rendered
- * in an [PaneScope] when it is active.
+ * in a [PaneScope] when [PaneScope.isActive] is true.
  *
  * Other implementations of [MovableSharedElementScope] may delegate to this for their own
  * movable shared element implementations.
@@ -247,14 +248,14 @@ fun <Pane, Destination : Node> PaneScope<Pane, Destination>.rememberPaneMovableS
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 class PaneMovableSharedElementScope<Pane, Destination : Node> internal constructor(
-    paneScope: PaneScope<Pane, Destination>,
+    private val currentPaneScope: () -> PaneScope<Pane, Destination>,
     private val movableSharedElementHostState: MovableSharedElementHostState<Pane, Destination>,
 ) : MovableSharedElementScope {
 
     override val sharedTransitionScope: SharedTransitionScope
         get() = movableSharedElementHostState
 
-    var paneScope by mutableStateOf(paneScope)
+    val paneScope get() = currentPaneScope()
 
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
