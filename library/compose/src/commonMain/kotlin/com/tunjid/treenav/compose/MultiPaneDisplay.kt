@@ -243,7 +243,7 @@ private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : N
                 slots = slots,
                 backStatus = backStatus,
                 panesToDestinations = state.destinationPanes,
-                currentPanedNavigationState = panedNavigationState,
+                initialPanedNavigationState = panedNavigationState,
                 eligibleSceneEntries = entries.filter { it.id in activeIds },
                 // Try to match up NavEntries to state using their id and children.
                 // Best case is O(n) where the backstack isn't shuffled.
@@ -266,17 +266,17 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     private val sceneKey: MultiPaneSceneKey,
     private val destination: Destination,
     private val slots: Set<Slot>,
-    private val currentPanedNavigationState: SlotBasedPaneNavigationState<Pane, Destination>,
+    private val initialPanedNavigationState: SlotBasedPaneNavigationState<Pane, Destination>,
     backStatus: () -> BackStatus,
     private val panesToDestinations: @Composable (Destination) -> Map<Pane, Destination?>,
     private val scopeContent: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : Scene<Destination> {
 
-    private val panedNavigationState = mutableStateOf(currentPanedNavigationState)
+    private val currentPanedNavigationState = mutableStateOf(initialPanedNavigationState)
 
     @Stable
     val multiPaneDisplayScope = PaneDestinationMultiPaneDisplayScope(
-        panedNavigationState = panedNavigationState,
+        currentPanedNavigationState = currentPanedNavigationState,
         currentEntries = ::entries,
         backStatus = backStatus,
     )
@@ -291,7 +291,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
             // entries that can show.
             // This is so destinations animating out are shown by the SceneSetupNavEntryDecorator.
             // Otherwise, they will be removed immediately and not animate.
-            else -> panedNavigationState.value.let { state ->
+            else -> currentPanedNavigationState.value.let { state ->
                 eligibleSceneEntries.filter { navEntry ->
                     state.paneFor(navEntry.destination()) != null
                 }
@@ -299,23 +299,23 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
         }
 
     override val content: @Composable () -> Unit = {
-        currentPanedNavigationState.rememberUpdatedPanedNavigationState(
+        initialPanedNavigationState.rememberUpdatedPanedNavigationState(
             backStackIds = sceneKey.ids,
             panesToDestinations = panesToDestinations(destination),
             slots = slots,
-        ).also { panedNavigationState.value = it.value }
+        ).also { currentPanedNavigationState.value = it.value }
 
         multiPaneDisplayScope.scopeContent()
     }
 
     @Stable
     class PaneDestinationMultiPaneDisplayScope<Pane, Destination : Node>(
-        panedNavigationState: State<SlotBasedPaneNavigationState<Pane, Destination>>,
+        private val currentPanedNavigationState: State<SlotBasedPaneNavigationState<Pane, Destination>>,
         private val currentEntries: () -> List<NavEntry<Destination>>,
         private val backStatus: () -> BackStatus,
     ) : MultiPaneDisplayScope<Pane, Destination> {
 
-        override val paneNavigationState by panedNavigationState
+        override val paneNavigationState by currentPanedNavigationState
 
         @Composable
         override fun Destination(pane: Pane) {
@@ -327,16 +327,15 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
             } ?: return
 
             val animatedContentScope = LocalNavAnimatedContentScope.current
+            val updatedPaneState = rememberUpdatedState(paneState)
 
             val scope = remember {
                 AnimatedPaneScope(
                     backStatus = backStatus,
-                    paneState = paneState,
+                    currentPaneState = updatedPaneState::value,
                     animatedContentScope = animatedContentScope,
-                    navigationState = { paneNavigationState },
+                    currentPaneNavigationState = currentPanedNavigationState::value,
                 )
-            }.also {
-                it.paneState = paneState
             }
 
             CompositionLocalProvider(

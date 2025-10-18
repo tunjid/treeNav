@@ -21,9 +21,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.tunjid.treenav.Node
 import kotlin.jvm.JvmInline
 
@@ -64,9 +61,9 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
  */
 @Stable
 internal class AnimatedPaneScope<Pane, Destination : Node>(
-    val backStatus: () -> BackStatus,
-    val navigationState: () -> PaneNavigationState<Pane, Destination>,
-    paneState: PaneState<Pane, Destination>,
+    private val backStatus: () -> BackStatus,
+    private val currentPaneNavigationState: () -> PaneNavigationState<Pane, Destination>,
+    private val currentPaneState: () -> PaneState<Pane, Destination>,
     animatedContentScope: AnimatedContentScope,
 ) : PaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
 
@@ -74,9 +71,10 @@ internal class AnimatedPaneScope<Pane, Destination : Node>(
         get() = transition.targetState == EnterExitState.Visible
 
     override val paneNavigationState: PaneNavigationState<Pane, Destination>
-        get() = navigationState()
+        get() = currentPaneNavigationState()
 
-    override var paneState by mutableStateOf(paneState)
+    override val paneState
+        get() = currentPaneState()
 
     override val isActive: Boolean
         get() = if (inPredictiveBack) !isEntering else isEntering
