@@ -66,9 +66,8 @@ fun <NavigationState : Node, Destination : Node>
         val delegate = rememberPaneMovableSharedElementScope(
             movableSharedElementHostState = movableSharedElementHostState
         )
-        delegate.paneScope = this
 
-        val movableSharedElementScope = remember {
+        val movableSharedElementScope = remember(movableSharedElementHostState, delegate) {
             ThreePaneMovableSharedElementScope(
                 hostState = movableSharedElementHostState,
                 delegate = delegate,
