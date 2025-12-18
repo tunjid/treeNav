@@ -56,8 +56,8 @@ import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.data.Profile
-import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableSharedElementOf
-import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableStickySharedElementOf
+import com.tunjid.treenav.compose.UpdatedMovableSharedElementOf
+import com.tunjid.treenav.compose.UpdatedMovableStickySharedElementOf
 import com.tunjid.treenav.compose.threepane.ThreePane
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -113,11 +113,11 @@ private fun ChatTitle(
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            modifier = Modifier
-                .paneSharedElement(rememberSharedContentState("title")),
-            text = roomName,
-        )
+        PaneSharedElement(
+            sharedContentState = rememberSharedContentState("title")
+        ) {
+            Text(text = roomName)
+        }
         Spacer(
             modifier = Modifier
                 .width(16.dp)

@@ -29,7 +29,7 @@ import com.tunjid.demo.common.ui.DragToPopState.Companion.rememberDragToPopState
 import com.tunjid.demo.common.ui.PaneScaffoldState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
-import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableStickySharedElementOf
+import com.tunjid.treenav.compose.UpdatedMovableStickySharedElementOf
 
 @Composable
 fun AvatarScreen(

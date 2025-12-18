@@ -1,4 +1,4 @@
-package com.tunjid.treenav.compose.moveablesharedelement
+package com.tunjid.treenav.compose
 
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable

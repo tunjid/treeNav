@@ -18,10 +18,10 @@ package com.tunjid.treenav.compose.threepane
 
 import androidx.compose.runtime.Composable
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.MovableSharedElementScope
 import com.tunjid.treenav.compose.PaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneSharedTransitionScope
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.rememberPaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.threepane.panedecorators.requireThreePaneMovableSharedElementScope
 

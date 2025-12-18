@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 
 /**
  * A type alias for [PaneMovableElementSharedTransitionScope] for usages where the generic types

@@ -42,7 +42,7 @@ import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableStickySharedElementOf
+import com.tunjid.treenav.compose.UpdatedMovableStickySharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
@@ -105,11 +105,11 @@ private fun ProfileHeader(
         )
         SampleTopAppBar(
             title = {
-                Text(
-                    modifier = Modifier
-                        .paneSharedElement(rememberSharedContentState("title")),
-                    text = if (state.profileName == null) "Me" else "Profile",
-                )
+                PaneSharedElement(
+                    sharedContentState = rememberSharedContentState("title")
+                ) {
+                    Text(text = if (state.profileName == null) "Me" else "Profile")
+                }
             },
             onBackPressed = onBackPressed,
         )

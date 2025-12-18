@@ -1,4 +1,4 @@
-package com.tunjid.treenav.compose.moveablesharedelement
+package com.tunjid.treenav.compose
 
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterExitState
@@ -12,14 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.Defaults
-import com.tunjid.treenav.compose.PaneScope
 
 /**
  * Creates movable shared elements that may be shared amongst different [PaneScope]
  * instances.
  */
-
 @Stable
 interface MovableSharedElementScope {
 

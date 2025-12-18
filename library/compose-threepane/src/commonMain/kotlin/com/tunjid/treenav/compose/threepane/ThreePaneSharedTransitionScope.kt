@@ -24,8 +24,12 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.MinConstraintBox
+import com.tunjid.treenav.compose.MinConstraintBoxScope
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneSharedTransitionScope
+import com.tunjid.treenav.compose.SharedElement
+import com.tunjid.treenav.compose.SharedElementWithCallerManagedVisibility
 
 /**
  * Creates and remembers a [PaneSharedTransitionScope] for [ThreePane] layouts with
@@ -57,62 +61,79 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
     PaneScope<ThreePane, Destination> by paneScope,
     SharedTransitionScope by sharedTransitionScope {
 
-
-    override fun Modifier.paneSharedElement(
+    @Composable
+    override fun PaneSharedElement(
+        modifier: Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
         placeholderSize: SharedTransitionScope.PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
-    ): Modifier = when (paneScope.paneState.pane) {
+        content: @Composable MinConstraintBoxScope.() -> Unit,
+    ) = when (val pane = paneState.pane) {
         null -> throw IllegalArgumentException(
             "Shared elements may only be used in non null panes"
         )
-        // Allow shared elements in the primary or transient primary content only
-        ThreePane.Primary -> sharedElement(
+        // Allow movable shared elements in the primary pane only
+        ThreePane.Primary,
+        ThreePane.Secondary -> SharedElement(
+            modifier = modifier,
             sharedContentState = sharedContentState,
-            animatedVisibilityScope = paneScope,
-            boundsTransform = boundsTransform,
+            animatedVisibilityScope =
+                if (pane == ThreePane.Primary) paneScope
+                else rememberStaticExitedAnimatedVisibilityScope(),
             placeholderSize = placeholderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+            content = content
         )
-
         // In the other panes use the element as is
-        ThreePane.Secondary,
         ThreePane.Tertiary,
-        ThreePane.Overlay,
-            -> this
+        ThreePane.Overlay -> MinConstraintBox(modifier) {
+            content()
+        }
     }
 
-    override fun Modifier.paneStickySharedElement(
+    @Composable
+    override fun PaneStickySharedElement(
+        modifier: Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
         placeholderSize: SharedTransitionScope.PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
-        clipInOverlayDuringTransition: OverlayClip
-    ): Modifier = when (paneScope.paneState.pane) {
+        clipInOverlayDuringTransition: OverlayClip,
+        content: @Composable MinConstraintBoxScope.() -> Unit,
+    ) = when (val pane = paneState.pane) {
         null -> throw IllegalArgumentException(
             "Shared elements may only be used in non null panes"
         )
-        // Allow shared elements in the primary or transient primary content only
-        ThreePane.Primary -> sharedElementWithCallerManagedVisibility(
+
+        ThreePane.Primary,
+        ThreePane.Secondary -> if (pane == ThreePane.Secondary && !canAnimateSecondary()) MinConstraintBox(
+            modifier
+        ) {
+            content()
+        }
+        else SharedElementWithCallerManagedVisibility(
+            modifier = modifier,
             sharedContentState = sharedContentState,
-            visible = isActive,
-            boundsTransform = boundsTransform,
             placeholderSize = placeholderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+            // Allow movable shared elements in the primary pane only
+            isVisible = {
+                isActive && pane == ThreePane.Primary
+            },
+            content = content,
         )
 
-        // In the other panes use the element as is
-        ThreePane.Secondary,
         ThreePane.Tertiary,
-        ThreePane.Overlay,
-            -> this
+        ThreePane.Overlay -> MinConstraintBox(modifier) {
+            content()
+        }
     }
 }

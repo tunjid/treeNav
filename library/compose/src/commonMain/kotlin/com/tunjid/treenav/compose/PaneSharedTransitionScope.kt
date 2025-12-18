@@ -20,6 +20,7 @@ import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.ContentSize
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
@@ -44,14 +45,17 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
      *
      * @see [SharedTransitionScope.sharedElement].
      */
-    fun Modifier.paneSharedElement(
+    @Composable
+    fun PaneSharedElement(
+        modifier: Modifier = Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
         placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
         clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
-    ): Modifier
+        content: @Composable MinConstraintBoxScope.() -> Unit,
+    )
 
     /**
      * Creates a shared element transition where the shared element is __NOT__ seekable
@@ -64,12 +68,15 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
      *
      * @see [SharedTransitionScope.sharedElement].
      */
-    fun Modifier.paneStickySharedElement(
+    @Composable
+    fun PaneStickySharedElement(
+        modifier: Modifier = Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
         placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
         clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
-    ): Modifier
+        content: @Composable MinConstraintBoxScope.() -> Unit,
+    )
 }

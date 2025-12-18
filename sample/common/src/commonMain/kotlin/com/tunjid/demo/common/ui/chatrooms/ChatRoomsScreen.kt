@@ -49,7 +49,7 @@ import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableSharedElementOf
+import com.tunjid.treenav.compose.UpdatedMovableSharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
@@ -99,11 +99,11 @@ private fun Header(
         )
         SampleTopAppBar(
             title = {
-                Text(
-                    modifier = Modifier
-                        .paneSharedElement(rememberSharedContentState("title")),
-                    text = "Chat Rooms",
-                )
+                PaneSharedElement(
+                    sharedContentState = rememberSharedContentState("title")
+                ) {
+                    Text("Chat Rooms")
+                }
             },
             onBackPressed = null
         )

@@ -16,34 +16,33 @@
 
 package com.tunjid.treenav.compose.threepane.panedecorators
 
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceholderSize
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.Transition
-import androidx.compose.animation.core.rememberTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.Adaptation
-import com.tunjid.treenav.compose.Adaptation.Swap
+import com.tunjid.treenav.compose.MovableSharedElementHostState
+import com.tunjid.treenav.compose.MovableSharedElementScope
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayState
+import com.tunjid.treenav.compose.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.PaneNavigationState
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
-import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
-import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
+import com.tunjid.treenav.compose.SharedElement
+import com.tunjid.treenav.compose.SharedElementWithCallerManagedVisibility
 import com.tunjid.treenav.compose.panedecorators.PaneDecorator
 import com.tunjid.treenav.compose.panedecorators.paneRenderDecorator
+import com.tunjid.treenav.compose.rememberPaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.canAnimateSecondary
+import com.tunjid.treenav.compose.threepane.rememberStaticExitedAnimatedVisibilityScope
 
 /**
  * A [PaneDecorator] that applies semantics of movable shared elements to
@@ -166,7 +165,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                         )
                         else PlainElement(
                             state = state,
-                            modifier = Modifier.fillSharedElement(),
+                            modifier = Modifier.fillParentAxisIfFixedOrWrap(),
                             content = alternateOutgoingSharedElement ?: sharedElement,
                         )
                     }
@@ -226,7 +225,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                         )
                         else PlainElement(
                             state = state,
-                            modifier = Modifier.fillSharedElement(),
+                            modifier = Modifier.fillParentAxisIfFixedOrWrap(),
                             content = alternateOutgoingSharedElement ?: sharedElement,
                         )
                     },
@@ -254,40 +253,4 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
             modifier,
         )
     }
-}
-
-
-@Composable
-private fun rememberStaticExitedAnimatedVisibilityScope(): AnimatedVisibilityScope {
-    val transition = rememberTransition(
-        remember {
-            MutableTransitionState(
-                initialState = EnterExitState.PostExit
-            )
-        }
-    )
-    return remember(transition) {
-        StaticAnimatedVisibilityScope(transition)
-    }
-}
-
-private fun PaneScope<ThreePane, *>.canAnimateSecondary(): Boolean {
-    if (inPredictiveBack) return false
-    if (!paneState.adaptations.contains(PrimaryToSecondary)) return false
-    if (paneState.adaptations.contains(Adaptation.Pop)) return false
-
-    return true
-}
-
-private val PrimaryToSecondary = Swap(
-    from = ThreePane.Primary,
-    to = ThreePane.Secondary
-)
-
-
-private class StaticAnimatedVisibilityScope(
-    private val staticTransition: Transition<EnterExitState>
-) : AnimatedVisibilityScope {
-    override val transition: Transition<EnterExitState>
-        get() = staticTransition
 }
