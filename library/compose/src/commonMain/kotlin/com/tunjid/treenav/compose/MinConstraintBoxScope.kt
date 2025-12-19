@@ -43,10 +43,10 @@ inline fun MinConstraintBox(
 
 /**
  * A higher level composable for shared elements that changes the rendering semantics when the
- * shared element is visible or not.
- * - Visible elements are rendered as children of a [MinConstraintBox] with the shared element
- * [Modifier] applied for bounds tracking.
- * - Non visible elements, i.e elements whose [AnimatedVisibilityScope.transition] do not report
+ * shared element has its bounds tracked or not.
+ * - Elements with tracked bounds are rendered as children of a [MinConstraintBox] with
+ * the shared element [Modifier] applied for bounds tracking.
+ * - Untracked elements, i.e elements whose [AnimatedVisibilityScope.transition] do not report
  * a target state of [EnterExitState.Visible], are rendered as siblings so that they may still
  * be visible during the transition.
  *
@@ -68,7 +68,7 @@ inline fun SharedTransitionScope.SharedElement(
     MinConstraintBox(
         modifier = modifier,
     ) {
-        val visible = animatedVisibilityScope.transition.targetState == EnterExitState.Visible
+        val boundsTracked = animatedVisibilityScope.transition.targetState == EnterExitState.Visible
         MinConstraintBox(
             // 2. The Tracker: Holds the shared element key and bounds
             Modifier
@@ -84,20 +84,20 @@ inline fun SharedTransitionScope.SharedElement(
                 .fillParentAxisIfFixedOrWrap(),
         ) {
             // 3a. The shared element if it is visible and animating
-            if (visible) content()
+            if (boundsTracked) content()
         }
         // 3b. The shared element if it is just visible
-        if (!visible) content()
+        if (!boundsTracked) content()
     }
 }
 
 /**
  * A higher level composable for shared elements that changes the rendering semantics when the
- * shared element is visible or not.
- * - Visible elements are rendered as children of a [MinConstraintBox] with the shared element
- * [Modifier] applied for bounds tracking.
- * - Non visible elements, i.e elements whose [isVisible] returns true, are rendered as siblings
- * so that they may still be visible during the transition.
+ * shared element has its bounds tracked or not.
+ * - Elements with tracked bounds are rendered as children of a [MinConstraintBox] with
+ * the shared element [Modifier] applied for bounds tracking.
+ * - Untracked elements, i.e elements whose [areBoundsTracked] returns true, are rendered as
+ * siblings so that they may still be visible during the transition.
  *
  * This semantic distinction is helpful when building for adaptive layouts.
  */
@@ -109,20 +109,20 @@ inline fun SharedTransitionScope.SharedElementWithCallerManagedVisibility(
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip,
-    crossinline isVisible: () -> Boolean,
+    crossinline areBoundsTracked: () -> Boolean,
     crossinline content: @Composable MinConstraintBoxScope.() -> Unit,
 ) {
     // 1. The Wrapper: Handles placement and sizing in the layout
     MinConstraintBox(
         modifier = modifier,
     ) {
-        val visible = isVisible()
+        val boundsTracked = areBoundsTracked()
         MinConstraintBox(
             // 2. The Tracker: Holds the shared element key and bounds
             Modifier
                 .sharedElementWithCallerManagedVisibility(
                     sharedContentState = sharedContentState,
-                    visible = visible,
+                    visible = boundsTracked,
                     placeholderSize = placeholderSize,
                     renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                     zIndexInOverlay = zIndexInOverlay,
@@ -132,10 +132,10 @@ inline fun SharedTransitionScope.SharedElementWithCallerManagedVisibility(
                 .fillParentAxisIfFixedOrWrap(),
         ) {
             // 3a. The shared element if it is visible and animating
-            if (visible) content()
+            if (boundsTracked) content()
         }
         // 3b. The shared element if it is just visible
-        if (!visible) content()
+        if (!boundsTracked) content()
     }
 }
 

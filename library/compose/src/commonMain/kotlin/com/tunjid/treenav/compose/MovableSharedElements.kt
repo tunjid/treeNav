@@ -306,7 +306,7 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
                 renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                 zIndexInOverlay = zIndexInOverlay,
                 clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-                isVisible = { paneScope.isActive },
+                areBoundsTracked = { paneScope.isActive },
                 content = {
                     MovableSharedElement(
                         sharedContentState = sharedContentState,

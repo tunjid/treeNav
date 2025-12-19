@@ -17,8 +17,10 @@
 package com.tunjid.treenav.compose.threepane
 
 import androidx.compose.animation.BoundsTransform
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
@@ -87,7 +89,14 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-            content = content
+            content = {
+                // TODO: Maybe fade content out
+                if (pane == ThreePane.Primary &&
+                    sharedContentState.isMatchFound &&
+                    paneScope.transition.targetState != EnterExitState.Visible
+                ) Box(Modifier.fillParentAxisIfFixedOrWrap())
+                else content()
+            },
         )
         // In the other panes use the element as is
         ThreePane.Tertiary,
@@ -124,11 +133,17 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-            // Allow movable shared elements in the primary pane only
-            isVisible = {
+            areBoundsTracked = {
                 isActive && pane == ThreePane.Primary
             },
-            content = content,
+            content = {
+                // TODO: Maybe fade content out
+                if (pane == ThreePane.Primary &&
+                    sharedContentState.isMatchFound &&
+                    !isActive
+                ) Box(Modifier.fillParentAxisIfFixedOrWrap())
+                else content()
+            },
         )
 
         ThreePane.Tertiary,

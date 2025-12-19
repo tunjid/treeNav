@@ -212,7 +212,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                     zIndexInOverlay = zIndexInOverlay,
                     clipInOverlayDuringTransition = clipInOverlayDuringTransition,
                     // Allow movable shared elements in the primary pane only
-                    isVisible = {
+                    areBoundsTracked = {
                         isActive && pane == ThreePane.Primary
                     },
                     content = {
