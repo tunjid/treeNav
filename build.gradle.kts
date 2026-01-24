@@ -17,16 +17,22 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     extra.apply {
-        set("localProps", java.util.Properties().apply {
-            file("local.properties").let { file ->
-                if (file.exists()) load(java.io.FileInputStream(file))
-            }
-        })
-        set("libProps", java.util.Properties().apply {
-            file("libraryVersion.properties").let { file ->
-                if (file.exists()) load(java.io.FileInputStream(file))
-            }
-        })
+        set(
+            "localProps",
+            java.util.Properties().apply {
+                file("local.properties").let { file ->
+                    if (file.exists()) load(java.io.FileInputStream(file))
+                }
+            },
+        )
+        set(
+            "libProps",
+            java.util.Properties().apply {
+                file("libraryVersion.properties").let { file ->
+                    if (file.exists()) load(java.io.FileInputStream(file))
+                }
+            },
+        )
     }
 
     repositories {
@@ -40,6 +46,7 @@ buildscript {
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.axionRelease) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.jetbrains.compose) apply false
     alias(libs.plugins.jetbrains.dokka) apply false

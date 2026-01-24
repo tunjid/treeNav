@@ -28,15 +28,17 @@ private class RouteDelegate<T>(
     @Suppress("UNCHECKED_CAST")
     override operator fun getValue(
         thisRef: Route,
-        property: KProperty<*>
-    ): T = when (val value = when {
-        isPath -> thisRef.routeParams.pathArgs[property.name]
-        else -> thisRef.routeParams.queryParams[property.name]?.firstOrNull()
-    }) {
+        property: KProperty<*>,
+    ): T = when (
+        val value = when {
+            isPath -> thisRef.routeParams.pathArgs[property.name]
+            else -> thisRef.routeParams.queryParams[property.name]?.firstOrNull()
+        }
+    ) {
         null -> when {
             isOptional -> default
             else -> default ?: throw NoSuchElementException(
-                "There is no value for the property '${property.name}' in the Route's ${if (isPath) "path arguments" else "query parameters"}."
+                "There is no value for the property '${property.name}' in the Route's ${if (isPath) "path arguments" else "query parameters"}.",
             )
         }
 
@@ -45,12 +47,12 @@ private class RouteDelegate<T>(
 }
 
 fun routePath(
-    default: String? = null
+    default: String? = null,
 ): ReadOnlyProperty<Route, String> = RouteDelegate(
     isOptional = false,
     isPath = true,
     default = default,
-    mapper = { it }
+    mapper = { it },
 )
 
 fun <T> mappedRoutePath(
@@ -60,16 +62,16 @@ fun <T> mappedRoutePath(
     isOptional = false,
     isPath = true,
     default = default,
-    mapper = mapper
+    mapper = mapper,
 )
 
 fun routeQuery(
-    default: String? = null
+    default: String? = null,
 ): ReadOnlyProperty<Route, String> = RouteDelegate(
     isOptional = false,
     isPath = false,
     default = default,
-    mapper = { it }
+    mapper = { it },
 )
 
 fun <T> mappedRouteQuery(
@@ -79,16 +81,16 @@ fun <T> mappedRouteQuery(
     isOptional = false,
     isPath = false,
     default = default,
-    mapper = mapper
+    mapper = mapper,
 )
 
 fun optionalRouteQuery(
-    default: String? = null
+    default: String? = null,
 ): ReadOnlyProperty<Route, String?> = RouteDelegate(
     isOptional = true,
     isPath = false,
     default = default,
-    mapper = { it }
+    mapper = { it },
 )
 
 fun <T> optionalMappedRouteQuery(
@@ -98,5 +100,5 @@ fun <T> optionalMappedRouteQuery(
     isOptional = true,
     isPath = false,
     default = default,
-    mapper = mapper
+    mapper = mapper,
 )

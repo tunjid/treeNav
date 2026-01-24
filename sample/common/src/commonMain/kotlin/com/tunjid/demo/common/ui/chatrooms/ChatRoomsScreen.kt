@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui.chatrooms
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
@@ -50,7 +49,7 @@ import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.data.ChatRoom
 import com.tunjid.demo.common.ui.data.Message
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableSharedElementOf
+import com.tunjid.treenav.compose.UpdatedMovableSharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
@@ -77,11 +76,10 @@ fun ChatRoomsScreen(
                 state = state,
                 onAction = onAction,
             )
-        }
+        },
     )
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun Header(
     headerState: CollapsingHeaderState,
@@ -95,19 +93,19 @@ private fun Header(
                 .offset {
                     IntOffset(
                         x = 0,
-                        y = -headerState.translation.roundToInt()
+                        y = -headerState.translation.roundToInt(),
                     )
-                }
+                },
         )
         SampleTopAppBar(
             title = {
-                Text(
-                    modifier = Modifier
-                        .paneSharedElement(rememberSharedContentState("title")),
-                    text = "Chat Rooms",
-                )
+                PaneSharedElement(
+                    sharedContentState = rememberSharedContentState("title"),
+                ) {
+                    Text("Chat Rooms")
+                }
             },
-            onBackPressed = null
+            onBackPressed = null,
         )
     }
 }
@@ -116,10 +114,10 @@ private fun Header(
 private fun ChatRooms(
     paneScaffoldState: PaneScaffoldState,
     state: State,
-    onAction: (Action) -> Unit
+    onAction: (Action) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) {
         items(
             items = state.chatRooms,
@@ -138,11 +136,11 @@ private fun ChatRooms(
                             Action.Navigation.ToRoom(
                                 roomName = it,
                                 participants = participants,
-                            )
+                            ),
                         )
-                    }
+                    },
                 )
-            }
+            },
         )
     }
 }
@@ -159,7 +157,7 @@ fun ChatRoomListItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(8.dp),
-        onClick = { onRoomClicked(roomName) }
+        onClick = { onRoomClicked(roomName) },
     ) {
         Row(
             modifier = Modifier
@@ -168,7 +166,7 @@ fun ChatRoomListItem(
                 .padding(
                     horizontal = 8.dp,
                 ),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             ChatRoomParticipants(
                 paneScaffoldState = paneScaffoldState,
@@ -178,13 +176,12 @@ fun ChatRoomListItem(
             Text(
                 text = roomName,
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
         }
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun ChatRoomParticipants(
     paneScaffoldState: PaneScaffoldState,
@@ -200,7 +197,7 @@ fun ChatRoomParticipants(
         participants.forEachIndexed { index, profileName ->
             UpdatedMovableSharedElementOf(
                 sharedContentState = paneScaffoldState.rememberSharedContentState(
-                    key = "$roomName-${profileName}"
+                    key = "$roomName-$profileName",
                 ),
                 state = ProfilePhotoArgs(
                     profileName = profileName,
@@ -222,7 +219,7 @@ fun ChatRoomParticipants(
                     .clip(RoundedCornerShape(28.dp)),
                 sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
                     ProfilePhoto(args, innerModifier)
-                }
+                },
             )
         }
     }

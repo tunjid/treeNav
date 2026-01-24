@@ -16,13 +16,12 @@
 
 package com.tunjid.treenav.compose.threepane
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.runtime.Composable
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.MovableSharedElementScope
 import com.tunjid.treenav.compose.PaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneSharedTransitionScope
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 import com.tunjid.treenav.compose.rememberPaneMovableElementSharedTransitionScope
 import com.tunjid.treenav.compose.threepane.panedecorators.requireThreePaneMovableSharedElementScope
 
@@ -31,7 +30,7 @@ import com.tunjid.treenav.compose.threepane.panedecorators.requireThreePaneMovab
  * a [ThreePane] layout.
  */
 typealias ThreePaneMovableElementSharedTransitionScope<Destination> =
-        PaneMovableElementSharedTransitionScope<ThreePane, Destination>
+    PaneMovableElementSharedTransitionScope<ThreePane, Destination>
 
 /**
  * Remembers a [ThreePaneMovableElementSharedTransitionScope] in the composition.
@@ -42,16 +41,16 @@ typealias ThreePaneMovableElementSharedTransitionScope<Destination> =
  * If one is not provided, one is retrieved from this [PaneScope] using
  * [requireThreePaneMovableSharedElementScope].
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
 fun <Destination : Node> PaneScope<
-        ThreePane,
-        Destination
-        >.rememberThreePaneMovableElementSharedTransitionScope(
-    movableSharedElementScope: MovableSharedElementScope = requireThreePaneMovableSharedElementScope()
+    ThreePane,
+    Destination,
+    >.rememberThreePaneMovableElementSharedTransitionScope(
+    movableSharedElementScope: MovableSharedElementScope = requireThreePaneMovableSharedElementScope(),
 ): ThreePaneMovableElementSharedTransitionScope<Destination> {
     val paneSharedTransitionScope = rememberPaneSharedTransitionScope(
-        movableSharedElementScope.sharedTransitionScope
+        movableSharedElementScope.sharedTransitionScope,
     )
     return rememberPaneMovableElementSharedTransitionScope(
         paneSharedTransitionScope = paneSharedTransitionScope,

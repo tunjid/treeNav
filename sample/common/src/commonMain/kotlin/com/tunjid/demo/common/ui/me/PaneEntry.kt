@@ -31,8 +31,7 @@ import com.tunjid.demo.common.ui.rememberPaneScaffoldState
 import com.tunjid.demo.common.ui.viewModelCoroutineScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
-fun mePaneEntry(
-) = threePaneEntry(
+fun mePaneEntry() = threePaneEntry(
     contentTransform = predictiveBackContentTransform,
     render = {
         val viewModel = viewModel<ProfileViewModel> {
@@ -60,5 +59,5 @@ fun mePaneEntry(
                 PaneNavigationRail()
             },
         )
-    }
+    },
 )

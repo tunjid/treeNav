@@ -1,7 +1,6 @@
 package com.tunjid.treenav.compose
 
 import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.EnterTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import com.tunjid.treenav.Node

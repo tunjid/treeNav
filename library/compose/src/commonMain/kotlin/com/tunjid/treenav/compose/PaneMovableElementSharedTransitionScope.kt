@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 @file:Suppress("unused")
 
 package com.tunjid.treenav.compose
@@ -23,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
 
 /**
  * A type alias for [PaneMovableElementSharedTransitionScope] for usages where the generic types
@@ -37,7 +35,8 @@ typealias MovableElementSharedTransitionScope = PaneMovableElementSharedTransiti
  */
 @Stable
 interface PaneMovableElementSharedTransitionScope<Pane, Destination : Node> :
-    PaneSharedTransitionScope<Pane, Destination>, MovableSharedElementScope
+    PaneSharedTransitionScope<Pane, Destination>,
+    MovableSharedElementScope
 
 /**
  * Remembers a [PaneMovableElementSharedTransitionScope] in the composition.

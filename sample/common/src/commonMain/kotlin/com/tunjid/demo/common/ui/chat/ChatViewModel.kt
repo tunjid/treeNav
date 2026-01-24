@@ -60,20 +60,20 @@ class ChatViewModel(
             chatLoadMutations(
                 chat = chat,
                 chatsRepository = chatsRepository,
-                profileRepository = profileRepository
-            )
+                profileRepository = profileRepository,
+            ),
         ),
         actionTransform = { actions ->
             actions.toMutationStream(
-                keySelector = Action::key
+                keySelector = Action::key,
             ) {
                 when (val type = type()) {
                     is Action.Navigation -> navigationRepository.navigationMutations(
-                        type.flow
+                        type.flow,
                     )
                 }
             }
-        }
+        },
     )
 
 private fun ProfileRepository.meMutations(): Flow<Mutation<State>> =
@@ -92,13 +92,13 @@ private fun chatLoadMutations(
 ): Flow<Mutation<State>> =
     chatsRepository.chatsFor(chat.roomName).flatMapLatest { chats ->
         combine(
-            flows = chats.map { message -> profileRepository.profileFor(message.sender) }
+            flows = chats.map { message -> profileRepository.profileFor(message.sender) },
         ) { profiles ->
             val namesToProfiles = profiles.associateBy(Profile::name)
             chats.map { message ->
                 MessageItem(
                     message = message,
-                    sender = namesToProfiles.getValue(message.sender)
+                    sender = namesToProfiles.getValue(message.sender),
                 )
             }
         }
@@ -124,25 +124,29 @@ sealed class Action(
     val key: String,
 ) {
 
-
-    sealed class Navigation : Action("Navigation"), NavigationAction {
-        data object Pop : Navigation(), NavigationAction by navigationAction(
-            MultiStackNav::pop
-        )
+    sealed class Navigation :
+        Action("Navigation"),
+        NavigationAction {
+        data object Pop :
+            Navigation(),
+            NavigationAction by navigationAction(
+                MultiStackNav::pop,
+            )
 
         data class GoToProfile(
             val profileName: String,
             val roomName: String,
             val isInPrimaryPane: Boolean,
-        ) : Navigation(), NavigationAction by navigationAction(
-            {
-                val profileDestination = SampleDestination.Profile(
-                    profileName = profileName,
-                    roomName = roomName,
-                )
-                if (isInPrimaryPane) push(profileDestination)
-                else swap(profileDestination)
-            }
-        )
+        ) : Navigation(),
+            NavigationAction by navigationAction(
+                {
+                    val profileDestination = SampleDestination.Profile(
+                        profileName = profileName,
+                        roomName = roomName,
+                    )
+                    if (isInPrimaryPane) push(profileDestination)
+                    else swap(profileDestination)
+                },
+            )
     }
 }

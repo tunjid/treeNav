@@ -14,15 +14,12 @@
  *    limitations under the License.
  */
 
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.tunjid.demo.common.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
@@ -58,7 +55,7 @@ fun PaneScaffoldState.PaneNavigationBar(
             val appState = LocalAppState.current
             if (canUseMovableNavigationBar) appState.movableNavigationBar(Modifier)
             else appState.PaneNavigationBar(Modifier)
-        }
+        },
     )
 }
 
@@ -77,8 +74,8 @@ fun PaneScaffoldState.PaneNavigationRail(
                 boundsTransform = NavigationRailBoundsTransform,
             ),
         visible = canShowNavigationRail,
-        enter = if (canShowNavigationRail
-            && paneState.adaptations.none { it is Adaptation.Swap<*> }
+        enter = if (canShowNavigationRail &&
+            paneState.adaptations.none { it is Adaptation.Swap<*> }
         ) enterTransition else EnterTransition.None,
         exit = if (canShowNavigationRail) exitTransition else ExitTransition.None,
     ) {
@@ -90,10 +87,10 @@ fun PaneScaffoldState.PaneNavigationRail(
 
 @Composable
 internal fun AppState.PaneNavigationBar(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavigationBar(
-        modifier = modifier
+        modifier = modifier,
     ) {
         SampleDestination.NavTabs.entries.forEach { item ->
             NavigationBarItem(
@@ -104,7 +101,7 @@ internal fun AppState.PaneNavigationBar(
                     )
                 },
                 selected = isOnCurrentStack(item),
-                onClick = { setTab(item) }
+                onClick = { setTab(item) },
             )
         }
     }
@@ -112,10 +109,10 @@ internal fun AppState.PaneNavigationBar(
 
 @Composable
 internal fun AppState.PaneNavigationRail(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavigationRail(
-        modifier = modifier
+        modifier = modifier,
     ) {
         SampleDestination.NavTabs.entries.forEach { item ->
             NavigationRailItem(
@@ -126,7 +123,7 @@ internal fun AppState.PaneNavigationRail(
                         contentDescription = item.title,
                     )
                 },
-                onClick = { setTab(item) }
+                onClick = { setTab(item) },
             )
         }
     }

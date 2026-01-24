@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui
 
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -37,16 +36,16 @@ import com.tunjid.composables.collapsingheader.rememberCollapsingHeaderState
 
 @Composable
 fun rememberAppBarCollapsingHeaderState(
-    expandedHeight: Dp
+    expandedHeight: Dp,
 ): CollapsingHeaderState {
     val statusBars = WindowInsets.statusBars
     return rememberCollapsingHeaderState(
         collapsedHeight = {
             56.dp.toPx() +
-                    statusBars.getTop(this).toFloat() +
-                    statusBars.getBottom(this).toFloat()
+                statusBars.getTop(this).toFloat() +
+                statusBars.getBottom(this).toFloat()
         },
-        initialExpandedHeight = { expandedHeight.toPx() }
+        initialExpandedHeight = { expandedHeight.toPx() },
     )
 }
 
@@ -70,7 +69,7 @@ fun SampleTopAppBar(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = null,
                 )
-            }
+            },
         )
         title()
     }

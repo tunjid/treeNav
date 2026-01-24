@@ -24,12 +24,10 @@ import com.tunjid.treenav.switch
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-
 class StackNavExtTest {
 
     @Test
     fun testStackNavMultiPaneDisplayBackstack() {
-
         val subject = StackNav(name = "subject")
 
         val pushed = subject
@@ -46,16 +44,15 @@ class StackNavExtTest {
                 placeChildrenBeforeParent = true,
                 distinctDestinations = false,
             ),
-            actual = pushed.multiPaneDisplayBackstack()
+            actual = pushed.multiPaneDisplayBackstack(),
         )
     }
 
     @Test
     fun testMultiStackNavMultiPaneDisplayBackstack() {
-
         val subject = MultiStackNav(
             name = "subject",
-            stacks = listOf("0", "1", "2").map(::StackNav)
+            stacks = listOf("0", "1", "2").map(::StackNav),
         )
 
         val pushed = subject
@@ -74,7 +71,7 @@ class StackNavExtTest {
                 placeChildrenBeforeParent = true,
                 distinctDestinations = false,
             ),
-            actual = pushed.multiPaneDisplayBackstack()
+            actual = pushed.multiPaneDisplayBackstack(),
         )
     }
 }

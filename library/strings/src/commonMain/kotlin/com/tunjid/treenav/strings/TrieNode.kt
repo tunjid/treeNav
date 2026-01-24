@@ -46,7 +46,7 @@ private fun <T> TrieNode<T>.insert(segments: List<String>, item: T, index: Int) 
     children.getValue(segment).insert(
         segments = segments,
         item = item,
-        index = index + 1
+        index = index + 1,
     )
 }
 
@@ -55,13 +55,13 @@ private fun <T> TrieNode<T>.find(segments: List<String>, index: Int): T? {
     val segment = segments[index]
 
     val child = children[segment]
-    // Try matching against a parameter
+        // Try matching against a parameter
         ?: children[PARAMETER_MATCHER]
         ?: return null
 
     return child.find(
         segments = segments,
-        index = index + 1
+        index = index + 1,
     )
 }
 

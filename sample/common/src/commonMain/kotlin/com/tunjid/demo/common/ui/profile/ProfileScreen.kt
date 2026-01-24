@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui.profile
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,7 +42,7 @@ import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
 import com.tunjid.demo.common.ui.SampleTopAppBar
 import com.tunjid.demo.common.ui.rememberAppBarCollapsingHeaderState
-import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableStickySharedElementOf
+import com.tunjid.treenav.compose.UpdatedMovableStickySharedElementOf
 import kotlin.math.roundToInt
 
 @Composable
@@ -73,22 +72,21 @@ fun ProfileScreen(
                     .offset {
                         IntOffset(
                             x = 0,
-                            y = -headerState.translation.roundToInt()
+                            y = -headerState.translation.roundToInt(),
                         )
                     }
                     .clickable {
                         val profileName = state.profile?.name ?: return@clickable
                         onAction(Action.Navigation.ToAvatar(profileName, state.roomName))
-                    }
+                    },
             )
         },
         body = {
             ProfileDetails(state)
-        }
+        },
     )
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ProfileHeader(
     state: State,
@@ -97,27 +95,26 @@ private fun ProfileHeader(
     onBackPressed: (() -> Unit)?,
 ) = with(paneScaffoldState) {
     Box(
-        modifier = Modifier.heightIn(min = 400.dp)
+        modifier = Modifier.heightIn(min = 400.dp),
     ) {
         ProfilePhoto(
             state = state,
             paneScaffoldState = paneScaffoldState,
-            modifier = modifier
+            modifier = modifier,
         )
         SampleTopAppBar(
             title = {
-                Text(
-                    modifier = Modifier
-                        .paneSharedElement(rememberSharedContentState("title")),
-                    text = if (state.profileName == null) "Me" else "Profile",
-                )
+                PaneSharedElement(
+                    sharedContentState = rememberSharedContentState("title"),
+                ) {
+                    Text(text = if (state.profileName == null) "Me" else "Profile")
+                }
             },
             onBackPressed = onBackPressed,
         )
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ProfilePhoto(
     state: State,
@@ -128,7 +125,7 @@ private fun ProfilePhoto(
     if (profileName != null) {
         paneScaffoldState.UpdatedMovableStickySharedElementOf(
             sharedContentState = paneScaffoldState.rememberSharedContentState(
-                key = "${state.roomName}-$profileName-profile"
+                key = "${state.roomName}-$profileName-profile",
             ),
             state = ProfilePhotoArgs(
                 profileName = profileName,
@@ -138,7 +135,7 @@ private fun ProfilePhoto(
             modifier = modifier,
             sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
                 ProfilePhoto(args, innerModifier)
-            }
+            },
         )
     }
 }
@@ -151,30 +148,30 @@ private fun ProfileDetails(
     Column(
         modifier = modifier
             .padding(horizontal = 16.dp)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = state.profile?.name ?: "",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = state.profile?.jobTitle ?: "",
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = state.profile?.location ?: "",
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = state.profile?.selfDescription ?: "",
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
         )
     }
 }

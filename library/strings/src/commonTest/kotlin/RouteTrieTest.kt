@@ -20,7 +20,6 @@ import com.tunjid.treenav.strings.toRouteTrie
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-
 class RouteTrieTest {
 
     @Test
@@ -67,7 +66,7 @@ class RouteTrieTest {
             actual = routeTrie[routeOf("users/1/photos/pager")],
             message = "users path with parameter and photos and pager segments should be found at index 3",
 
-            )
+        )
         assertEquals(
             expected = null,
             actual = routeTrie[routeOf("users/1/photos/pager/oops")],

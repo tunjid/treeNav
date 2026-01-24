@@ -36,9 +36,9 @@ fun avatarPaneEntry() = threePaneEntry<SampleDestination>(
         mapOf(
             ThreePane.Primary to destination,
             ThreePane.Secondary to (
-                    destination.roomName?.let(SampleDestination::Chat)
-                        ?: NavTabs.Me
-                    ),
+                destination.roomName?.let(SampleDestination::Chat)
+                    ?: NavTabs.Me
+                ),
             ThreePane.Tertiary to destination.roomName?.let { NavTabs.ChatRooms },
         )
     },
@@ -61,7 +61,7 @@ fun avatarPaneEntry() = threePaneEntry<SampleDestination>(
                     paneScaffoldState = this,
                     state = viewModel.state.collectAsStateWithLifecycle().value,
                     onAction = viewModel.accept,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             },
         )

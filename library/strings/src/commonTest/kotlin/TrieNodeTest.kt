@@ -21,7 +21,6 @@ import com.tunjid.treenav.strings.insert
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-
 class TrieNodeTest {
 
     @Test
@@ -70,7 +69,7 @@ class TrieNodeTest {
             actual = trieNode.find("users/1/photos/pager"),
             message = "users path with parameter and photos and pager segments should be found at index 3",
 
-            )
+        )
         assertEquals(
             expected = null,
             actual = trieNode.find("users/1/photos/pager/oops"),

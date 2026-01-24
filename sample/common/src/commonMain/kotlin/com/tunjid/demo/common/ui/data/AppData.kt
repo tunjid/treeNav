@@ -14,60 +14,61 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalTime::class)
+
 package com.tunjid.demo.common.ui.data
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 data class ChatData(
     val chatRooms: Map<String, ChatRoom>,
-    val profiles: Map<String, Profile>
+    val profiles: Map<String, Profile>,
 )
 
 data class ChatRoom(
     val name: String,
-    val messages: List<Message>
+    val messages: List<Message>,
 )
 
 data class Message @OptIn(ExperimentalTime::class) constructor(
     val sender: String,
     val timestamp: Instant,
-    val content: String
+    val content: String,
 )
 
 data class Profile(
     val name: String,
     val jobTitle: String,
     val location: String,
-    val selfDescription: String
+    val selfDescription: String,
 )
 
 object ChatsRepository {
     val rooms: Flow<List<ChatRoom>> = flowOf(
-        chatData.chatRooms.values.toList()
+        chatData.chatRooms.values.toList(),
     )
 
     fun room(roomName: String): Flow<ChatRoom> = flowOf(
-        chatData.chatRooms.getValue(roomName)
+        chatData.chatRooms.getValue(roomName),
     )
 
     fun chatsFor(roomName: String): Flow<List<Message>> = flowOf(
-        chatData.chatRooms[roomName]?.messages ?: emptyList()
+        chatData.chatRooms[roomName]?.messages ?: emptyList(),
     )
 }
 
 object ProfileRepository {
     val me: Flow<Profile> = flowOf(
-        chatData.profiles.values.random()
+        chatData.profiles.values.random(),
     )
 
     fun profileFor(name: String): Flow<Profile> = flowOf(
-        chatData.profiles.getValue(name)
+        chatData.profiles.getValue(name),
     )
 }
-
 
 @OptIn(ExperimentalTime::class)
 private val chatData = ChatData(
@@ -78,19 +79,19 @@ private val chatData = ChatData(
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-05T13:00:00Z"),
-                    content = "Hey team, any thoughts on how we should handle message delivery confirmations in the SDK?"
+                    content = "Hey team, any thoughts on how we should handle message delivery confirmations in the SDK?",
                 ),
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-05T13:05:00Z"),
-                    content = "I think we should provide callbacks for both client-side and server-side confirmations."
+                    content = "I think we should provide callbacks for both client-side and server-side confirmations.",
                 ),
                 Message(
                     sender = "Kenji",
                     timestamp = Instant.parse("2024-10-05T13:10:00Z"),
-                    content = "Agreed. We should also consider adding an option for offline message storage."
-                )
-            )
+                    content = "Agreed. We should also consider adding an option for offline message storage.",
+                ),
+            ),
         ),
         "API Integration" to ChatRoom(
             name = "API Integration",
@@ -98,14 +99,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-05T14:00:00Z"),
-                    content = "Has anyone started working on the API integration for user authentication?"
+                    content = "Has anyone started working on the API integration for user authentication?",
                 ),
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-05T14:05:00Z"),
-                    content = "I've been looking into it. I think OAuth 2.0 would be the best approach."
-                )
-            )
+                    content = "I've been looking into it. I think OAuth 2.0 would be the best approach.",
+                ),
+            ),
         ),
         "Testing" to ChatRoom(
             name = "Testing",
@@ -113,14 +114,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-05T15:00:00Z"),
-                    content = "Bjorn, are you ready to start testing the message sending functionality?"
+                    content = "Bjorn, are you ready to start testing the message sending functionality?",
                 ),
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-05T15:05:00Z"),
-                    content = "Almost! Just finishing up the unit tests."
-                )
-            )
+                    content = "Almost! Just finishing up the unit tests.",
+                ),
+            ),
         ),
         "Documentation" to ChatRoom(
             name = "Documentation",
@@ -128,14 +129,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Kenji",
                     timestamp = Instant.parse("2024-10-05T16:00:00Z"),
-                    content = "Lin, can you start working on the documentation for the SDK?"
+                    content = "Lin, can you start working on the documentation for the SDK?",
                 ),
                 Message(
                     sender = "Lin",
                     timestamp = Instant.parse("2024-10-05T16:05:00Z"),
-                    content = "Sure, I'll get started on that today."
-                )
-            )
+                    content = "Sure, I'll get started on that today.",
+                ),
+            ),
         ),
         "Random" to ChatRoom(
             name = "Random",
@@ -143,19 +144,19 @@ private val chatData = ChatData(
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-05T17:00:00Z"),
-                    content = "Anyone want to grab coffee?"
+                    content = "Anyone want to grab coffee?",
                 ),
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-05T17:05:00Z"),
-                    content = "Sure, I'm in!"
+                    content = "Sure, I'm in!",
                 ),
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-05T17:10:00Z"),
-                    content = "Count me in too!"
-                )
-            )
+                    content = "Count me in too!",
+                ),
+            ),
         ),
         "Project Updates" to ChatRoom(
             name = "Project Updates",
@@ -163,19 +164,19 @@ private val chatData = ChatData(
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-06T09:00:00Z"),
-                    content = "Good morning everyone! Just wanted to share a quick update on the project timeline."
+                    content = "Good morning everyone! Just wanted to share a quick update on the project timeline.",
                 ),
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-06T09:05:00Z"),
-                    content = "Thanks Diego! Looking forward to seeing the updated roadmap."
+                    content = "Thanks Diego! Looking forward to seeing the updated roadmap.",
                 ),
                 Message(
                     sender = "Kenji",
                     timestamp = Instant.parse("2024-10-06T09:10:00Z"),
-                    content = "Any news on the release date?"
-                )
-            )
+                    content = "Any news on the release date?",
+                ),
+            ),
         ),
         "Weekend Plans" to ChatRoom(
             name = "Weekend Plans",
@@ -183,19 +184,19 @@ private val chatData = ChatData(
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-06T10:00:00Z"),
-                    content = "Any fun plans for the weekend?"
+                    content = "Any fun plans for the weekend?",
                 ),
                 Message(
                     sender = "Lin",
                     timestamp = Instant.parse("2024-10-06T10:05:00Z"),
-                    content = "I'm planning to go hiking!"
+                    content = "I'm planning to go hiking!",
                 ),
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-06T10:10:00Z"),
-                    content = "I'm going to a concert on Saturday night."
-                )
-            )
+                    content = "I'm going to a concert on Saturday night.",
+                ),
+            ),
         ),
         "UI/UX Feedback" to ChatRoom(
             name = "UI/UX Feedback",
@@ -203,19 +204,19 @@ private val chatData = ChatData(
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-07T11:00:00Z"),
-                    content = "Hey team, I've got some initial designs for the chat UI. Any feedback?"
+                    content = "Hey team, I've got some initial designs for the chat UI. Any feedback?",
                 ),
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-07T11:05:00Z"),
-                    content = "Looks good! I think the message bubbles could be a bit bigger though."
+                    content = "Looks good! I think the message bubbles could be a bit bigger though.",
                 ),
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-07T11:10:00Z"),
-                    content = "Agreed, and maybe add some more whitespace between messages?"
-                )
-            )
+                    content = "Agreed, and maybe add some more whitespace between messages?",
+                ),
+            ),
         ),
         "Team Building" to ChatRoom(
             name = "Team Building",
@@ -223,19 +224,19 @@ private val chatData = ChatData(
                 Message(
                     sender = "Kenji",
                     timestamp = Instant.parse("2024-10-07T14:00:00Z"),
-                    content = "We should plan a team building activity soon!"
+                    content = "We should plan a team building activity soon!",
                 ),
                 Message(
                     sender = "Lin",
                     timestamp = Instant.parse("2024-10-07T14:05:00Z"),
-                    content = "Great idea! How about bowling?"
+                    content = "Great idea! How about bowling?",
                 ),
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-07T14:10:00Z"),
-                    content = "Escape room?"
-                )
-            )
+                    content = "Escape room?",
+                ),
+            ),
         ),
         "Bug Reports" to ChatRoom(
             name = "Bug Reports",
@@ -243,14 +244,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-08T10:00:00Z"),
-                    content = "Found a bug in the message sending function. It crashes when sending a message with an empty string."
+                    content = "Found a bug in the message sending function. It crashes when sending a message with an empty string.",
                 ),
                 Message(
                     sender = "Kenji",
                     timestamp = Instant.parse("2024-10-08T10:05:00Z"),
-                    content = "Thanks for reporting! I'll take a look."
-                )
-            )
+                    content = "Thanks for reporting! I'll take a look.",
+                ),
+            ),
         ),
         "Feature Requests" to ChatRoom(
             name = "Feature Requests",
@@ -258,14 +259,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-08T15:00:00Z"),
-                    content = "It would be great to have a feature for sending voice messages."
+                    content = "It would be great to have a feature for sending voice messages.",
                 ),
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-08T15:05:00Z"),
-                    content = "Good idea! I'll add it to the roadmap."
-                )
-            )
+                    content = "Good idea! I'll add it to the roadmap.",
+                ),
+            ),
         ),
         "Coffee Break" to ChatRoom(
             name = "Coffee Break",
@@ -273,14 +274,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Lin",
                     timestamp = Instant.parse("2024-10-09T11:00:00Z"),
-                    content = "Coffee break anyone?"
+                    content = "Coffee break anyone?",
                 ),
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-09T11:05:00Z"),
-                    content = "I'm in!"
-                )
-            )
+                    content = "I'm in!",
+                ),
+            ),
         ),
         "Funny Memes" to ChatRoom(
             name = "Funny Memes",
@@ -288,14 +289,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-09T16:00:00Z"),
-                    content = "Check out this hilarious meme! [link to meme]"
+                    content = "Check out this hilarious meme! [link to meme]",
                 ),
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-09T16:05:00Z"),
-                    content = "LOL! That's a good one."
-                )
-            )
+                    content = "LOL! That's a good one.",
+                ),
+            ),
         ),
         "Productivity Tips" to ChatRoom(
             name = "Productivity Tips",
@@ -303,14 +304,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Kenji",
                     timestamp = Instant.parse("2024-10-10T09:00:00Z"),
-                    content = "Any tips for staying focused and productive?"
+                    content = "Any tips for staying focused and productive?",
                 ),
                 Message(
                     sender = "Lin",
                     timestamp = Instant.parse("2024-10-10T09:05:00Z"),
-                    content = "I use the Pomodoro Technique. It really helps!"
-                )
-            )
+                    content = "I use the Pomodoro Technique. It really helps!",
+                ),
+            ),
         ),
         "Travel Recommendations" to ChatRoom( // New chat room
             name = "Travel Recommendations",
@@ -318,14 +319,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-10T11:00:00Z"),
-                    content = "I'm planning a trip to Europe next month. Any recommendations?"
+                    content = "I'm planning a trip to Europe next month. Any recommendations?",
                 ),
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-10T11:05:00Z"),
-                    content = "You should definitely visit Stockholm! It's a beautiful city."
-                )
-            )
+                    content = "You should definitely visit Stockholm! It's a beautiful city.",
+                ),
+            ),
         ),
         "Food Talk" to ChatRoom( // New chat room
             name = "Food Talk",
@@ -333,14 +334,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-10T14:00:00Z"),
-                    content = "What's everyone having for lunch?"
+                    content = "What's everyone having for lunch?",
                 ),
                 Message(
                     sender = "Kenji",
                     timestamp = Instant.parse("2024-10-10T14:05:00Z"),
-                    content = "Sushi!"
-                )
-            )
+                    content = "Sushi!",
+                ),
+            ),
         ),
         "Book Club" to ChatRoom( // New chat room
             name = "Book Club",
@@ -348,14 +349,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Lin",
                     timestamp = Instant.parse("2024-10-11T09:00:00Z"),
-                    content = "Has anyone read the new book by [author name]?"
+                    content = "Has anyone read the new book by [author name]?",
                 ),
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-11T09:05:00Z"),
-                    content = "I have! It was amazing."
-                )
-            )
+                    content = "I have! It was amazing.",
+                ),
+            ),
         ),
         "Movie Night" to ChatRoom( // New chat room
             name = "Movie Night",
@@ -363,14 +364,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-11T12:00:00Z"),
-                    content = "Anyone up for a movie night this weekend?"
+                    content = "Anyone up for a movie night this weekend?",
                 ),
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-11T12:05:00Z"),
-                    content = "I'm in!"
-                )
-            )
+                    content = "I'm in!",
+                ),
+            ),
         ),
         "Pet Pictures" to ChatRoom( // New chat room
             name = "Pet Pictures",
@@ -378,14 +379,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Kenji",
                     timestamp = Instant.parse("2024-10-11T15:00:00Z"),
-                    content = "Share pictures of your pets!"
+                    content = "Share pictures of your pets!",
                 ),
                 Message(
                     sender = "Lin",
                     timestamp = Instant.parse("2024-10-11T15:05:00Z"),
-                    content = "Here's my cat, Mittens! [picture of cat]"
-                )
-            )
+                    content = "Here's my cat, Mittens! [picture of cat]",
+                ),
+            ),
         ),
         "Gardening Enthusiasts" to ChatRoom( // New chat room
             name = "Gardening Enthusiasts",
@@ -393,14 +394,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-12T10:00:00Z"),
-                    content = "Anyone else have a green thumb?"
+                    content = "Anyone else have a green thumb?",
                 ),
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-12T10:05:00Z"),
-                    content = "I love gardening! I have a small balcony garden."
-                )
-            )
+                    content = "I love gardening! I have a small balcony garden.",
+                ),
+            ),
         ),
         "Gaming Group" to ChatRoom( // New chat room
             name = "Gaming Group",
@@ -408,14 +409,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-12T13:00:00Z"),
-                    content = "Anyone play [game name]?"
+                    content = "Anyone play [game name]?",
                 ),
                 Message(
                     sender = "Kenji",
                     timestamp = Instant.parse("2024-10-12T13:05:00Z"),
-                    content = "I do! I'm a huge fan."
-                )
-            )
+                    content = "I do! I'm a huge fan.",
+                ),
+            ),
         ),
         "Music Lovers" to ChatRoom( // New chat room
             name = "Music Lovers",
@@ -423,14 +424,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Lin",
                     timestamp = Instant.parse("2024-10-12T16:00:00Z"),
-                    content = "What's everyone listening to these days?"
+                    content = "What's everyone listening to these days?",
                 ),
                 Message(
                     sender = "Aisha",
                     timestamp = Instant.parse("2024-10-12T16:05:00Z"),
-                    content = "I'm really into [artist name] lately."
-                )
-            )
+                    content = "I'm really into [artist name] lately.",
+                ),
+            ),
         ),
         "Photography Club" to ChatRoom( // New chat room
             name = "Photography Club",
@@ -438,14 +439,14 @@ private val chatData = ChatData(
                 Message(
                     sender = "Bjorn",
                     timestamp = Instant.parse("2024-10-13T09:00:00Z"),
-                    content = "Anyone interested in photography?"
+                    content = "Anyone interested in photography?",
                 ),
                 Message(
                     sender = "Diego",
                     timestamp = Instant.parse("2024-10-13T09:05:00Z"),
-                    content = "I am! I love taking pictures."
-                )
-            )
+                    content = "I am! I love taking pictures.",
+                ),
+            ),
         ),
         "DIY Projects" to ChatRoom( // New chat room
             name = "DIY Projects",
@@ -453,46 +454,46 @@ private val chatData = ChatData(
                 Message(
                     sender = "Kenji",
                     timestamp = Instant.parse("2024-10-13T11:00:00Z"),
-                    content = "Anyone working on any cool DIY projects?"
+                    content = "Anyone working on any cool DIY projects?",
                 ),
                 Message(
                     sender = "Lin",
                     timestamp = Instant.parse("2024-10-13T11:05:00Z"),
-                    content = "I'm building a bookshelf!"
-                )
-            )
-        )
+                    content = "I'm building a bookshelf!",
+                ),
+            ),
+        ),
     ),
     profiles = mapOf(
         "Aisha" to Profile(
             name = "Aisha",
             jobTitle = "Lead Software Engineer",
             location = "Lagos, Nigeria",
-            selfDescription = "Passionate about building scalable and reliable chat infrastructure."
+            selfDescription = "Passionate about building scalable and reliable chat infrastructure.",
         ),
         "Bjorn" to Profile(
             name = "Bjorn",
             jobTitle = "Software Engineer",
             location = "Stockholm, Sweden",
-            selfDescription = "Enjoys tackling complex problems and writing clean, efficient code."
+            selfDescription = "Enjoys tackling complex problems and writing clean, efficient code.",
         ),
         "Kenji" to Profile(
             name = "Kenji",
             jobTitle = "QA Engineer",
             location = "Tokyo, Japan",
-            selfDescription = "Dedicated to ensuring the quality and reliability of our chat SDK."
+            selfDescription = "Dedicated to ensuring the quality and reliability of our chat SDK.",
         ),
         "Diego" to Profile(
             name = "Diego",
             jobTitle = "Product Manager",
             location = "Buenos Aires, Argentina",
-            selfDescription = "Driven by creating products that users love and that solve real problems."
+            selfDescription = "Driven by creating products that users love and that solve real problems.",
         ),
         "Lin" to Profile(
             name = "Lin",
             jobTitle = "Technical Writer",
             location = "Beijing, China",
-            selfDescription = "Loves explaining complex technical concepts in a clear and concise way."
-        )
-    )
+            selfDescription = "Loves explaining complex technical concepts in a clear and concise way.",
+        ),
+    ),
 )

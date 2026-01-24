@@ -24,7 +24,9 @@ kotlin {
                 implementation(project(":library:treenav"))
 
                 implementation(libs.androidx.collection)
-                implementation(libs.androidx.navigation.event)
+                implementation(libs.navigation.runtime)
+                implementation(libs.navigation.multiplatform.ui)
+                implementation(libs.navigation.event.multiplatform.compose)
 
                 implementation(libs.compose.multiplatform.runtime)
                 implementation(libs.compose.multiplatform.foundation)
@@ -32,17 +34,14 @@ kotlin {
 
                 implementation(libs.lifecycle.multiplatform.runtime)
                 implementation(libs.lifecycle.multiplatform.runtime.compose)
-                implementation(libs.lifecycle.multiplatform.viewmodel)
-                implementation(libs.lifecycle.multiplatform.viewmodel.compose)
 
                 implementation(libs.savedstate.multiplatform.compose)
-
             }
         }
         androidMain {
             dependencies {
                 implementation(libs.androidx.activity.compose)
-//                implementation(libs.androidx.viewmodel.navigation3)
+                implementation(libs.compose.animation)
             }
         }
 

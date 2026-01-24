@@ -21,6 +21,7 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Stable
+import androidx.navigation3.scene.Scene
 import com.tunjid.treenav.Node
 import kotlin.jvm.JvmInline
 
@@ -61,14 +62,18 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
  */
 @Stable
 internal class AnimatedPaneScope<Pane, Destination : Node>(
-    private val backStatus: () -> BackStatus,
+    private val navigationEventStatus: () -> NavigationEventStatus,
     private val currentPaneNavigationState: () -> PaneNavigationState<Pane, Destination>,
     private val currentPaneState: () -> PaneState<Pane, Destination>,
-    animatedContentScope: AnimatedContentScope,
-) : PaneScope<Pane, Destination>, AnimatedVisibilityScope by animatedContentScope {
+    private val currentAnimatedContentScope: () -> AnimatedContentScope,
+) : PaneScope<Pane, Destination>,
+    AnimatedVisibilityScope {
 
     private val isEntering
         get() = transition.targetState == EnterExitState.Visible
+
+    override val transition: Transition<EnterExitState>
+        get() = currentAnimatedContentScope().transition
 
     override val paneNavigationState: PaneNavigationState<Pane, Destination>
         get() = currentPaneNavigationState()
@@ -81,17 +86,17 @@ internal class AnimatedPaneScope<Pane, Destination : Node>(
 
     override val inPredictiveBack: Boolean
         get() {
-            val currentSize = transition.sceneCurrentDestinationKey?.ids?.size ?: 0
-            val targetSize = transition.sceneTargetDestinationKey?.ids?.size ?: 0
+            val currentSize = transition.sceneCurrentDestinationKey.ids.size
+            val targetSize = transition.sceneTargetDestinationKey.ids.size
 
-            val targetIsPreview = transition.sceneTargetDestinationKey?.isPreviewingBack == true
+            val targetIsPreview = transition.sceneTargetDestinationKey.isPreviewingBack
 
             val isAnimatingBack = targetSize < currentSize
 
-            return when (backStatus()) {
-                BackStatus.Seeking -> isAnimatingBack && targetIsPreview
-                BackStatus.Completed.Cancelled -> isAnimatingBack && targetIsPreview
-                BackStatus.Completed.Commited -> false
+            return when (navigationEventStatus()) {
+                NavigationEventStatus.Seeking -> isAnimatingBack && targetIsPreview
+                NavigationEventStatus.Completed.Cancelled -> isAnimatingBack && targetIsPreview
+                NavigationEventStatus.Completed.Commited -> false
             }
         }
 }
@@ -123,16 +128,16 @@ internal data class SlotPaneState<Pane, Destination : Node>(
 @JvmInline
 internal value class Slot internal constructor(val index: Int)
 
-private val Transition<*>.sceneTargetDestinationKey: MultiPaneSceneKey?
+private val Transition<*>.sceneTargetDestinationKey: MultiPaneSceneKey
     get() {
-        val target = parentTransition?.targetState as? Pair<*, *> ?: return null
-        return target.second as MultiPaneSceneKey
+        val target = parentTransition?.targetState as Scene<*>
+        return target.key as MultiPaneSceneKey
     }
 
-private val Transition<*>.sceneCurrentDestinationKey: MultiPaneSceneKey?
+private val Transition<*>.sceneCurrentDestinationKey: MultiPaneSceneKey
     get() {
-        val target = parentTransition?.currentState as? Pair<*, *> ?: return null
-        return target.second as MultiPaneSceneKey
+        val target = parentTransition?.currentState as Scene<*>
+        return target.key as MultiPaneSceneKey
     }
 
 internal expect fun Any.identityHash(): Int

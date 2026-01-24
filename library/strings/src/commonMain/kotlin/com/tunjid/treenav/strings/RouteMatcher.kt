@@ -49,11 +49,11 @@ fun interface RouteParser {
  * Note that the order of [RouteMatcher]s matter; place more specific matchers first.
  */
 fun routeParserFrom(
-    vararg matchers: RouteMatcher
+    vararg matchers: RouteMatcher,
 ): RouteParser = object : RouteParser {
 
     private val rootTrieNode = matchers.fold(
-        TrieNode<RouteMatcher>()
+        TrieNode<RouteMatcher>(),
     ) { routeNode, matcher ->
         routeNode.insert(
             pattern = matcher.pattern,
@@ -68,7 +68,7 @@ fun routeParserFrom(
         ) ?: return null
 
         return matcher.route(
-            pathAndQueries.routeParams(matcher.pattern)
+            pathAndQueries.routeParams(matcher.pattern),
         )
     }
 }
@@ -79,7 +79,7 @@ fun routeParserFrom(
  */
 fun urlRouteMatcher(
     routePattern: String,
-    routeMapper: (RouteParams) -> Route
+    routeMapper: (RouteParams) -> Route,
 ) = object : RouteMatcher {
 
     override val pattern = PathPattern(routePattern)

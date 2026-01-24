@@ -29,6 +29,11 @@ kotlin {
                 implementation(libs.compose.multiplatform.foundation.layout)
             }
         }
+        androidMain {
+            dependencies {
+                implementation(libs.androidx.activity.compose)
+                implementation(libs.compose.animation)
+            }
+        }
     }
 }
-

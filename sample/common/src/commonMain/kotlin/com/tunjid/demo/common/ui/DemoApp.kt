@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animate
@@ -67,7 +66,12 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavEntryDecorator
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigationevent.NavigationEvent
+import androidx.navigationevent.NavigationEventTransitionState
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.tunjid.composables.backpreview.BackPreviewState
 import com.tunjid.composables.splitlayout.SplitLayout
 import com.tunjid.composables.splitlayout.SplitLayoutState
@@ -80,12 +84,11 @@ import com.tunjid.demo.common.ui.data.SampleDestination
 import com.tunjid.demo.common.ui.me.mePaneEntry
 import com.tunjid.demo.common.ui.profile.profilePaneEntry
 import com.tunjid.treenav.MultiStackNav
+import com.tunjid.treenav.compose.MovableSharedElementHostState
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayState
 import com.tunjid.treenav.compose.PaneNavigationState
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
 import com.tunjid.treenav.compose.multiPaneDisplayBackstack
-import com.tunjid.treenav.compose.navigation3.ui.NavigationEventHandler
 import com.tunjid.treenav.compose.panedecorators.PaneDecorator
 import com.tunjid.treenav.compose.threepane.ThreePane
 import com.tunjid.treenav.compose.threepane.panedecorators.threePaneAdaptiveDecorator
@@ -98,7 +101,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun App(
     appState: AppState = remember { AppState() },
@@ -110,29 +112,39 @@ fun App(
             val density = LocalDensity.current
             val movableSharedElementHostState = remember {
                 MovableSharedElementHostState<ThreePane, SampleDestination>(
-                    sharedTransitionScope = this
+                    sharedTransitionScope = this,
                 )
             }
             val windowWidth = rememberUpdatedState(
                 with(density) {
                     LocalWindowInfo.current.containerSize.width.toDp()
-                }
+                },
             )
+            val saveableStateHolderNavEntryDecorator =
+                rememberSaveableStateHolderNavEntryDecorator<SampleDestination>()
+            val viewModelStoreNavEntryDecorator =
+                rememberViewModelStoreNavEntryDecorator<SampleDestination>()
             val displayState = appState.rememberMultiPaneDisplayState(
-                remember {
+                paneDecorators = remember {
                     listOf(
                         threePaneAdaptiveDecorator(
                             secondaryPaneBreakPoint = mutableStateOf(
-                                SecondaryPaneMinWidthBreakpointDp
+                                SecondaryPaneMinWidthBreakpointDp,
                             ),
                             tertiaryPaneBreakPoint = mutableStateOf(
-                                TertiaryPaneMinWidthBreakpointDp
+                                TertiaryPaneMinWidthBreakpointDp,
                             ),
-                            windowWidthState = windowWidth
+                            windowWidthState = windowWidth,
                         ),
                         threePaneMovableSharedElementDecorator(
-                            movableSharedElementHostState = movableSharedElementHostState
+                            movableSharedElementHostState = movableSharedElementHostState,
                         ),
+                    )
+                },
+                navEntryDecorators = remember {
+                    listOf(
+                        saveableStateHolderNavEntryDecorator,
+                        viewModelStoreNavEntryDecorator,
                     )
                 },
             )
@@ -144,17 +156,12 @@ fun App(
             ) {
                 val splitPaneState = remember {
                     SplitPaneState(
-                        paneNavigationState = paneNavigationState,
+                        paneNavigationState = { this.paneNavigationState },
                         windowWidth = windowWidth,
                     )
-                }.also {
-                    it.update(
-                        paneNavigationState = paneNavigationState,
-                    )
                 }
-
                 CompositionLocalProvider(
-                    LocalSplitPaneState provides splitPaneState
+                    LocalSplitPaneState provides splitPaneState,
                 ) {
                     SplitLayout(
                         state = splitPaneState.splitLayoutState,
@@ -171,26 +178,34 @@ fun App(
                         },
                         itemContent = { index ->
                             Destination(splitPaneState.filteredPaneOrder[index])
-                        }
+                        },
                     )
                 }
 
-                NavigationEventHandler(
-                    enabled = displayState::canPop,
-                    passThrough = true,
-                ) { progress ->
-                    try {
-                        progress.collect { event ->
-                            appState.backPreviewState.progress = event.progress
-                            appState.backPreviewState.atStart =
-                                event.swipeEdge == NavigationEvent.EDGE_LEFT
-                            appState.backPreviewState.pointerOffset =
-                                Offset(event.touchX, event.touchY).round()
+                val navigationEventDispatcher = LocalNavigationEventDispatcherOwner.current!!
+                    .navigationEventDispatcher
+
+                LaunchedEffect(navigationEventDispatcher) {
+                    navigationEventDispatcher.transitionState
+                        .collect { eventState ->
+                            when (eventState) {
+                                is NavigationEventTransitionState.Idle -> {
+                                    appState.backPreviewState.progress = 0f
+                                }
+
+                                is NavigationEventTransitionState.InProgress -> {
+                                    appState.backPreviewState.progress =
+                                        eventState.latestEvent.progress
+                                    appState.backPreviewState.atStart =
+                                        eventState.latestEvent.swipeEdge == NavigationEvent.EDGE_LEFT
+                                    appState.backPreviewState.pointerOffset =
+                                        Offset(
+                                            eventState.latestEvent.touchX,
+                                            eventState.latestEvent.touchY,
+                                        ).round()
+                                }
+                            }
                         }
-                        appState.backPreviewState.progress = 0f
-                    } finally {
-                        appState.backPreviewState.progress = 0f
-                    }
                 }
             }
         }
@@ -210,7 +225,7 @@ private fun PaneSeparator(
     val draggableState = rememberDraggableState {
         splitLayoutState.dragBy(
             index = index,
-            delta = with(density) { it.toDp() }
+            delta = with(density) { it.toDp() },
         )
     }
     val active = interactionSource.isActive()
@@ -225,7 +240,7 @@ private fun PaneSeparator(
             )
             .hoverable(interactionSource)
             .width(PaneSeparatorTouchTargetWidthDp)
-            .fillMaxHeight()
+            .fillMaxHeight(),
     ) {
         Box(
             modifier = Modifier
@@ -233,12 +248,12 @@ private fun PaneSeparator(
                 .background(
                     color = animateColorAsState(
                         if (active) MaterialTheme.colorScheme.onSurfaceVariant
-                        else MaterialTheme.colorScheme.onSurface
+                        else MaterialTheme.colorScheme.onSurface,
                     ).value,
                     shape = RoundedCornerShape(PaneSeparatorActiveWidthDp),
                 )
                 .width(animateDpAsState(if (active) PaneSeparatorActiveWidthDp else 1.dp).value)
-                .height(PaneSeparatorActiveWidthDp)
+                .height(PaneSeparatorActiveWidthDp),
         )
     }
     LaunchedEffect(Unit) {
@@ -246,7 +261,7 @@ private fun PaneSeparator(
             initialValue = 0f,
             targetValue = 1f,
             animationSpec = tween(1000),
-            block = { value, _ -> alpha = value }
+            block = { value, _ -> alpha = value },
         )
     }
 }
@@ -265,16 +280,15 @@ class AppState(
 ) {
 
     private val navigationState = mutableStateOf(
-        navigationRepository.navigationStateFlow.value
+        navigationRepository.navigationStateFlow.value,
     )
 
     private val paneInteractionSourceList = mutableStateListOf<MutableInteractionSource>()
 
-
     val currentNavigation by navigationState
     val backPreviewState = BackPreviewState()
 
-    internal val dragToPopState = DragToPopState()
+    internal var dismissBehavior by mutableStateOf<DismissBehavior>(DismissBehavior.None)
 
     internal val movableNavigationBar =
         movableContentOf<Modifier> { modifier ->
@@ -304,10 +318,19 @@ class AppState(
     fun isInteractingWithPanes(): Boolean =
         paneInteractionSourceList.any { it.isActive() }
 
+    sealed class DismissBehavior {
+        data object None : DismissBehavior()
+        sealed class Gesture : DismissBehavior() {
+            data object Drag : Gesture()
+            data object Slide : Gesture()
+        }
+    }
+
     companion object {
         @Composable
         fun AppState.rememberMultiPaneDisplayState(
             paneDecorators: List<PaneDecorator<MultiStackNav, SampleDestination, ThreePane>>,
+            navEntryDecorators: List<NavEntryDecorator<SampleDestination>>,
         ): MultiPaneDisplayState<MultiStackNav, SampleDestination, ThreePane> {
             val displayState = remember {
                 MultiPaneDisplayState(
@@ -331,6 +354,7 @@ class AppState(
                         }
                     },
                     paneDecorators = paneDecorators,
+                    navEntryDecorators = navEntryDecorators,
                 )
             }
             DisposableEffect(Unit) {
@@ -348,35 +372,28 @@ class AppState(
 
 @Stable
 internal class SplitPaneState(
-    paneNavigationState: PaneNavigationState<ThreePane, SampleDestination>,
+    paneNavigationState: () -> PaneNavigationState<ThreePane, SampleDestination>,
     private val windowWidth: State<Dp>,
 ) {
 
-    private var paneNavigationState by mutableStateOf(paneNavigationState)
-
     internal val filteredPaneOrder by derivedStateOf {
-        PaneRenderOrder.filter { paneNavigationState.destinationIn(it) != null }
+        PaneRenderOrder.filter { paneNavigationState().destinationIn(it) != null }
     }
 
     internal val splitLayoutState = SplitLayoutState(
         orientation = Orientation.Horizontal,
         maxCount = filteredPaneOrder.size,
-        initialVisibleCount = filteredPaneOrder.size,
         minSize = 10.dp,
+        visibleCount = {
+            filteredPaneOrder.size
+        },
         keyAtIndex = { index ->
             filteredPaneOrder[index]
-        }
+        },
     )
 
     internal val isMediumScreenWidthOrWider
         get() = windowWidth.value >= SecondaryPaneMinWidthBreakpointDp
-
-    fun update(
-        paneNavigationState: PaneNavigationState<ThreePane, SampleDestination>
-    ) {
-        this.paneNavigationState = paneNavigationState
-        splitLayoutState.visibleCount = filteredPaneOrder.size
-    }
 }
 
 internal val LocalSplitPaneState = staticCompositionLocalOf<SplitPaneState> {

@@ -48,7 +48,7 @@ class RouteParams(
 
 fun routeString(
     path: String,
-    queryParams: Map<String, List<String>>
+    queryParams: Map<String, List<String>>,
 ) = when {
     queryParams.isEmpty() -> path
     else -> {
@@ -69,7 +69,7 @@ fun routeOf(
     children: List<Node> = emptyList(),
 ): Route = BasicRoute(
     routeParams = params,
-    children = children
+    children = children,
 )
 
 /**
@@ -86,7 +86,7 @@ fun routeOf(
     path = path,
     pathArgs = pathArgs,
     queryParams = queryParams,
-    children = children
+    children = children,
 )
 
 /**
@@ -108,7 +108,7 @@ private class BasicRoute(
             pathArgs = pathArgs,
             queryParams = queryParams,
         ),
-        children = children
+        children = children,
     )
 
     override fun toString(): String = id
@@ -121,4 +121,3 @@ private class BasicRoute(
 
     override fun hashCode(): Int = id.hashCode()
 }
-

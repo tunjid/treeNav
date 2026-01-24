@@ -17,11 +17,10 @@
 package com.tunjid.treenav.compose
 
 import androidx.compose.animation.BoundsTransform
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
+import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.ContentSize
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
@@ -32,10 +31,10 @@ import com.tunjid.treenav.Node
  * shared element behavior when shared elements move in between [Pane]s during the
  * transition.
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 interface PaneSharedTransitionScope<Pane, Destination : Node> :
-    PaneScope<Pane, Destination>, SharedTransitionScope {
+    PaneScope<Pane, Destination>,
+    SharedTransitionScope {
 
     /**
      * Creates a shared element transition where the shared element is seekable
@@ -47,14 +46,17 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
      *
      * @see [SharedTransitionScope.sharedElement].
      */
-    fun Modifier.paneSharedElement(
+    @Composable
+    fun PaneSharedElement(
+        modifier: Modifier = Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
-        placeHolderSize: PlaceHolderSize = contentSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
         clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
-    ): Modifier
+        content: @Composable MinConstraintBoxScope.() -> Unit,
+    )
 
     /**
      * Creates a shared element transition where the shared element is __NOT__ seekable
@@ -67,12 +69,15 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
      *
      * @see [SharedTransitionScope.sharedElement].
      */
-    fun Modifier.paneStickySharedElement(
+    @Composable
+    fun PaneStickySharedElement(
+        modifier: Modifier = Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
-        placeHolderSize: PlaceHolderSize = contentSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
         clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
-    ): Modifier
+        content: @Composable MinConstraintBoxScope.() -> Unit,
+    )
 }

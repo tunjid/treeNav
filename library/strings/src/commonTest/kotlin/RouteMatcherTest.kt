@@ -21,7 +21,6 @@ import com.tunjid.treenav.strings.urlRouteMatcher
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-
 class UrlRouteMatcherTest {
 
     @Test
@@ -29,18 +28,18 @@ class UrlRouteMatcherTest {
         val routeParser = routeParserFrom(
             urlRouteMatcher(
                 routePattern = "/users/{id}",
-                routeMapper = ::routeOf
-            )
+                routeMapper = ::routeOf,
+            ),
         )
         val route = routeParser.parse("/users/jeff")
 
         assertEquals(
             expected = "/users/jeff",
-            actual = route?.id
+            actual = route?.id,
         )
         assertEquals(
             expected = "jeff",
-            actual = route?.routeParams?.pathArgs?.get("id")
+            actual = route?.routeParams?.pathArgs?.get("id"),
         )
     }
 
@@ -49,8 +48,8 @@ class UrlRouteMatcherTest {
         val routeParser = routeParserFrom(
             urlRouteMatcher(
                 routePattern = "/users/{id}",
-                routeMapper = ::routeOf
-            )
+                routeMapper = ::routeOf,
+            ),
         )
         val routeString = routeString(
             path = "/users/jeff",
@@ -58,7 +57,7 @@ class UrlRouteMatcherTest {
                 "age" to listOf("27"),
                 "job" to listOf("dev"),
                 "hobby" to listOf("running", "reading"),
-            )
+            ),
         )
 
         assertEquals(
@@ -70,23 +69,23 @@ class UrlRouteMatcherTest {
 
         assertEquals(
             expected = "/users/jeff",
-            actual = route?.id
+            actual = route?.id,
         )
         assertEquals(
             expected = "jeff",
-            actual = route?.routeParams?.pathArgs?.get("id")
+            actual = route?.routeParams?.pathArgs?.get("id"),
         )
         assertEquals(
             expected = "27",
-            actual = route?.routeParams?.queryParams?.get("age")?.first()
+            actual = route?.routeParams?.queryParams?.get("age")?.first(),
         )
         assertEquals(
             expected = "dev",
-            actual = route?.routeParams?.queryParams?.get("job")?.first()
+            actual = route?.routeParams?.queryParams?.get("job")?.first(),
         )
         assertEquals(
             expected = listOf("running", "reading"),
-            actual = route?.routeParams?.queryParams?.get("hobby")
+            actual = route?.routeParams?.queryParams?.get("hobby"),
         )
     }
 }

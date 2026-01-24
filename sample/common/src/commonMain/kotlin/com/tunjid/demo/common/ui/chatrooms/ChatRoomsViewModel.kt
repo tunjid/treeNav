@@ -42,25 +42,24 @@ class ChatRoomsViewModel(
     ActionStateMutator<Action, StateFlow<State>> by coroutineScope.actionStateFlowMutator(
         initialState = State(),
         inputs = listOf(
-            chatsRepository.loadMutations()
+            chatsRepository.loadMutations(),
         ),
         actionTransform = { actions ->
             actions.toMutationStream(
-                keySelector = Action::key
+                keySelector = Action::key,
             ) {
                 when (val type = type()) {
                     is Action.Navigation -> navigationRepository.navigationMutations(
-                        type.flow
+                        type.flow,
                     )
                 }
             }
-        }
+        },
     )
 
 private fun ChatsRepository.loadMutations(): Flow<Mutation<State>> = rooms.mapToMutation {
     copy(chatRooms = it)
 }
-
 
 data class State(
     val chatRooms: List<ChatRoom> = emptyList(),
@@ -69,12 +68,15 @@ data class State(
 sealed class Action(
     val key: String,
 ) {
-    sealed class Navigation : Action("Navigation"), NavigationAction {
+    sealed class Navigation :
+        Action("Navigation"),
+        NavigationAction {
         data class ToRoom(
             val roomName: String,
             val participants: List<String>,
-        ) : Navigation(), NavigationAction by navigationAction(
-            { push(SampleDestination.Chat(roomName, participants)) }
-        )
+        ) : Navigation(),
+            NavigationAction by navigationAction(
+                { push(SampleDestination.Chat(roomName, participants)) },
+            )
     }
 }

@@ -52,7 +52,7 @@ fun StackNav.pop(popLast: Boolean = false) = when {
  * Pops every node in this [StackNav] up until the last one.
  */
 fun StackNav.popToRoot() = copy(
-    children = children.take(1)
+    children = children.take(1),
 )
 
 /**
@@ -71,7 +71,7 @@ fun StackNav.reversedBackStackSequence(
     placeChildrenBeforeParent: Boolean = false,
 ): Sequence<Node> =
     if (!includeCurrentDestinationChildren && placeChildrenBeforeParent) throw IllegalArgumentException(
-        "Cannot place children nodes before the parent if children are not included"
+        "Cannot place children nodes before the parent if children are not included",
     )
     else generateSequence(this) { current ->
         current.pop().takeUnless(current::equals)
@@ -106,7 +106,7 @@ fun StackNav.backStack(
     distinctDestinations: Boolean = false,
 ): List<Node> = reversedBackStackSequence(
     includeCurrentDestinationChildren = includeCurrentDestinationChildren,
-    placeChildrenBeforeParent = !placeChildrenBeforeParent
+    placeChildrenBeforeParent = !placeChildrenBeforeParent,
 )
     .toList()
     .asReversed()

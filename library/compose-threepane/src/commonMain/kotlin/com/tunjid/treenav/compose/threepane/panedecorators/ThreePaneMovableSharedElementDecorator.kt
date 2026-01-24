@@ -18,30 +18,31 @@ package com.tunjid.treenav.compose.threepane.panedecorators
 
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
+import androidx.compose.animation.SharedTransitionScope.PlaceholderSize
 import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.Adaptation
-import com.tunjid.treenav.compose.Adaptation.Swap
+import com.tunjid.treenav.compose.MovableSharedElementHostState
+import com.tunjid.treenav.compose.MovableSharedElementScope
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayState
+import com.tunjid.treenav.compose.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.PaneNavigationState
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneState
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementHostState
-import com.tunjid.treenav.compose.moveablesharedelement.MovableSharedElementScope
-import com.tunjid.treenav.compose.moveablesharedelement.PaneMovableSharedElementScope
-import com.tunjid.treenav.compose.moveablesharedelement.rememberPaneMovableSharedElementScope
+import com.tunjid.treenav.compose.SharedElement
+import com.tunjid.treenav.compose.SharedElementWithCallerManagedVisibility
 import com.tunjid.treenav.compose.panedecorators.PaneDecorator
 import com.tunjid.treenav.compose.panedecorators.paneRenderDecorator
+import com.tunjid.treenav.compose.rememberPaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
+import com.tunjid.treenav.compose.threepane.canAnimateSecondary
+import com.tunjid.treenav.compose.threepane.rememberStaticExitedAnimatedVisibilityScope
 
 /**
  * A [PaneDecorator] that applies semantics of movable shared elements to
@@ -58,13 +59,12 @@ import com.tunjid.treenav.compose.threepane.ThreePane
  * @param movableSharedElementHostState the host state for coordinating movable shared elements.
  * There should be one instance of this per [MultiPaneDisplay].
  */
-fun <NavigationState : Node, Destination : Node>
-        threePaneMovableSharedElementDecorator(
+fun <NavigationState : Node, Destination : Node> threePaneMovableSharedElementDecorator(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
 ): PaneDecorator<NavigationState, Destination, ThreePane> =
     paneRenderDecorator { destination, destinationPaneMapper ->
         val delegate = rememberPaneMovableSharedElementScope(
-            movableSharedElementHostState = movableSharedElementHostState
+            movableSharedElementHostState = movableSharedElementHostState,
         )
 
         val movableSharedElementScope = remember(movableSharedElementHostState, delegate) {
@@ -87,9 +87,9 @@ fun <NavigationState : Node, Destination : Node>
  */
 @Stable
 fun <Destination : Node> PaneScope<
-        ThreePane,
-        Destination
-        >.requireThreePaneMovableSharedElementScope(): MovableSharedElementScope {
+    ThreePane,
+    Destination,
+    >.requireThreePaneMovableSharedElementScope(): MovableSharedElementScope {
     check(this is ThreePaneMovableSharedElementScope) {
         """
             The current PaneScope (${this::class.qualifiedName}) is not an instance of
@@ -100,7 +100,6 @@ fun <Destination : Node> PaneScope<
     return this
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
 private class ThreePaneMovableSharedElementScope<Destination : Node>(
     private val hostState: MovableSharedElementHostState<ThreePane, Destination>,
@@ -126,11 +125,10 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
     override val inPredictiveBack: Boolean
         get() = delegate.paneScope.inPredictiveBack
 
-    @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableSharedElementOf(
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
@@ -138,53 +136,44 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         sharedElement: @Composable (T, Modifier) -> Unit,
     ): @Composable (T, Modifier) -> Unit = with(hostState) {
         { state, modifier ->
-            when (paneState.pane) {
+            when (val pane = paneState.pane) {
                 null -> throw IllegalArgumentException(
-                    "Shared elements may only be used in non null panes"
+                    "Shared elements may only be used in non null panes",
                 )
                 // Allow movable shared elements in the primary pane only
-                ThreePane.Primary -> SharedElement(
+                ThreePane.Primary,
+                ThreePane.Secondary,
+                -> SharedElement(
                     modifier = modifier,
                     sharedContentState = sharedContentState,
-                    animatedVisibilityScope = delegate.paneScope,
-                    placeHolderSize = placeHolderSize,
+                    animatedVisibilityScope =
+                    if (pane == ThreePane.Primary) delegate.paneScope
+                    else rememberStaticExitedAnimatedVisibilityScope(),
+                    placeholderSize = placeholderSize,
                     renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                     zIndexInOverlay = zIndexInOverlay,
                     clipInOverlayDuringTransition = clipInOverlayDuringTransition,
                     content = {
-                        MovableSharedElement(
+                        if (pane == ThreePane.Primary) MovableSharedElement(
                             sharedContentState = sharedContentState,
                             state = state,
                             useMovableContent = {
                                 delegate.paneScope.transition.targetState == EnterExitState.Visible
                             },
                             sharedElement = sharedElement,
-                            alternateOutgoingSharedElement = alternateOutgoingSharedElement
+                            alternateOutgoingSharedElement = alternateOutgoingSharedElement,
                         )
-                    }
-                )
-
-                // In the secondary pane allow shared elements only if certain conditions match
-                ThreePane.Secondary -> SharedElementWithCallerManagedVisibility(
-                    modifier = modifier,
-                    sharedContentState = sharedContentState,
-                    placeHolderSize = placeHolderSize,
-                    renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                    zIndexInOverlay = zIndexInOverlay,
-                    clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-                    isVisible = { false },
-                    content = {
-                        PlainElement(
+                        else PlainElement(
                             state = state,
-                            modifier = Modifier.fillSharedElement(),
+                            modifier = Modifier.fillParentAxisIfFixedOrWrap(),
                             content = alternateOutgoingSharedElement ?: sharedElement,
                         )
-                    }
+                    },
                 )
                 // In the other panes use the element as is
                 ThreePane.Tertiary,
                 ThreePane.Overlay,
-                    -> PlainElement(
+                -> PlainElement(
                     state = state,
                     modifier = modifier,
                     content = alternateOutgoingSharedElement ?: sharedElement,
@@ -193,70 +182,58 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         }
     }
 
-    @OptIn(ExperimentalSharedTransitionApi::class)
     override fun <T> movableStickySharedElementOf(
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
         alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
-        sharedElement: @Composable (T, Modifier) -> Unit
+        sharedElement: @Composable (T, Modifier) -> Unit,
     ): @Composable (T, Modifier) -> Unit = with(hostState) {
         { state, modifier ->
-            when(paneState.pane) {
+            when (val pane = paneState.pane) {
                 null -> throw IllegalArgumentException(
-                    "Shared elements may only be used in non null panes"
+                    "Shared elements may only be used in non null panes",
                 )
-                ThreePane.Primary -> SharedElementWithCallerManagedVisibility(
+
+                ThreePane.Primary,
+                ThreePane.Secondary,
+                -> if (pane == ThreePane.Secondary && !canAnimateSecondary()) PlainElement(
+                    state = state,
+                    modifier = modifier,
+                    content = alternateOutgoingSharedElement ?: sharedElement,
+                )
+                else SharedElementWithCallerManagedVisibility(
                     modifier = modifier,
                     sharedContentState = sharedContentState,
-                    placeHolderSize = placeHolderSize,
+                    placeholderSize = placeholderSize,
                     renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                     zIndexInOverlay = zIndexInOverlay,
                     clipInOverlayDuringTransition = clipInOverlayDuringTransition,
                     // Allow movable shared elements in the primary pane only
-                    isVisible = {
-                        delegate.paneScope.isActive
+                    areBoundsTracked = {
+                        isActive && pane == ThreePane.Primary
                     },
                     content = {
-                        MovableSharedElement(
+                        if (pane == ThreePane.Primary) MovableSharedElement(
                             sharedContentState = sharedContentState,
                             state = state,
-                            useMovableContent = { delegate.paneScope.isActive },
+                            useMovableContent = { isActive },
                             alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-                            sharedElement = sharedElement
+                            sharedElement = sharedElement,
+                        )
+                        else PlainElement(
+                            state = state,
+                            modifier = Modifier.fillParentAxisIfFixedOrWrap(),
+                            content = alternateOutgoingSharedElement ?: sharedElement,
                         )
                     },
                 )
-                ThreePane.Secondary -> when {
-                    canAnimateSecondary() -> SharedElementWithCallerManagedVisibility(
-                        modifier = modifier,
-                        sharedContentState = sharedContentState,
-                        placeHolderSize = placeHolderSize,
-                        renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-                        zIndexInOverlay = zIndexInOverlay,
-                        clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-                        isVisible = {
-                            false
-                        },
-                        content = {
-                            PlainElement(
-                                state = state,
-                                modifier = Modifier.fillSharedElement(),
-                                content = alternateOutgoingSharedElement ?: sharedElement,
-                            )
-                        },
-                    )
-                    else -> PlainElement(
-                        state = state,
-                        modifier = modifier,
-                        content = alternateOutgoingSharedElement ?: sharedElement,
-                    )
-                }
+
                 ThreePane.Tertiary,
-                ThreePane.Overlay
+                ThreePane.Overlay,
                 -> PlainElement(
                     state = state,
                     modifier = modifier,
@@ -278,16 +255,3 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         )
     }
 }
-
-private fun PaneScope<ThreePane, *>.canAnimateSecondary(): Boolean {
-    if (inPredictiveBack) return false
-    if (!paneState.adaptations.contains(PrimaryToSecondary)) return false
-    if (paneState.adaptations.contains(Adaptation.Pop)) return false
-
-    return true
-}
-
-private val PrimaryToSecondary = Swap(
-    from = ThreePane.Primary,
-    to = ThreePane.Secondary
-)

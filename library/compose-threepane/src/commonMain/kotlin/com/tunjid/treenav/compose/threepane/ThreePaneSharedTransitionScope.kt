@@ -17,17 +17,22 @@
 package com.tunjid.treenav.compose.threepane
 
 import androidx.compose.animation.BoundsTransform
-import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.Defaults.visible
+import com.tunjid.treenav.compose.MinConstraintBox
+import com.tunjid.treenav.compose.MinConstraintBoxScope
 import com.tunjid.treenav.compose.PaneScope
 import com.tunjid.treenav.compose.PaneSharedTransitionScope
+import com.tunjid.treenav.compose.SharedElement
+import com.tunjid.treenav.compose.SharedElementWithCallerManagedVisibility
 
 /**
  * Creates and remembers a [PaneSharedTransitionScope] for [ThreePane] layouts with
@@ -36,88 +41,131 @@ import com.tunjid.treenav.compose.PaneSharedTransitionScope
  * @param sharedTransitionScope the [SharedTransitionScope] to be delegated to for core
  * shared transition APIs.
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
 fun <Destination : Node> PaneScope<
-        ThreePane,
-        Destination
-        >.rememberPaneSharedTransitionScope(
+    ThreePane,
+    Destination,
+    >.rememberPaneSharedTransitionScope(
     sharedTransitionScope: SharedTransitionScope,
 ): PaneSharedTransitionScope<ThreePane, Destination> =
     remember(this, sharedTransitionScope) {
         ThreePaneSharedTransitionScope(
             paneScope = this,
-            sharedTransitionScope = sharedTransitionScope
+            sharedTransitionScope = sharedTransitionScope,
         )
     }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Stable
-private class ThreePaneSharedTransitionScope<Destination : Node> @OptIn(
-    ExperimentalSharedTransitionApi::class
-) constructor(
+private class ThreePaneSharedTransitionScope<Destination : Node>(
     val paneScope: PaneScope<ThreePane, Destination>,
     val sharedTransitionScope: SharedTransitionScope,
 ) : PaneSharedTransitionScope<ThreePane, Destination>,
     PaneScope<ThreePane, Destination> by paneScope,
     SharedTransitionScope by sharedTransitionScope {
 
-    @OptIn(ExperimentalSharedTransitionApi::class)
-    override fun Modifier.paneSharedElement(
+    @Composable
+    override fun PaneSharedElement(
+        modifier: Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
-    ): Modifier = when (paneScope.paneState.pane) {
+        content: @Composable MinConstraintBoxScope.() -> Unit,
+    ) = when (val pane = paneState.pane) {
         null -> throw IllegalArgumentException(
-            "Shared elements may only be used in non null panes"
+            "Shared elements may only be used in non null panes",
         )
-        // Allow shared elements in the primary or transient primary content only
-        ThreePane.Primary -> sharedElement(
+        // Allow movable shared elements in the primary pane only
+        ThreePane.Primary,
+        ThreePane.Secondary,
+        -> SharedElement(
+            modifier = modifier,
             sharedContentState = sharedContentState,
-            animatedVisibilityScope = paneScope,
-            boundsTransform = boundsTransform,
-            placeHolderSize = placeHolderSize,
+            animatedVisibilityScope =
+            if (pane == ThreePane.Primary) paneScope
+            else rememberStaticExitedAnimatedVisibilityScope(),
+            placeholderSize = placeholderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
-        )
+            content = {
+                // TODO: Maybe fade content out
+                val isInvisible = pane == ThreePane.Primary &&
+                    sharedContentState.isMatchFound &&
+                    paneScope.transition.targetState != EnterExitState.Visible
 
+                Box(
+                    modifier = Modifier
+                        .fillParentAxisIfFixedOrWrap()
+                        .visible(visible = !isInvisible),
+                ) {
+                    content()
+                }
+            },
+        )
         // In the other panes use the element as is
-        ThreePane.Secondary,
         ThreePane.Tertiary,
         ThreePane.Overlay,
-            -> this
+        -> MinConstraintBox(modifier) {
+            content()
+        }
     }
 
-    override fun Modifier.paneStickySharedElement(
+    @Composable
+    override fun PaneStickySharedElement(
+        modifier: Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
-        placeHolderSize: PlaceHolderSize,
+        placeholderSize: SharedTransitionScope.PlaceholderSize,
         renderInOverlayDuringTransition: Boolean,
         zIndexInOverlay: Float,
-        clipInOverlayDuringTransition: OverlayClip
-    ): Modifier = when (paneScope.paneState.pane) {
+        clipInOverlayDuringTransition: OverlayClip,
+        content: @Composable MinConstraintBoxScope.() -> Unit,
+    ) = when (val pane = paneState.pane) {
         null -> throw IllegalArgumentException(
-            "Shared elements may only be used in non null panes"
+            "Shared elements may only be used in non null panes",
         )
-        // Allow shared elements in the primary or transient primary content only
-        ThreePane.Primary -> sharedElementWithCallerManagedVisibility(
+
+        ThreePane.Primary,
+        ThreePane.Secondary,
+        -> if (pane == ThreePane.Secondary && !canAnimateSecondary()) MinConstraintBox(
+            modifier,
+        ) {
+            content()
+        }
+        else SharedElementWithCallerManagedVisibility(
+            modifier = modifier,
             sharedContentState = sharedContentState,
-            visible = isActive,
-            boundsTransform = boundsTransform,
-            placeHolderSize = placeHolderSize,
+            placeholderSize = placeholderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+            areBoundsTracked = {
+                isActive && pane == ThreePane.Primary
+            },
+            content = {
+                // TODO: Maybe fade content out
+                val isInvisible = pane == ThreePane.Primary &&
+                    sharedContentState.isMatchFound &&
+                    !isActive
+
+                Box(
+                    modifier = Modifier
+                        .fillParentAxisIfFixedOrWrap()
+                        .visible(visible = !isInvisible),
+                ) {
+                    content()
+                }
+            },
         )
 
-        // In the other panes use the element as is
-        ThreePane.Secondary,
         ThreePane.Tertiary,
         ThreePane.Overlay,
-            -> this
+        -> MinConstraintBox(modifier) {
+            content()
+        }
     }
 }

@@ -16,7 +16,6 @@
 
 package com.tunjid.demo.common.ui.avatar
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,13 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import com.tunjid.demo.common.ui.DragToPopState.Companion.dragToPop
+import com.tunjid.demo.common.ui.DragToPopState.Companion.rememberDragToPopState
 import com.tunjid.demo.common.ui.PaneScaffoldState
 import com.tunjid.demo.common.ui.ProfilePhoto
 import com.tunjid.demo.common.ui.ProfilePhotoArgs
-import com.tunjid.demo.common.ui.dragToPop
-import com.tunjid.treenav.compose.moveablesharedelement.UpdatedMovableStickySharedElementOf
+import com.tunjid.treenav.compose.UpdatedMovableStickySharedElementOf
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AvatarScreen(
     paneScaffoldState: PaneScaffoldState,
@@ -40,16 +39,15 @@ fun AvatarScreen(
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
     Box(
         modifier = modifier
-            .dragToPop()
-            .fillMaxSize()
+            .dragToPop(rememberDragToPopState())
+            .fillMaxSize(),
     ) {
         val profileName = state.profileName ?: state.profile?.name ?: ""
         paneScaffoldState.UpdatedMovableStickySharedElementOf(
             sharedContentState = paneScaffoldState.rememberSharedContentState(
-                key = "${state.roomName}-$profileName-profile"
+                key = "${state.roomName}-$profileName-profile",
             ),
             state = ProfilePhotoArgs(
                 profileName = profileName,
@@ -62,8 +60,7 @@ fun AvatarScreen(
                 .aspectRatio(1f),
             sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
                 ProfilePhoto(args, innerModifier)
-            }
+            },
         )
     }
-
 }

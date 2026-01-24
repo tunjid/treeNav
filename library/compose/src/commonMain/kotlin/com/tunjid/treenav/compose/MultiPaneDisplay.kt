@@ -27,24 +27,22 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.scene.Scene
+import androidx.navigation3.scene.SceneStrategy
+import androidx.navigation3.scene.SceneStrategyScope
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.destination
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.id
-import com.tunjid.treenav.compose.navigation3.decorators.rememberViewModelStoreNavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.runtime.NavEntry
-import com.tunjid.treenav.compose.navigation3.runtime.rememberSavedStateNavEntryDecorator
-import com.tunjid.treenav.compose.navigation3.ui.LocalNavAnimatedContentScope
+import com.tunjid.treenav.compose.navigation3.ui.MultiPaneNavDisplay
 import com.tunjid.treenav.compose.navigation3.ui.NavDisplay
-import com.tunjid.treenav.compose.navigation3.ui.NavigationEventHandler
-import com.tunjid.treenav.compose.navigation3.ui.Scene
-import com.tunjid.treenav.compose.navigation3.ui.SceneStrategy
-import com.tunjid.treenav.compose.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.tunjid.treenav.compose.panedecorators.PaneDecorator
-import kotlinx.coroutines.CancellationException
 
 /**
  * Scope that provides context about individual panes [Pane] in an [MultiPaneDisplay].
@@ -85,14 +83,12 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
 ) {
     val navigationState by state.navigationState
 
-    val backStatusState = remember {
-        mutableStateOf<BackStatus>(BackStatus.Completed.Commited)
-    }
+    val backStatusState = rememberNavigationEventStatus()
 
     val panesToDestinations = rememberUpdatedState(
         state.destinationPanes(
-            state.destinationTransform(navigationState)
-        )
+            state.destinationTransform(navigationState),
+        ),
     )
 
     val backStack = remember { mutableStateListOf<Destination>() }.also { mutableBackStack ->
@@ -103,7 +99,6 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
             Snapshot.withMutableSnapshot {
                 mutableBackStack.clear()
                 mutableBackStack.addAll(currentBackStack)
-                backStatusState.value = BackStatus.Completed.Commited
             }
         }
     }
@@ -111,7 +106,7 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
     val slots = remember {
         List(
             size = state.panes.size,
-            init = ::Slot
+            init = ::Slot,
         ).toSet()
     }
 
@@ -128,7 +123,7 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
     val panedNavigationState = initialPanedNavigationState.rememberUpdatedPanedNavigationState(
         backStackIds = backStack.map(Node::id),
         panesToDestinations = panesToDestinations.value,
-        slots = slots
+        slots = slots,
     )
 
     val sceneStrategy = remember {
@@ -136,126 +131,102 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
             state = state,
             slots = slots,
             currentPanedNavigationState = panedNavigationState::value,
-            backStatus = backStatusState::value,
+            navigationEventStatus = backStatusState::value,
             content = content,
         )
     }
 
-    val transitionSpec: AnimatedContentTransitionScope<*>.() -> ContentTransform = remember {
-        val displayScope = NonRenderingMultiPaneDisplayScope(
-            panedNavigationState = panedNavigationState,
-        )
-        return@remember {
-            state.transitionSpec(displayScope)
+    val transitionSpec: AnimatedContentTransitionScope<Scene<Destination>>.() -> ContentTransform =
+        remember {
+            val displayScope = NonRenderingMultiPaneDisplayScope(
+                panedNavigationState = panedNavigationState,
+            )
+            return@remember {
+                state.transitionSpec(displayScope)
+            }
         }
-    }
 
-    NavDisplay(
+    MultiPaneNavDisplay(
         backStack = backStack,
         modifier = modifier,
-        onBack = { count ->
-            val poppedBackStackIds = state.backStackTransform(navigationState)
-                .map(Node::id)
-                .dropLast(count)
-
-            val poppedNavigationState = state.findNavigationStateMatching(
-                backstackIds = poppedBackStackIds,
+        onBack = remember(navigationState) onBack@{
+            var backStackIds by mutableStateOf(
+                state.backStackTransform(navigationState).map(Node::id),
             )
-            state.onPopped(poppedNavigationState)
+            return@onBack {
+                backStackIds = backStackIds.dropLast(1)
+                state.findNavigationStateMatching(
+                    backstackIds = backStackIds,
+                )?.let(state.onPopped)
+            }
         },
-        entryDecorators = listOf(
-            rememberSceneSetupNavEntryDecorator(),
-            rememberSavedStateNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator(),
-        ),
+        entryDecorators = state.navEntryDecorators,
         sceneStrategy = sceneStrategy,
         transitionSpec = transitionSpec,
         popTransitionSpec = transitionSpec,
-        predictivePopTransitionSpec = transitionSpec,
+        predictivePopTransitionSpec = { transitionSpec() },
         entryProvider = state.navEntryProvider,
     )
-
-    NavigationEventHandler(
-        enabled = state::canPop,
-        passThrough = true,
-    ) { progress ->
-        try {
-            progress.collect {
-                backStatusState.value = BackStatus.Seeking
-            }
-            backStatusState.value = BackStatus.Completed.Commited
-        } catch (e: CancellationException) {
-            backStatusState.value = BackStatus.Completed.Cancelled
-        }
-    }
 }
 
 @Stable
 private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : Node, Pane>(
     private val state: MultiPaneDisplayState<NavigationState, Destination, Pane>,
     private val slots: Set<Slot>,
-    private val backStatus: () -> BackStatus,
+    private val navigationEventStatus: () -> NavigationEventStatus,
     private val currentPanedNavigationState: () -> SlotBasedPaneNavigationState<Pane, Destination>,
     private val content: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : SceneStrategy<Destination> {
 
-    @Composable
-    override fun calculateScene(
+    override fun SceneStrategyScope<Destination>.calculateScene(
         entries: List<NavEntry<Destination>>,
-        onBack: (count: Int) -> Unit
     ): Scene<Destination> {
+        val backstackIds = entries.map { it.id }
 
-        val backstackIds = remember(entries.identityHash()) {
-            entries.map { it.id }
-        }
+        // Calculate the scene for the entries specified.
+        // Since there might be a predictive back gesture, pop until the right navigation state
+        // is found
+        val currentNavigationState = state.findNavigationStateMatching(
+            backstackIds = backstackIds,
+        ) ?: throw IllegalStateException("Invalid entries")
 
-        return remember(backstackIds) {
+        val panedNavigationState = currentPanedNavigationState()
 
-            // Calculate the scene for the entries specified.
-            // Since there might be a predictive back gesture, pop until the right navigation state
-            // is found
-            val currentNavigationState = state.findNavigationStateMatching(
-                backstackIds = backstackIds,
-            )
+        val destination = state.destinationTransform(currentNavigationState)
 
-            val panedNavigationState = currentPanedNavigationState()
+        val activeIds = destination.children.mapTo(mutableSetOf(), Node::id) + destination.id
 
-            val destination = state.destinationTransform(currentNavigationState)
+        val poppedNavigationState = state.popTransform(currentNavigationState)
 
-            val activeIds = destination.children.mapTo(mutableSetOf(), Node::id) + destination.id
+        val poppedBackstack =
+            if (currentNavigationState == poppedNavigationState) emptyList()
+            else state.backStackTransform(poppedNavigationState)
 
-            val poppedNavigationState = state.popTransform(currentNavigationState)
+        val mutableEntries = entries.toMutableList()
 
-            val poppedBackstack =
-                if (currentNavigationState == poppedNavigationState) emptyList()
-                else state.backStackTransform(poppedNavigationState)
+        val sceneKey = MultiPaneSceneKey(
+            ids = backstackIds,
+            isPreviewingBack = backstackIds != panedNavigationState.backStackIds,
+        )
 
-            val mutableEntries = entries.toMutableList()
-
-            val sceneKey = MultiPaneSceneKey(
-                ids = backstackIds,
-                isPreviewingBack = backstackIds != panedNavigationState.backStackIds
-            )
-
-            MultiPaneDisplayScene(
-                destination = destination,
-                sceneKey = sceneKey,
-                slots = slots,
-                backStatus = backStatus,
-                panesToDestinations = state.destinationPanes,
-                initialPanedNavigationState = panedNavigationState,
-                eligibleSceneEntries = entries.filter { it.id in activeIds },
-                // Try to match up NavEntries to state using their id and children.
-                // Best case is O(n) where the backstack isn't shuffled.
-                previousEntries = poppedBackstack.map { poppedDestination ->
-                    val index = mutableEntries.indexOfFirst {
-                        it.id == poppedDestination.id && it.children == poppedDestination.children
-                    }
-                    mutableEntries.removeAt(index)
-                },
-                scopeContent = content
-            )
-        }
+        return MultiPaneDisplayScene(
+            destination = destination,
+            sceneKey = sceneKey,
+            slots = slots,
+            navigationEventStatus = navigationEventStatus,
+            panesToDestinations = state.destinationPanes,
+            initialPanedNavigationState = panedNavigationState,
+            eligibleSceneEntries = entries.filter { it.id in activeIds },
+            // Try to match up NavEntries to state using their id and children.
+            // Best case is O(n) where the backstack isn't shuffled.
+            previousEntries = poppedBackstack.map { poppedDestination ->
+                val index = mutableEntries.indexOfFirst {
+                    it.id == poppedDestination.id && it.children == poppedDestination.children
+                }
+                mutableEntries.removeAt(index)
+            },
+            scopeContent = content,
+        )
     }
 }
 
@@ -267,7 +238,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     private val destination: Destination,
     private val slots: Set<Slot>,
     private val initialPanedNavigationState: SlotBasedPaneNavigationState<Pane, Destination>,
-    backStatus: () -> BackStatus,
+    navigationEventStatus: () -> NavigationEventStatus,
     private val panesToDestinations: @Composable (Destination) -> Map<Pane, Destination?>,
     private val scopeContent: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : Scene<Destination> {
@@ -278,7 +249,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     val multiPaneDisplayScope = PaneDestinationMultiPaneDisplayScope(
         currentPanedNavigationState = currentPanedNavigationState,
         currentEntries = ::entries,
-        backStatus = backStatus,
+        navigationEventStatus = navigationEventStatus,
     )
 
     override val key: Any = sceneKey
@@ -312,7 +283,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     class PaneDestinationMultiPaneDisplayScope<Pane, Destination : Node>(
         private val currentPanedNavigationState: State<SlotBasedPaneNavigationState<Pane, Destination>>,
         private val currentEntries: () -> List<NavEntry<Destination>>,
-        private val backStatus: () -> BackStatus,
+        private val navigationEventStatus: () -> NavigationEventStatus,
     ) : MultiPaneDisplayScope<Pane, Destination> {
 
         override val paneNavigationState by currentPanedNavigationState
@@ -326,20 +297,21 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
                 paneNavigationState.slotFor(pane)?.let(paneNavigationState::paneStateFor)
             } ?: return
 
-            val animatedContentScope = LocalNavAnimatedContentScope.current
+            val updatedAnimatedContentScope =
+                rememberUpdatedState(LocalNavAnimatedContentScope.current)
             val updatedPaneState = rememberUpdatedState(paneState)
 
             val scope = remember {
                 AnimatedPaneScope(
-                    backStatus = backStatus,
+                    navigationEventStatus = navigationEventStatus,
                     currentPaneState = updatedPaneState::value,
-                    animatedContentScope = animatedContentScope,
                     currentPaneNavigationState = currentPanedNavigationState::value,
+                    currentAnimatedContentScope = updatedAnimatedContentScope::value,
                 )
             }
 
             CompositionLocalProvider(
-                LocalPaneScope provides scope
+                LocalPaneScope provides scope,
             ) {
                 entry.Content()
             }
@@ -356,17 +328,19 @@ private class NonRenderingMultiPaneDisplayScope<Pane, Destination : Node>(
 
     @Composable
     override fun Destination(pane: Pane) = throw IllegalStateException(
-        "This MultiPaneDisplayScope cannot render panes"
+        "This MultiPaneDisplayScope cannot render panes",
     )
-
 }
 
 private fun <NavigationState : Node> MultiPaneDisplayState<NavigationState, *, *>.findNavigationStateMatching(
     backstackIds: List<String>,
-): NavigationState {
+): NavigationState? {
     var state = navigationState.value
-    while (backStackTransform(state).map(Node::id) != backstackIds) {
+    var nodes = backStackTransform(state).map(Node::id)
+    while (nodes != backstackIds) {
         state = popTransform(state)
+        nodes = backStackTransform(state).map(Node::id)
+        if (nodes.size < backstackIds.size) return null
     }
     return state
 }
@@ -378,7 +352,7 @@ private fun <NavigationState : Node> MultiPaneDisplayState<NavigationState, *, *
 private fun <Destination : Node, Pane> SlotBasedPaneNavigationState<Pane, Destination>.rememberUpdatedPanedNavigationState(
     backStackIds: List<String>,
     panesToDestinations: Map<Pane, Destination?>,
-    slots: Set<Slot>
+    slots: Set<Slot>,
 ): State<SlotBasedPaneNavigationState<Pane, Destination>> =
     remember {
         mutableStateOf(this)
@@ -426,17 +400,9 @@ internal class MultiPaneSceneKey(
     }
 }
 
-internal sealed class BackStatus {
-    data object Seeking : BackStatus()
-    sealed class Completed : BackStatus() {
-        data object Commited : Completed()
-        data object Cancelled : Completed()
-    }
-}
-
 private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     throw IllegalArgumentException(
-        "PaneScope should not be read until provided in the composition"
+        "PaneScope should not be read until provided in the composition",
     )
 }
 
