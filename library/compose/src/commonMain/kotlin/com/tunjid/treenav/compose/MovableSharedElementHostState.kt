@@ -7,6 +7,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.Defaults.visible
 
 /**
  * State for managing movable shared elements within a single [MultiPaneDisplay].
@@ -58,20 +59,18 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
 
         // This pane state is be transitioning out. Check if it should be displayed without
         // shared element semantics.
-        else -> when {
-            // The element is being shared in its new destination, stop showing it
-            // in the in active one
-            isCurrentlyShared(sharedContentState.key) &&
-                isMatchFound(sharedContentState.key) -> Defaults.EmptyElement(
-                state,
-                Modifier.fillParentAxisIfFixedOrWrap(),
-            )
-            // The element is not being shared in its new destination, allow it run its exit
-            // transition
-            else -> (alternateOutgoingSharedElement ?: sharedElement)(
-                state,
-                Modifier.fillParentAxisIfFixedOrWrap(),
-            )
-        }
+        else -> (alternateOutgoingSharedElement ?: sharedElement)(
+            state,
+            Modifier
+                .fillParentAxisIfFixedOrWrap()
+                // If the element is being shared in its new destination, stop showing it
+                // in the in active one
+                // else if the element is not being shared in its new destination, allow it run its exit
+                // transition
+                .visible(visible = !sharedContentState.isInvisible()),
+        )
     }
+
+    private fun SharedContentState.isInvisible(): Boolean =
+        isCurrentlyShared(key) && isMatchFound(key)
 }

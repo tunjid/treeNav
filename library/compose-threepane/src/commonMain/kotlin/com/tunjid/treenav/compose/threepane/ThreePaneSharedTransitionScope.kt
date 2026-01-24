@@ -26,6 +26,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
+import com.tunjid.treenav.compose.Defaults.visible
 import com.tunjid.treenav.compose.MinConstraintBox
 import com.tunjid.treenav.compose.MinConstraintBoxScope
 import com.tunjid.treenav.compose.PaneScope
@@ -92,11 +93,17 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
             content = {
                 // TODO: Maybe fade content out
-                if (pane == ThreePane.Primary &&
+                val isInvisible = pane == ThreePane.Primary &&
                     sharedContentState.isMatchFound &&
                     paneScope.transition.targetState != EnterExitState.Visible
-                ) Box(Modifier.fillParentAxisIfFixedOrWrap())
-                else content()
+
+                Box(
+                    modifier = Modifier
+                        .fillParentAxisIfFixedOrWrap()
+                        .visible(visible = !isInvisible),
+                ) {
+                    content()
+                }
             },
         )
         // In the other panes use the element as is
@@ -141,11 +148,17 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
             },
             content = {
                 // TODO: Maybe fade content out
-                if (pane == ThreePane.Primary &&
+                val isInvisible = pane == ThreePane.Primary &&
                     sharedContentState.isMatchFound &&
                     !isActive
-                ) Box(Modifier.fillParentAxisIfFixedOrWrap())
-                else content()
+
+                Box(
+                    modifier = Modifier
+                        .fillParentAxisIfFixedOrWrap()
+                        .visible(visible = !isInvisible),
+                ) {
+                    content()
+                }
             },
         )
 
