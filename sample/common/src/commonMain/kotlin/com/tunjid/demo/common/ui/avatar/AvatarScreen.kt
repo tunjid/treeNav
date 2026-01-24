@@ -39,16 +39,15 @@ fun AvatarScreen(
     onAction: (Action) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
     Box(
         modifier = modifier
             .dragToPop(rememberDragToPopState())
-            .fillMaxSize()
+            .fillMaxSize(),
     ) {
         val profileName = state.profileName ?: state.profile?.name ?: ""
         paneScaffoldState.UpdatedMovableStickySharedElementOf(
             sharedContentState = paneScaffoldState.rememberSharedContentState(
-                key = "${state.roomName}-$profileName-profile"
+                key = "${state.roomName}-$profileName-profile",
             ),
             state = ProfilePhotoArgs(
                 profileName = profileName,
@@ -61,8 +60,7 @@ fun AvatarScreen(
                 .aspectRatio(1f),
             sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
                 ProfilePhoto(args, innerModifier)
-            }
+            },
         )
     }
-
 }

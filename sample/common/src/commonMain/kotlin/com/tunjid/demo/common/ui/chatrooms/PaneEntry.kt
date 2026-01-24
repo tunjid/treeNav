@@ -30,14 +30,13 @@ import com.tunjid.demo.common.ui.rememberPaneScaffoldState
 import com.tunjid.demo.common.ui.viewModelCoroutineScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
 
-fun chatRoomPaneEntry(
-) = threePaneEntry(
+fun chatRoomPaneEntry() = threePaneEntry(
     contentTransform = predictiveBackContentTransform,
     render = {
         val viewModel = viewModel<ChatRoomsViewModel> {
             ChatRoomsViewModel(
                 coroutineScope = viewModelCoroutineScope(),
-                chatsRepository = ChatsRepository
+                chatsRepository = ChatsRepository,
             )
         }
         rememberPaneScaffoldState().PaneScaffold(
@@ -58,5 +57,5 @@ fun chatRoomPaneEntry(
                 PaneNavigationRail()
             },
         )
-    }
+    },
 )

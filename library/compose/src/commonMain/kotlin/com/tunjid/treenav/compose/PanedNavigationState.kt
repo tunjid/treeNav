@@ -33,5 +33,4 @@ sealed class Adaptation {
      * Checks if a [Swap] [Adaptation] involved [pane].
      */
     operator fun <Pane> Swap<Pane>.contains(pane: Pane?): Boolean = pane == from || pane == to
-
 }

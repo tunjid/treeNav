@@ -63,7 +63,7 @@ interface MovableSharedElementScope {
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
         alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
-        sharedElement: @Composable (T, Modifier) -> Unit
+        sharedElement: @Composable (T, Modifier) -> Unit,
     ): @Composable (T, Modifier) -> Unit
 
     /**
@@ -108,7 +108,7 @@ interface MovableSharedElementScope {
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
         alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
-        sharedElement: @Composable (T, Modifier) -> Unit
+        sharedElement: @Composable (T, Modifier) -> Unit,
     ): @Composable (T, Modifier) -> Unit
 }
 
@@ -151,7 +151,7 @@ fun <T> MovableSharedElementScope.UpdatedMovableSharedElementOf(
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
     alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)? = null,
-    sharedElement: @Composable (T, Modifier) -> Unit
+    sharedElement: @Composable (T, Modifier) -> Unit,
 ) = movableSharedElementOf(
     sharedContentState = sharedContentState,
     boundsTransform = boundsTransform,
@@ -160,7 +160,7 @@ fun <T> MovableSharedElementScope.UpdatedMovableSharedElementOf(
     zIndexInOverlay = zIndexInOverlay,
     clipInOverlayDuringTransition = clipInOverlayDuringTransition,
     alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-    sharedElement = sharedElement
+    sharedElement = sharedElement,
 ).invoke(
     state,
     modifier,
@@ -205,7 +205,7 @@ fun <T> MovableSharedElementScope.UpdatedMovableStickySharedElementOf(
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
     alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)? = null,
-    sharedElement: @Composable (T, Modifier) -> Unit
+    sharedElement: @Composable (T, Modifier) -> Unit,
 ) = movableStickySharedElementOf(
     sharedContentState = sharedContentState,
     boundsTransform = boundsTransform,
@@ -214,7 +214,7 @@ fun <T> MovableSharedElementScope.UpdatedMovableStickySharedElementOf(
     zIndexInOverlay = zIndexInOverlay,
     clipInOverlayDuringTransition = clipInOverlayDuringTransition,
     alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-    sharedElement = sharedElement
+    sharedElement = sharedElement,
 ).invoke(
     state,
     modifier,
@@ -222,13 +222,13 @@ fun <T> MovableSharedElementScope.UpdatedMovableStickySharedElementOf(
 
 @Composable
 fun <Pane, Destination : Node> PaneScope<Pane, Destination>.rememberPaneMovableSharedElementScope(
-    movableSharedElementHostState: MovableSharedElementHostState<Pane, Destination>
+    movableSharedElementHostState: MovableSharedElementHostState<Pane, Destination>,
 ): PaneMovableSharedElementScope<Pane, Destination> {
     val updatedPaneScope = rememberUpdatedState(this)
     return remember(movableSharedElementHostState) {
         PaneMovableSharedElementScope(
             currentPaneScope = updatedPaneScope::value,
-            movableSharedElementHostState = movableSharedElementHostState
+            movableSharedElementHostState = movableSharedElementHostState,
         )
     }
 }
@@ -252,7 +252,6 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
 
     val paneScope get() = currentPaneScope()
 
-
     override fun <T> movableSharedElementOf(
         sharedContentState: SharedContentState,
         boundsTransform: BoundsTransform,
@@ -261,7 +260,7 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
         alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
-        sharedElement: @Composable (T, Modifier) -> Unit
+        sharedElement: @Composable (T, Modifier) -> Unit,
     ): @Composable (T, Modifier) -> Unit = { state, modifier ->
         with(movableSharedElementHostState) {
             SharedElement(
@@ -280,13 +279,12 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
                             paneScope.transition.targetState == EnterExitState.Visible
                         },
                         sharedElement = sharedElement,
-                        alternateOutgoingSharedElement = alternateOutgoingSharedElement
+                        alternateOutgoingSharedElement = alternateOutgoingSharedElement,
                     )
-                }
+                },
             )
         }
     }
-
 
     override fun <T> movableStickySharedElementOf(
         sharedContentState: SharedContentState,
@@ -296,7 +294,7 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
         alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
-        sharedElement: @Composable (T, Modifier) -> Unit
+        sharedElement: @Composable (T, Modifier) -> Unit,
     ): @Composable (T, Modifier) -> Unit = with(movableSharedElementHostState) {
         { state, modifier ->
             SharedElementWithCallerManagedVisibility(
@@ -313,7 +311,7 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
                         state = state,
                         useMovableContent = { paneScope.isActive },
                         alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-                        sharedElement = sharedElement
+                        sharedElement = sharedElement,
                     )
                 },
             )

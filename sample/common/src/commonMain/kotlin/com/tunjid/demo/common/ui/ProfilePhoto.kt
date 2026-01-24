@@ -41,7 +41,7 @@ fun ProfilePhoto(
             .clip(RoundedCornerShape(animateDpAsState(args.cornerRadius).value)),
         contentScale = args.contentScale.animate(),
         contentDescription = args.contentDescription,
-        painter = painterResource(args.profilePhotoResource())
+        painter = painterResource(args.profilePhotoResource()),
     )
 }
 

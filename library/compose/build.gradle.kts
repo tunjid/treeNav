@@ -36,7 +36,6 @@ kotlin {
                 implementation(libs.lifecycle.multiplatform.runtime.compose)
 
                 implementation(libs.savedstate.multiplatform.compose)
-
             }
         }
         androidMain {

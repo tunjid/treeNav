@@ -59,13 +59,12 @@ import com.tunjid.treenav.compose.threepane.rememberStaticExitedAnimatedVisibili
  * @param movableSharedElementHostState the host state for coordinating movable shared elements.
  * There should be one instance of this per [MultiPaneDisplay].
  */
-fun <NavigationState : Node, Destination : Node>
-        threePaneMovableSharedElementDecorator(
+fun <NavigationState : Node, Destination : Node> threePaneMovableSharedElementDecorator(
     movableSharedElementHostState: MovableSharedElementHostState<ThreePane, Destination>,
 ): PaneDecorator<NavigationState, Destination, ThreePane> =
     paneRenderDecorator { destination, destinationPaneMapper ->
         val delegate = rememberPaneMovableSharedElementScope(
-            movableSharedElementHostState = movableSharedElementHostState
+            movableSharedElementHostState = movableSharedElementHostState,
         )
 
         val movableSharedElementScope = remember(movableSharedElementHostState, delegate) {
@@ -88,9 +87,9 @@ fun <NavigationState : Node, Destination : Node>
  */
 @Stable
 fun <Destination : Node> PaneScope<
-        ThreePane,
-        Destination
-        >.requireThreePaneMovableSharedElementScope(): MovableSharedElementScope {
+    ThreePane,
+    Destination,
+    >.requireThreePaneMovableSharedElementScope(): MovableSharedElementScope {
     check(this is ThreePaneMovableSharedElementScope) {
         """
             The current PaneScope (${this::class.qualifiedName}) is not an instance of
@@ -139,16 +138,17 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         { state, modifier ->
             when (val pane = paneState.pane) {
                 null -> throw IllegalArgumentException(
-                    "Shared elements may only be used in non null panes"
+                    "Shared elements may only be used in non null panes",
                 )
                 // Allow movable shared elements in the primary pane only
                 ThreePane.Primary,
-                ThreePane.Secondary -> SharedElement(
+                ThreePane.Secondary,
+                -> SharedElement(
                     modifier = modifier,
                     sharedContentState = sharedContentState,
                     animatedVisibilityScope =
-                        if (pane == ThreePane.Primary) delegate.paneScope
-                        else rememberStaticExitedAnimatedVisibilityScope(),
+                    if (pane == ThreePane.Primary) delegate.paneScope
+                    else rememberStaticExitedAnimatedVisibilityScope(),
                     placeholderSize = placeholderSize,
                     renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                     zIndexInOverlay = zIndexInOverlay,
@@ -161,19 +161,19 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                                 delegate.paneScope.transition.targetState == EnterExitState.Visible
                             },
                             sharedElement = sharedElement,
-                            alternateOutgoingSharedElement = alternateOutgoingSharedElement
+                            alternateOutgoingSharedElement = alternateOutgoingSharedElement,
                         )
                         else PlainElement(
                             state = state,
                             modifier = Modifier.fillParentAxisIfFixedOrWrap(),
                             content = alternateOutgoingSharedElement ?: sharedElement,
                         )
-                    }
+                    },
                 )
                 // In the other panes use the element as is
                 ThreePane.Tertiary,
                 ThreePane.Overlay,
-                    -> PlainElement(
+                -> PlainElement(
                     state = state,
                     modifier = modifier,
                     content = alternateOutgoingSharedElement ?: sharedElement,
@@ -190,16 +190,17 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
         zIndexInOverlay: Float,
         clipInOverlayDuringTransition: OverlayClip,
         alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
-        sharedElement: @Composable (T, Modifier) -> Unit
+        sharedElement: @Composable (T, Modifier) -> Unit,
     ): @Composable (T, Modifier) -> Unit = with(hostState) {
         { state, modifier ->
             when (val pane = paneState.pane) {
                 null -> throw IllegalArgumentException(
-                    "Shared elements may only be used in non null panes"
+                    "Shared elements may only be used in non null panes",
                 )
 
                 ThreePane.Primary,
-                ThreePane.Secondary -> if (pane == ThreePane.Secondary && !canAnimateSecondary()) PlainElement(
+                ThreePane.Secondary,
+                -> if (pane == ThreePane.Secondary && !canAnimateSecondary()) PlainElement(
                     state = state,
                     modifier = modifier,
                     content = alternateOutgoingSharedElement ?: sharedElement,
@@ -221,7 +222,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                             state = state,
                             useMovableContent = { isActive },
                             alternateOutgoingSharedElement = alternateOutgoingSharedElement,
-                            sharedElement = sharedElement
+                            sharedElement = sharedElement,
                         )
                         else PlainElement(
                             state = state,
@@ -232,8 +233,8 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                 )
 
                 ThreePane.Tertiary,
-                ThreePane.Overlay
-                    -> PlainElement(
+                ThreePane.Overlay,
+                -> PlainElement(
                     state = state,
                     modifier = modifier,
                     content = alternateOutgoingSharedElement ?: sharedElement,

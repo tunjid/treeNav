@@ -60,7 +60,7 @@ fun profilePaneEntry() = threePaneEntry(
                     paneScaffoldState = this,
                     state = viewModel.state.collectAsStateWithLifecycle().value,
                     onAction = viewModel.accept,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             },
             navigationBar = {

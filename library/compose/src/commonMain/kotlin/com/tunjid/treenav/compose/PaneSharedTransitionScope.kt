@@ -33,7 +33,8 @@ import com.tunjid.treenav.Node
  */
 @Stable
 interface PaneSharedTransitionScope<Pane, Destination : Node> :
-    PaneScope<Pane, Destination>, SharedTransitionScope {
+    PaneScope<Pane, Destination>,
+    SharedTransitionScope {
 
     /**
      * Creates a shared element transition where the shared element is seekable

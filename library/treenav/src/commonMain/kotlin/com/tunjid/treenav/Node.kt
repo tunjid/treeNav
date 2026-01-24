@@ -86,6 +86,3 @@ operator fun Node.minus(node: Node): Set<Node> {
     }
     return left - right
 }
-
-
-

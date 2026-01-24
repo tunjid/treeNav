@@ -64,7 +64,7 @@ enum class ThreePane {
     /**
      * An optional pane for showing dialogs, or context sheets over existing panes.
      */
-    Overlay;
+    Overlay,
 }
 
 /**
@@ -90,7 +90,7 @@ fun <Destination : Node> threePaneEntry(
     metadata = metadata,
     contentTransform = contentTransform,
     paneMapping = paneMapping,
-    content = render
+    content = render,
 )
 
 /**
@@ -99,18 +99,17 @@ fun <Destination : Node> threePaneEntry(
  * contains no animations.
  */
 fun <Destination : Node> ContentTransform.adaptTo(
-    paneScope: PaneScope<ThreePane, Destination>
+    paneScope: PaneScope<ThreePane, Destination>,
 ): ContentTransform = if (paneScope.canAnimate()) this else NoContentTransform
-
 
 @Composable
 internal fun rememberStaticExitedAnimatedVisibilityScope(): AnimatedVisibilityScope {
     val transition = rememberTransition(
         remember {
             MutableTransitionState(
-                initialState = EnterExitState.PostExit
+                initialState = EnterExitState.PostExit,
             )
-        }
+        },
     )
     return remember(transition) {
         StaticAnimatedVisibilityScope(transition)
@@ -127,19 +126,18 @@ internal fun PaneScope<ThreePane, *>.canAnimateSecondary(): Boolean {
 
 private val PrimaryToSecondary = Swap(
     from = ThreePane.Primary,
-    to = ThreePane.Secondary
+    to = ThreePane.Secondary,
 )
 
-
 private class StaticAnimatedVisibilityScope(
-    private val staticTransition: Transition<EnterExitState>
+    private val staticTransition: Transition<EnterExitState>,
 ) : AnimatedVisibilityScope {
     override val transition: Transition<EnterExitState>
         get() = staticTransition
 }
 
 private val RouteTransitionAnimationSpec: FiniteAnimationSpec<Float> = tween(
-    durationMillis = 700
+    durationMillis = 700,
 )
 
 private val DefaultContentTransform = ContentTransform(
@@ -148,7 +146,7 @@ private val DefaultContentTransform = ContentTransform(
     ),
     initialContentExit = fadeOut(
         animationSpec = RouteTransitionAnimationSpec,
-    )
+    ),
 )
 
 private val NoContentTransform = ContentTransform(
@@ -173,11 +171,13 @@ private fun PaneScope<ThreePane, *>.canAnimate() =
         else -> when (val pane = paneState.pane) {
             ThreePane.Primary,
             ThreePane.Secondary,
-            ThreePane.Tertiary -> paneState.adaptations.any { adaptation ->
+            ThreePane.Tertiary,
+            -> paneState.adaptations.any { adaptation ->
                 adaptation is Swap<*> && adaptation.from == pane
             }
 
             ThreePane.Overlay,
-            null -> true
+            null,
+            -> true
         }
     }

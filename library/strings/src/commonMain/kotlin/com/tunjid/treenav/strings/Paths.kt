@@ -27,7 +27,7 @@ import kotlin.jvm.JvmInline
  */
 @JvmInline
 value class PathPattern(
-    val template: String
+    val template: String,
 ) {
     init {
         checkNotNull(pathPatternRegex.matchEntire(template)) {
@@ -41,7 +41,7 @@ value class PathPattern(
  * [RouteParams]
  */
 internal fun String.routeParams(
-    pattern: PathPattern
+    pattern: PathPattern,
 ) = RouteParams(
     pathAndQueries = this,
     pathArgs = pathArgs(pattern.template),
@@ -65,7 +65,6 @@ private fun String.queryParams(): Map<String, List<String>> {
     return result
 }
 
-
 private fun String.pathArgs(pattern: String): Map<String, String> {
     val path = split("?").first()
     val pathKeys = mutableListOf<String>()
@@ -74,8 +73,8 @@ private fun String.pathArgs(pattern: String): Map<String, String> {
         pathKeys.add(
             it.value.replace(
                 regex = pathArgRegex,
-                replacement = ""
-            )
+                replacement = "",
+            ),
         )
         "(.*?)"
     }

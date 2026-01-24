@@ -30,7 +30,7 @@ import com.tunjid.treenav.compose.threepane.panedecorators.requireThreePaneMovab
  * a [ThreePane] layout.
  */
 typealias ThreePaneMovableElementSharedTransitionScope<Destination> =
-        PaneMovableElementSharedTransitionScope<ThreePane, Destination>
+    PaneMovableElementSharedTransitionScope<ThreePane, Destination>
 
 /**
  * Remembers a [ThreePaneMovableElementSharedTransitionScope] in the composition.
@@ -44,13 +44,13 @@ typealias ThreePaneMovableElementSharedTransitionScope<Destination> =
 
 @Composable
 fun <Destination : Node> PaneScope<
-        ThreePane,
-        Destination
-        >.rememberThreePaneMovableElementSharedTransitionScope(
-    movableSharedElementScope: MovableSharedElementScope = requireThreePaneMovableSharedElementScope()
+    ThreePane,
+    Destination,
+    >.rememberThreePaneMovableElementSharedTransitionScope(
+    movableSharedElementScope: MovableSharedElementScope = requireThreePaneMovableSharedElementScope(),
 ): ThreePaneMovableElementSharedTransitionScope<Destination> {
     val paneSharedTransitionScope = rememberPaneSharedTransitionScope(
-        movableSharedElementScope.sharedTransitionScope
+        movableSharedElementScope.sharedTransitionScope,
     )
     return rememberPaneMovableElementSharedTransitionScope(
         paneSharedTransitionScope = paneSharedTransitionScope,

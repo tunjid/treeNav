@@ -95,86 +95,84 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
         @Suppress("UNCHECKED_CAST")
         internal inline fun <T : Node> NavEntry<*>.destination() =
             metadata[DESTINATION_KEY] as T
+
+        /**
+         * Provides an [MultiPaneDisplayState] for configuring a [MultiPaneDisplay] for
+         * showing different navigation destinations into different panes from an arbitrary
+         * [navigationState].
+         *
+         * @param panes a list of panes that is possible to show in the [MultiPaneDisplay] in all
+         * possible configurations. The panes should consist of enum class instances, or a sealed class
+         * hierarchy of kotlin objects.
+         * @param navigationState the navigation state to be adapted into various panes.
+         * @param backStackTransform a transform to read the back stack of the navigation state. The [List]
+         * returned is expected to be immutable.
+         * @param destinationTransform a transform of the [navigationState] to its current destination.
+         * @param popTransform a transform of the [navigationState] when back is pressed. It is expected
+         * that the value returned is a difference instance than that in [NavigationState].
+         * @param onPopped an action to perform when the navigation state has been popped to a new state.
+         * @param entryProvider provides the [PaneDecorator]s and content needed to render
+         * a [Destination] in its pane.
+         * @param paneDecorators a list of decorators applied to every [Destination] before it is
+         * rendered in its pane. Order matters; they are applied from last to first.
+         */
+        operator fun <NavigationState : Node, Destination : Node, Pane> invoke(
+            panes: List<Pane>,
+            navigationState: State<NavigationState>,
+            backStackTransform: (NavigationState) -> List<Destination>,
+            destinationTransform: (NavigationState) -> Destination,
+            popTransform: (NavigationState) -> NavigationState,
+            onPopped: (NavigationState) -> Unit,
+            paneDecorators: List<PaneDecorator<NavigationState, Destination, Pane>> = emptyList(),
+            navEntryDecorators: List<NavEntryDecorator<Destination>> = emptyList(),
+            transitionSpec: MultiPaneDisplayScope<Pane, Destination>.() -> ContentTransform = {
+                NoContentTransform
+            },
+            entryProvider: (Destination) -> PaneEntry<Pane, Destination>,
+        ) = paneDecorators.fold(
+            initial = MultiPaneDisplayState(
+                panes = panes,
+                navigationState = navigationState,
+                backStackTransform = backStackTransform,
+                destinationTransform = destinationTransform,
+                popTransform = popTransform,
+                onPopped = onPopped,
+                navEntryDecorators = navEntryDecorators,
+                transitionSpec = transitionSpec,
+                paneEntryProvider = entryProvider,
+                destinationPanes = { destination ->
+                    entryProvider(destination).paneMapping(destination)
+                },
+                destinationContent = transform@{ paneEntry, destination ->
+                    Box(
+                        modifier = remember(
+                            isActive,
+                            inPredictiveBack,
+                            paneState.pane,
+                            transition.targetState,
+                        ) {
+                            val contentTransform = paneEntry.contentTransform(this)
+                            val shouldAnimate =
+                                contentTransform.targetContentEnter != EnterTransition.None ||
+                                    contentTransform.initialContentExit != ExitTransition.None
+
+                            if (shouldAnimate) Modifier.animateEnterExit(
+                                enter = contentTransform.targetContentEnter,
+                                exit = contentTransform.initialContentExit,
+                            )
+                            else Modifier
+                        },
+                        content = {
+                            paneEntry.content(this@transform, destination)
+                        },
+                    )
+                },
+            ),
+            operation = MultiPaneDisplayState<NavigationState, Destination, Pane>::plus,
+        )
     }
 }
-
-/**
- * Provides an [MultiPaneDisplayState] for configuring a [MultiPaneDisplay] for
- * showing different navigation destinations into different panes from an arbitrary
- * [navigationState].
- *
- * @param panes a list of panes that is possible to show in the [MultiPaneDisplay] in all
- * possible configurations. The panes should consist of enum class instances, or a sealed class
- * hierarchy of kotlin objects.
- * @param navigationState the navigation state to be adapted into various panes.
- * @param backStackTransform a transform to read the back stack of the navigation state. The [List]
- * returned is expected to be immutable.
- * @param destinationTransform a transform of the [navigationState] to its current destination.
- * @param popTransform a transform of the [navigationState] when back is pressed. It is expected
- * that the value returned is a difference instance than that in [NavigationState].
- * @param onPopped an action to perform when the navigation state has been popped to a new state.
- * @param entryProvider provides the [PaneDecorator]s and content needed to render
- * a [Destination] in its pane.
- * @param paneDecorators a list of decorators applied to every [Destination] before it is
- * rendered in its pane. Order matters; they are applied from last to first.
- */
-fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplayState(
-    panes: List<Pane>,
-    navigationState: State<NavigationState>,
-    backStackTransform: (NavigationState) -> List<Destination>,
-    destinationTransform: (NavigationState) -> Destination,
-    popTransform: (NavigationState) -> NavigationState,
-    onPopped: (NavigationState) -> Unit,
-    paneDecorators: List<PaneDecorator<NavigationState, Destination, Pane>> = emptyList(),
-    navEntryDecorators: List<NavEntryDecorator<Destination>> = emptyList(),
-    transitionSpec: MultiPaneDisplayScope<Pane, Destination>.() -> ContentTransform = {
-        NoContentTransform
-    },
-    entryProvider: (Destination) -> PaneEntry<Pane, Destination>,
-) = paneDecorators.fold(
-    initial = MultiPaneDisplayState(
-        panes = panes,
-        navigationState = navigationState,
-        backStackTransform = backStackTransform,
-        destinationTransform = destinationTransform,
-        popTransform = popTransform,
-        onPopped = onPopped,
-        navEntryDecorators = navEntryDecorators,
-        transitionSpec = transitionSpec,
-        paneEntryProvider = entryProvider,
-        destinationPanes = { destination ->
-            entryProvider(destination).paneMapping(destination)
-        },
-        destinationContent = transform@{ paneEntry, destination ->
-            Box(
-                modifier = remember(
-                    isActive,
-                    inPredictiveBack,
-                    paneState.pane,
-                    transition.targetState,
-                ) {
-                    val contentTransform = paneEntry.contentTransform(this)
-                    val shouldAnimate =
-                        contentTransform.targetContentEnter != EnterTransition.None
-                                || contentTransform.initialContentExit != ExitTransition.None
-
-                    if (shouldAnimate) Modifier.animateEnterExit(
-                        enter = contentTransform.targetContentEnter,
-                        exit = contentTransform.initialContentExit,
-                    )
-                    else Modifier
-                },
-                content = {
-                    paneEntry.content(this@transform, destination)
-                }
-            )
-        }
-    ),
-    operation = MultiPaneDisplayState<NavigationState, Destination, Pane>::plus
-)
-
-private operator fun <NavigationState : Node, Destination : Node, Pane>
-        MultiPaneDisplayState<NavigationState, Destination, Pane>.plus(
+private operator fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplayState<NavigationState, Destination, Pane>.plus(
     transform: PaneDecorator<NavigationState, Destination, Pane>,
 ): MultiPaneDisplayState<NavigationState, Destination, Pane> =
     MultiPaneDisplayState(

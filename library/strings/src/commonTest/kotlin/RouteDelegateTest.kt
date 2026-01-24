@@ -26,16 +26,14 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-
 class RouteDelegateTest {
 
     @Test
     fun testDelegateReading() {
-
         val route = routeOf(
             path = "users",
             pathArgs = mapOf(
-                "userId" to "1"
+                "userId" to "1",
             ),
             queryParams = mapOf(
                 "page" to listOf("0"),
@@ -139,7 +137,7 @@ private val Route.count by optionalMappedRouteQuery(
 )
 
 private val Route.category by optionalRouteQuery(
-    default = "profilePictures"
+    default = "profilePictures",
 )
 
 private val Route.defaultProfileId by routePath("2")
@@ -152,4 +150,3 @@ private val Route.defaultPage by mappedRouteQuery(
 private val Route.defaultOffset by routeQuery(
     default = "200",
 )
-

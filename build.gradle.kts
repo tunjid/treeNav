@@ -17,16 +17,22 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     extra.apply {
-        set("localProps", java.util.Properties().apply {
-            file("local.properties").let { file ->
-                if (file.exists()) load(java.io.FileInputStream(file))
-            }
-        })
-        set("libProps", java.util.Properties().apply {
-            file("libraryVersion.properties").let { file ->
-                if (file.exists()) load(java.io.FileInputStream(file))
-            }
-        })
+        set(
+            "localProps",
+            java.util.Properties().apply {
+                file("local.properties").let { file ->
+                    if (file.exists()) load(java.io.FileInputStream(file))
+                }
+            },
+        )
+        set(
+            "libProps",
+            java.util.Properties().apply {
+                file("libraryVersion.properties").let { file ->
+                    if (file.exists()) load(java.io.FileInputStream(file))
+                }
+            },
+        )
     }
 
     repositories {

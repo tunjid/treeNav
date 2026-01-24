@@ -59,10 +59,10 @@ import com.tunjid.demo.common.ui.data.Profile
 import com.tunjid.treenav.compose.UpdatedMovableSharedElementOf
 import com.tunjid.treenav.compose.UpdatedMovableStickySharedElementOf
 import com.tunjid.treenav.compose.threepane.ThreePane
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun ChatScreen(
@@ -81,7 +81,7 @@ fun ChatScreen(
                 ChatTitle(
                     roomName = state.roomName,
                     participants = state.participants,
-                    paneScaffoldState = paneScaffoldState
+                    paneScaffoldState = paneScaffoldState,
                 )
             },
             onBackPressed = remember(isInPrimaryPane) {
@@ -103,29 +103,28 @@ fun ChatScreen(
     }
 }
 
-
 @Composable
 private fun ChatTitle(
     roomName: String,
     participants: List<String>,
-    paneScaffoldState: PaneScaffoldState
+    paneScaffoldState: PaneScaffoldState,
 ) = with(paneScaffoldState) {
     Row(
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         PaneSharedElement(
-            sharedContentState = rememberSharedContentState("title")
+            sharedContentState = rememberSharedContentState("title"),
         ) {
             Text(text = roomName)
         }
         Spacer(
             modifier = Modifier
-                .width(16.dp)
+                .width(16.dp),
         )
         participants.forEachIndexed { index, participant ->
             UpdatedMovableSharedElementOf(
                 sharedContentState = paneScaffoldState.rememberSharedContentState(
-                    key = "${roomName}-${participant}"
+                    key = "$roomName-$participant",
                 ),
                 state = ProfilePhotoArgs(
                     profileName = participant,
@@ -138,7 +137,7 @@ private fun ChatTitle(
                     .offset(x = index * (-8).dp),
                 sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
                     ProfilePhoto(args, innerModifier)
-                }
+                },
             )
         }
     }
@@ -159,10 +158,10 @@ fun Messages(
         LazyColumn(
             state = scrollState,
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             items(
-                count = messages.size
+                count = messages.size,
             ) { index ->
                 val prevAuthor = messages.getOrNull(index - 1)?.sender
                 val nextAuthor = messages.getOrNull(index + 1)?.sender
@@ -178,13 +177,12 @@ fun Messages(
                     isInPrimaryPane = isInPrimaryPane,
                     isFirstMessageByAuthor = isFirstMessageByAuthor,
                     isLastMessageByAuthor = isLastMessageByAuthor,
-                    paneScaffoldState = paneScaffoldState
+                    paneScaffoldState = paneScaffoldState,
                 )
             }
         }
     }
 }
-
 
 @Composable
 fun Message(
@@ -223,14 +221,14 @@ fun Message(
                                     roomName = it,
                                     profileName = item.sender.name,
                                     isInPrimaryPane = isInPrimaryPane,
-                                )
+                                ),
                             )
                         }
                     },
             ) {
                 paneScaffoldState.UpdatedMovableStickySharedElementOf(
                     sharedContentState = paneScaffoldState.rememberSharedContentState(
-                        key = "$roomName-${item.sender.name}-profile"
+                        key = "$roomName-${item.sender.name}-profile",
                     ),
                     state = ProfilePhotoArgs(
                         profileName = item.sender.name,
@@ -241,7 +239,7 @@ fun Message(
                     modifier = Modifier.matchParentSize(),
                     sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
                         ProfilePhoto(args, innerModifier)
-                    }
+                    },
                 )
             }
         } else {
@@ -255,7 +253,7 @@ fun Message(
             isLastMessageByAuthor = isLastMessageByAuthor,
             modifier = Modifier
                 .padding(end = 16.dp)
-                .weight(1f)
+                .weight(1f),
         )
     }
 }
@@ -266,7 +264,7 @@ fun AuthorAndTextMessage(
     isUserMe: Boolean,
     isFirstMessageByAuthor: Boolean,
     isLastMessageByAuthor: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
         if (isLastMessageByAuthor) {
@@ -286,7 +284,7 @@ fun AuthorAndTextMessage(
 @OptIn(ExperimentalTime::class)
 @Composable
 private fun AuthorNameTimestamp(
-    item: MessageItem
+    item: MessageItem,
 ) {
     // Combine author and timestamp for a11y.
     Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
@@ -295,14 +293,14 @@ private fun AuthorNameTimestamp(
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier
                 .alignBy(LastBaseline)
-                .paddingFrom(LastBaseline, after = 8.dp) // Space to 1st bubble
+                .paddingFrom(LastBaseline, after = 8.dp), // Space to 1st bubble
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = item.message.timestamp.toTimestamp(),
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.alignBy(LastBaseline),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -310,7 +308,7 @@ private fun AuthorNameTimestamp(
 @Composable
 fun ChatItemBubble(
     item: MessageItem,
-    isUserMe: Boolean
+    isUserMe: Boolean,
 ) {
     val backgroundBubbleColor = if (isUserMe) {
         MaterialTheme.colorScheme.primary
@@ -321,7 +319,7 @@ fun ChatItemBubble(
     Column {
         Surface(
             color = backgroundBubbleColor,
-            shape = ChatBubbleShape
+            shape = ChatBubbleShape,
         ) {
             ChatMessage(
                 message = item.message,

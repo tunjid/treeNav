@@ -36,7 +36,8 @@ sealed interface SampleDestination : Node {
         val title: String,
     ) : SampleDestination {
         ChatRooms("Chat Rooms"),
-        Me("Me");
+        Me("Me"),
+        ;
 
         override val id: String get() = title
 
@@ -70,7 +71,7 @@ sealed interface SampleDestination : Node {
         override val children: List<Node>
             get() = listOfNotNull(
                 roomName?.let(::Chat),
-                roomName?.let { NavTabs.ChatRooms }
+                roomName?.let { NavTabs.ChatRooms },
             )
     }
 
@@ -95,7 +96,7 @@ fun interface NavigationAction {
 }
 
 fun navigationAction(
-    block: MultiStackNav.() -> MultiStackNav
+    block: MultiStackNav.() -> MultiStackNav,
 ) = NavigationAction(block)
 
 object NavigationRepository {
@@ -109,7 +110,7 @@ object NavigationRepository {
 }
 
 fun <T> NavigationRepository.navigationMutations(
-    navigationActions: Flow<NavigationAction>
+    navigationActions: Flow<NavigationAction>,
 ): Flow<Mutation<T>> =
     navigationActions.mapToManyMutations {
         navigate(it)
@@ -122,13 +123,13 @@ private val InitialNavState = MultiStackNav(
             name = "chatrooms",
             children = listOf(
                 SampleDestination.NavTabs.ChatRooms,
-            )
+            ),
         ),
         StackNav(
             name = "me",
             children = listOf(
                 SampleDestination.NavTabs.Me,
-            )
+            ),
         ),
-    )
+    ),
 )

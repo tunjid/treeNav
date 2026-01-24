@@ -66,7 +66,8 @@ internal class AnimatedPaneScope<Pane, Destination : Node>(
     private val currentPaneNavigationState: () -> PaneNavigationState<Pane, Destination>,
     private val currentPaneState: () -> PaneState<Pane, Destination>,
     private val currentAnimatedContentScope: () -> AnimatedContentScope,
-) : PaneScope<Pane, Destination>, AnimatedVisibilityScope {
+) : PaneScope<Pane, Destination>,
+    AnimatedVisibilityScope {
 
     private val isEntering
         get() = transition.targetState == EnterExitState.Visible

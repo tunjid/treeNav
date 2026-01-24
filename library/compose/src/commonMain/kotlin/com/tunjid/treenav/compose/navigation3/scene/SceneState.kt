@@ -54,7 +54,7 @@ internal fun <T : Any> rememberSceneState(
         // Calculate the single scene based on the sceneStrategy and start the list there.
         val allScenes =
             mutableListOf(
-                sceneStrategy.calculateSceneWithSinglePaneFallback(scope, decoratedEntries)
+                sceneStrategy.calculateSceneWithSinglePaneFallback(scope, decoratedEntries),
             )
 
         // find all of the OverlayScenes
@@ -127,16 +127,16 @@ internal constructor(
         other as SceneState<*>
 
         return entries == other.entries &&
-                overlayScenes == other.overlayScenes &&
-                currentScene == other.currentScene &&
-                previousScenes == other.previousScenes
+            overlayScenes == other.overlayScenes &&
+            currentScene == other.currentScene &&
+            previousScenes == other.previousScenes
     }
 
     override fun hashCode(): Int {
         return entries.hashCode() * 31 +
-                overlayScenes.hashCode() * 31 +
-                currentScene.hashCode() * 31 +
-                previousScenes.hashCode() * 31
+            overlayScenes.hashCode() * 31 +
+            currentScene.hashCode() * 31 +
+            previousScenes.hashCode() * 31
     }
 
     override fun toString(): String {

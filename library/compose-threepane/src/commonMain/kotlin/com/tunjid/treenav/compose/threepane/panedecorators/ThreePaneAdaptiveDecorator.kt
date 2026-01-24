@@ -34,8 +34,7 @@ import com.tunjid.treenav.compose.threepane.ThreePane
  *
  * @param windowWidthState provides the current width of the display in Dp.
  */
-fun <NavigationState : Node, Destination : Node>
-        threePaneAdaptiveDecorator(
+fun <NavigationState : Node, Destination : Node> threePaneAdaptiveDecorator(
     windowWidthState: State<Dp>,
     secondaryPaneBreakPoint: State<Dp> = mutableStateOf(SECONDARY_PANE_MIN_WIDTH_BREAKPOINT_DP),
     tertiaryPaneBreakPoint: State<Dp> = mutableStateOf(TERTIARY_PANE_MIN_WIDTH_BREAKPOINT_DP),

@@ -71,7 +71,7 @@ class StackNavTest {
 
         assertEquals(
             expected = listOf(pushed) + listOf("A", "B", "C").map(::TestNode),
-            actual = pushed.flatten(order = Order.DepthFirst)
+            actual = pushed.flatten(order = Order.DepthFirst),
         )
     }
 
@@ -90,15 +90,15 @@ class StackNavTest {
 
         assertEquals(
             expected = setOf(TestNode(name = "A")),
-            actual = singlePush - subject
+            actual = singlePush - subject,
         )
         assertEquals(
             expected = listOf("A", "B", "C").map(::TestNode).toSet(),
-            actual = multiPush - subject
+            actual = multiPush - subject,
         )
         assertEquals(
             expected = listOf("B", "C").map(::TestNode).toSet(),
-            actual = multiPush - singlePush
+            actual = multiPush - singlePush,
         )
     }
 
@@ -115,14 +115,14 @@ class StackNavTest {
             expected = listOf(TestNode(name = "A"), TestNode(name = "B")),
             actual = multiPush
                 .pop()
-                .children
+                .children,
         )
         assertEquals(
             expected = listOf(TestNode(name = "A")),
             actual = multiPush
                 .pop()
                 .pop()
-                .children
+                .children,
         )
         assertEquals(
             expected = listOf(TestNode(name = "A")),
@@ -130,7 +130,7 @@ class StackNavTest {
                 .pop()
                 .pop()
                 .pop()
-                .children
+                .children,
         )
         assertEquals(
             expected = listOf(),
@@ -138,7 +138,7 @@ class StackNavTest {
                 .pop()
                 .pop()
                 .pop(popLast = true)
-                .children
+                .children,
         )
     }
 
@@ -149,12 +149,11 @@ class StackNavTest {
             .push(TestNode(name = "B"))
             .push(TestNode(name = "C"))
 
-
         assertEquals(
             expected = listOf(TestNode(name = "A")),
             actual = multiPush
                 .popToRoot()
-                .children
+                .children,
         )
     }
 
@@ -181,7 +180,7 @@ class StackNavTest {
                 includeCurrentDestinationChildren = false,
                 placeChildrenBeforeParent = false,
             )
-                .toList()
+                .toList(),
         )
 
         assertEquals(
@@ -194,7 +193,7 @@ class StackNavTest {
                 includeCurrentDestinationChildren = false,
                 placeChildrenBeforeParent = true,
             )
-                .asReversed()
+                .asReversed(),
         )
 
         assertEquals(
@@ -213,7 +212,7 @@ class StackNavTest {
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = false,
             )
-                .toList()
+                .toList(),
         )
 
         assertEquals(
@@ -226,7 +225,7 @@ class StackNavTest {
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = true,
             )
-                .asReversed()
+                .asReversed(),
         )
 
         assertEquals(
@@ -245,7 +244,7 @@ class StackNavTest {
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = true,
             )
-                .toList()
+                .toList(),
         )
 
         assertEquals(
@@ -258,7 +257,7 @@ class StackNavTest {
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = false,
             )
-                .asReversed()
+                .asReversed(),
         )
     }
 }

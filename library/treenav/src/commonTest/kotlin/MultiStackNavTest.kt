@@ -54,7 +54,7 @@ class MultiStackNavTest {
     fun setup() {
         subject = MultiStackNav(
             name = "subject",
-            stacks = listOf("0", "1", "2").map(::StackNav)
+            stacks = listOf("0", "1", "2").map(::StackNav),
         )
     }
 
@@ -75,21 +75,21 @@ class MultiStackNavTest {
                 pushed,
                 StackNav(
                     name = "0",
-                    children = listOf("A", "B", "C").map(::TestNode)
-                )
-            )
-                    + listOf("A", "B", "C").map(::TestNode)
-                    + StackNav(
-                name = "1",
-                children = listOf("F").map(::TestNode)
-            )
-                    + listOf("F").map(::TestNode)
-                    + StackNav(
-                name = "2",
-                children = listOf("D", "E").map(::TestNode)
-            )
-                    + listOf("D", "E").map(::TestNode),
-            actual = pushed.flatten(order = Order.DepthFirst)
+                    children = listOf("A", "B", "C").map(::TestNode),
+                ),
+            ) +
+                listOf("A", "B", "C").map(::TestNode) +
+                StackNav(
+                    name = "1",
+                    children = listOf("F").map(::TestNode),
+                ) +
+                listOf("F").map(::TestNode) +
+                StackNav(
+                    name = "2",
+                    children = listOf("D", "E").map(::TestNode),
+                ) +
+                listOf("D", "E").map(::TestNode),
+            actual = pushed.flatten(order = Order.DepthFirst),
         )
     }
 
@@ -110,21 +110,21 @@ class MultiStackNavTest {
                 pushed,
                 StackNav(
                     name = "0",
-                    children = listOf("A", "B", "C").map(::TestNode)
+                    children = listOf("A", "B", "C").map(::TestNode),
                 ),
                 StackNav(
                     name = "1",
-                    children = listOf("F").map(::TestNode)
+                    children = listOf("F").map(::TestNode),
                 ),
                 StackNav(
                     name = "2",
-                    children = listOf("D", "E").map(::TestNode)
-                )
-            )
-                    + listOf("A", "B", "C").map(::TestNode)
-                    + listOf("F").map(::TestNode)
-                    + listOf("D", "E").map(::TestNode),
-            actual = pushed.flatten(order = Order.BreadthFirst)
+                    children = listOf("D", "E").map(::TestNode),
+                ),
+            ) +
+                listOf("A", "B", "C").map(::TestNode) +
+                listOf("F").map(::TestNode) +
+                listOf("D", "E").map(::TestNode),
+            actual = pushed.flatten(order = Order.BreadthFirst),
         )
     }
 
@@ -149,20 +149,20 @@ class MultiStackNavTest {
                 stacks = listOf(
                     StackNav(
                         name = "0",
-                        children = listOf("A", "B", "C").map(::TestNode)
+                        children = listOf("A", "B", "C").map(::TestNode),
                     ),
                     StackNav(
                         name = "1",
-                        children = listOf("F").map(::TestNode)
+                        children = listOf("F").map(::TestNode),
                     ),
                     StackNav(
                         name = "2",
-                        children = listOf("D", "E").map(::TestNode)
-                    )
-                )
+                        children = listOf("D", "E").map(::TestNode),
+                    ),
+                ),
             ),
             actual = pushed
-                .pop()
+                .pop(),
         )
 
         // Should pop "E" off stack 2
@@ -174,21 +174,21 @@ class MultiStackNavTest {
                 stacks = listOf(
                     StackNav(
                         name = "0",
-                        children = listOf("A", "B", "C").map(::TestNode)
+                        children = listOf("A", "B", "C").map(::TestNode),
                     ),
                     StackNav(
                         name = "1",
-                        children = listOf("F").map(::TestNode)
+                        children = listOf("F").map(::TestNode),
                     ),
                     StackNav(
                         name = "2",
-                        children = listOf("D").map(::TestNode)
-                    )
-                )
+                        children = listOf("D").map(::TestNode),
+                    ),
+                ),
             ),
             actual = pushed
                 .pop()
-                .pop()
+                .pop(),
         )
 
         // Should switch to stack 0
@@ -200,22 +200,22 @@ class MultiStackNavTest {
                 stacks = listOf(
                     StackNav(
                         name = "0",
-                        children = listOf("A", "B", "C").map(::TestNode)
+                        children = listOf("A", "B", "C").map(::TestNode),
                     ),
                     StackNav(
                         name = "1",
-                        children = listOf("F").map(::TestNode)
+                        children = listOf("F").map(::TestNode),
                     ),
                     StackNav(
                         name = "2",
-                        children = listOf("D").map(::TestNode)
-                    )
-                )
+                        children = listOf("D").map(::TestNode),
+                    ),
+                ),
             ),
             actual = pushed
                 .pop()
                 .pop()
-                .pop()
+                .pop(),
         )
 
         // Should pop off stack "0"
@@ -227,23 +227,23 @@ class MultiStackNavTest {
                 stacks = listOf(
                     StackNav(
                         name = "0",
-                        children = listOf("A", "B").map(::TestNode)
+                        children = listOf("A", "B").map(::TestNode),
                     ),
                     StackNav(
                         name = "1",
-                        children = listOf("F").map(::TestNode)
+                        children = listOf("F").map(::TestNode),
                     ),
                     StackNav(
                         name = "2",
-                        children = listOf("D").map(::TestNode)
-                    )
-                )
+                        children = listOf("D").map(::TestNode),
+                    ),
+                ),
             ),
             actual = pushed
                 .pop()
                 .pop()
                 .pop()
-                .pop()
+                .pop(),
         )
     }
 
@@ -258,7 +258,7 @@ class MultiStackNavTest {
             expected = listOf("A", "B", "D").map(::TestNode),
             actual = multiPush.swap(TestNode(name = "D"))
                 .flatten(Order.DepthFirst)
-                .filterIsInstance<TestNode>()
+                .filterIsInstance<TestNode>(),
         )
     }
 
@@ -275,7 +275,7 @@ class MultiStackNavTest {
                 .toSet(),
             actual = (multiPush - subject)
                 .filterIsInstance<TestNode>()
-                .toSet()
+                .toSet(),
         )
     }
 
@@ -301,7 +301,7 @@ class MultiStackNavTest {
                 .popToRoot()
                 .minus(subject)
                 .filterIsInstance<TestNode>()
-                .toSet()
+                .toSet(),
         )
 
         assertEquals(
@@ -316,7 +316,7 @@ class MultiStackNavTest {
                 .popToRoot()
                 .minus(subject)
                 .filterIsInstance<TestNode>()
-                .toSet()
+                .toSet(),
         )
     }
 
@@ -345,7 +345,7 @@ class MultiStackNavTest {
                 includeCurrentDestinationChildren = false,
                 placeChildrenBeforeParent = false,
             )
-                .toList()
+                .toList(),
         )
 
         assertEquals(
@@ -358,7 +358,7 @@ class MultiStackNavTest {
                 includeCurrentDestinationChildren = false,
                 placeChildrenBeforeParent = true,
             )
-                .asReversed()
+                .asReversed(),
         )
 
         assertEquals(
@@ -377,7 +377,7 @@ class MultiStackNavTest {
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = false,
             )
-                .toList()
+                .toList(),
         )
 
         assertEquals(
@@ -390,7 +390,7 @@ class MultiStackNavTest {
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = true,
             )
-                .asReversed()
+                .asReversed(),
         )
 
         assertEquals(
@@ -409,7 +409,7 @@ class MultiStackNavTest {
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = true,
             )
-                .toList()
+                .toList(),
         )
 
         assertEquals(
@@ -422,7 +422,7 @@ class MultiStackNavTest {
                 includeCurrentDestinationChildren = true,
                 placeChildrenBeforeParent = false,
             )
-                .asReversed()
+                .asReversed(),
         )
     }
 }

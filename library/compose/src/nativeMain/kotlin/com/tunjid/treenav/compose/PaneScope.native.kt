@@ -19,7 +19,6 @@ package com.tunjid.treenav.compose
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.identityHashCode
 
-
 @OptIn(ExperimentalNativeApi::class)
 internal actual fun Any.identityHash(): Int =
     identityHashCode()

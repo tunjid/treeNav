@@ -68,11 +68,11 @@ import com.tunjid.treenav.compose.navigation3.ui.NavDisplay.POP_TRANSITION_SPEC
 import com.tunjid.treenav.compose.navigation3.ui.NavDisplay.PREDICTIVE_POP_TRANSITION_SPEC
 import com.tunjid.treenav.compose.navigation3.ui.NavDisplay.TRANSITION_SPEC
 import com.tunjid.treenav.compose.navigation3.ui.NavDisplay.transitionSpec
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.launch
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 
 /** Object that indicates the features that can be handled by the [MultiPaneNavDisplay] */
 internal object NavDisplay {
@@ -88,7 +88,7 @@ internal object NavDisplay {
      *   is null, the transition will fallback to the transition set on the [MultiPaneNavDisplay]
      */
     fun transitionSpec(
-        transitionSpec: AnimatedContentTransitionScope<Scene<*>>.() -> ContentTransform?
+        transitionSpec: AnimatedContentTransitionScope<Scene<*>>.() -> ContentTransform?,
     ): Map<String, Any> = mapOf(TRANSITION_SPEC to transitionSpec)
 
     /**
@@ -105,7 +105,7 @@ internal object NavDisplay {
      *   this is null, the transition will fallback to the transition set on the [MultiPaneNavDisplay]
      */
     fun popTransitionSpec(
-        popTransitionSpec: AnimatedContentTransitionScope<Scene<*>>.() -> ContentTransform?
+        popTransitionSpec: AnimatedContentTransitionScope<Scene<*>>.() -> ContentTransform?,
     ): Map<String, Any> = mapOf(POP_TRANSITION_SPEC to popTransitionSpec)
 
     /**
@@ -123,10 +123,9 @@ internal object NavDisplay {
      *   the transition set on the [MultiPaneNavDisplay]
      */
     fun predictivePopTransitionSpec(
-        predictivePopTransitionSpec:
-        AnimatedContentTransitionScope<Scene<*>>.(
-            @NavigationEvent.SwipeEdge Int
-        ) -> ContentTransform?
+        predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<*>>.(
+            @NavigationEvent.SwipeEdge Int,
+        ) -> ContentTransform?,
     ): Map<String, Any> = mapOf(PREDICTIVE_POP_TRANSITION_SPEC to predictivePopTransitionSpec)
 
     internal const val TRANSITION_SPEC = "transitionSpec"
@@ -135,7 +134,6 @@ internal object NavDisplay {
 
     internal const val DEFAULT_TRANSITION_DURATION_MILLISECOND = 700
 }
-
 
 /**
  * A nav display that renders and animates between different [Scene]s, each of which can render one
@@ -196,9 +194,8 @@ internal fun <T : Any> MultiPaneNavDisplay(
         defaultTransitionSpec(),
     popTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform =
         defaultPopTransitionSpec(),
-    predictivePopTransitionSpec:
-    AnimatedContentTransitionScope<Scene<T>>.(
-        @NavigationEvent.SwipeEdge Int
+    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.(
+        @NavigationEvent.SwipeEdge Int,
     ) -> ContentTransform =
         defaultPredictivePopTransitionSpec(),
     entryProvider: (key: T) -> NavEntry<T>,
@@ -282,9 +279,8 @@ internal fun <T : Any> MultiPaneNavDisplay(
         defaultTransitionSpec(),
     popTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform =
         defaultPopTransitionSpec(),
-    predictivePopTransitionSpec:
-    AnimatedContentTransitionScope<Scene<T>>.(
-        @NavigationEvent.SwipeEdge Int
+    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.(
+        @NavigationEvent.SwipeEdge Int,
     ) -> ContentTransform =
         defaultPredictivePopTransitionSpec(),
     onBack: () -> Unit,
@@ -359,9 +355,8 @@ internal fun <T : Any> MultiPaneNavDisplay(
         defaultTransitionSpec(),
     popTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform =
         defaultPopTransitionSpec(),
-    predictivePopTransitionSpec:
-    AnimatedContentTransitionScope<Scene<T>>.(
-        @NavigationEvent.SwipeEdge Int
+    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<T>>.(
+        @NavigationEvent.SwipeEdge Int,
     ) -> ContentTransform =
         defaultPredictivePopTransitionSpec(),
 ) {
@@ -377,6 +372,7 @@ internal fun <T : Any> MultiPaneNavDisplay(
     val transition = rememberTransition(transitionState, label = "scene")
 
     // Transition Handling
+
     /** Keep track of the previous entries for the transition's current scene. */
     val transitionCurrentStateEntries =
         remember(transition.currentState) { sceneState.entries.toList() }
@@ -569,13 +565,13 @@ internal fun <T : Any> MultiPaneNavDisplay(
         val isSettled = transition.currentState == transition.targetState
         val sceneLifecycleOwner =
             rememberLifecycleOwner(
-                maxLifecycle = if (isSettled) Lifecycle.State.RESUMED else Lifecycle.State.STARTED
+                maxLifecycle = if (isSettled) Lifecycle.State.RESUMED else Lifecycle.State.STARTED,
             )
         CompositionLocalProvider(
             LocalLifecycleOwner provides sceneLifecycleOwner,
             LocalNavAnimatedContentScope provides this,
             LocalEntriesToExcludeFromCurrentScene provides
-                    sceneToExcludedEntryMap.getValue(targetScene::class to targetScene.key),
+                sceneToExcludedEntryMap.getValue(targetScene::class to targetScene.key),
         ) {
             targetScene.content()
         }
@@ -603,7 +599,7 @@ internal fun <T : Any> MultiPaneNavDisplay(
     overlayScenes.fastForEachReversed { overlayScene ->
         CompositionLocalProvider(
             LocalEntriesToExcludeFromCurrentScene provides
-                    sceneToExcludedEntryMap.getValue(overlayScene::class to overlayScene.key)
+                sceneToExcludedEntryMap.getValue(overlayScene::class to overlayScene.key),
         ) {
             overlayScene.content.invoke()
         }
@@ -625,26 +621,26 @@ private fun <T : Any> isPop(oldBackStack: List<T>, newBackStack: List<T>): Boole
 
 @Suppress("UNCHECKED_CAST")
 private fun <T : Any> Scene<T>.contentTransform(
-    key: String
+    key: String,
 ): (AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform)? {
     return metadata[key] as? AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform
 }
 
 @Suppress("UNCHECKED_CAST")
-private fun <T : Any> Scene<T>.predictivePopSpec():
-        (AnimatedContentTransitionScope<Scene<T>>.(
-            @NavigationEvent.SwipeEdge Int
-        ) -> ContentTransform)? {
+private fun <T : Any> Scene<T>.predictivePopSpec(): (
+    AnimatedContentTransitionScope<Scene<T>>.(
+        @NavigationEvent.SwipeEdge Int,
+    ) -> ContentTransform
+)? {
     return metadata[PREDICTIVE_POP_TRANSITION_SPEC]
-            as?
-            AnimatedContentTransitionScope<Scene<T>>.(
-                @NavigationEvent.SwipeEdge Int
-            ) -> ContentTransform
+        as?
+        AnimatedContentTransitionScope<Scene<T>>.(
+            @NavigationEvent.SwipeEdge Int,
+        ) -> ContentTransform
 }
 
 /** Default [transitionSpec] for forward navigation to be used by [MultiPaneNavDisplay]. */
-internal fun <T : Any> defaultTransitionSpec():
-        AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
+internal fun <T : Any> defaultTransitionSpec(): AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
     ContentTransform(
         fadeIn(animationSpec = tween(DEFAULT_TRANSITION_DURATION_MILLISECOND)),
         fadeOut(animationSpec = tween(DEFAULT_TRANSITION_DURATION_MILLISECOND)),
@@ -652,8 +648,7 @@ internal fun <T : Any> defaultTransitionSpec():
 }
 
 /** Default [transitionSpec] for pop navigation to be used by [MultiPaneNavDisplay]. */
-internal fun <T : Any> defaultPopTransitionSpec():
-        AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
+internal fun <T : Any> defaultPopTransitionSpec(): AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
     ContentTransform(
         fadeIn(animationSpec = tween(DEFAULT_TRANSITION_DURATION_MILLISECOND)),
         fadeOut(animationSpec = tween(DEFAULT_TRANSITION_DURATION_MILLISECOND)),
@@ -661,15 +656,14 @@ internal fun <T : Any> defaultPopTransitionSpec():
 }
 
 /** Default [transitionSpec] for predictive pop navigation to be used by [MultiPaneNavDisplay]. */
-internal fun <T : Any> defaultPredictivePopTransitionSpec():
-        AnimatedContentTransitionScope<Scene<T>>.(@NavigationEvent.SwipeEdge Int) -> ContentTransform =
+internal fun <T : Any> defaultPredictivePopTransitionSpec(): AnimatedContentTransitionScope<Scene<T>>.(@NavigationEvent.SwipeEdge Int) -> ContentTransform =
     {
         ContentTransform(
             fadeIn(
                 spring(
                     dampingRatio = 1.0f, // reflects material3 motionScheme.defaultEffectsSpec()
                     stiffness = 1600.0f, // reflects material3 motionScheme.defaultEffectsSpec()
-                )
+                ),
             ),
             scaleOut(targetScale = 0.7f),
         )

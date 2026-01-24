@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 @file:Suppress("unused")
 
 package com.tunjid.treenav.compose
@@ -36,7 +35,8 @@ typealias MovableElementSharedTransitionScope = PaneMovableElementSharedTransiti
  */
 @Stable
 interface PaneMovableElementSharedTransitionScope<Pane, Destination : Node> :
-    PaneSharedTransitionScope<Pane, Destination>, MovableSharedElementScope
+    PaneSharedTransitionScope<Pane, Destination>,
+    MovableSharedElementScope
 
 /**
  * Remembers a [PaneMovableElementSharedTransitionScope] in the composition.

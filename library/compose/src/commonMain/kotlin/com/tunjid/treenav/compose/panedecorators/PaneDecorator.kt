@@ -14,8 +14,7 @@ sealed interface PaneDecorator<in NavigationState : Node, Destination : Node, Pa
 /**
  * A [PaneDecorator] that allows for changing which [Destination] shows in which [Pane].
  */
-internal fun interface PaneMappingDecorator<Destination : Node, Pane>
-    : PaneDecorator<Node, Destination, Pane> {
+internal fun interface PaneMappingDecorator<Destination : Node, Pane> : PaneDecorator<Node, Destination, Pane> {
 
     /**
      * Given the current [Destination], provide what [Destination] to show in a [Pane].
@@ -37,8 +36,7 @@ internal fun interface PaneMappingDecorator<Destination : Node, Pane>
  * A [PaneDecorator] that allows for the rendering semantics of a [Destination] in a given
  * [PaneScope].
  */
-internal fun interface PaneRenderDecorator<Destination : Node, Pane>
-    : PaneDecorator<Node, Destination, Pane> {
+internal fun interface PaneRenderDecorator<Destination : Node, Pane> : PaneDecorator<Node, Destination, Pane> {
 
     /**
      * Given the current [Destination], and its [PaneScope], compose additional presentation
@@ -70,8 +68,8 @@ internal fun interface PaneRenderDecorator<Destination : Node, Pane>
 fun <NavigationState : Node, Destination : Node, Pane> paneMappingDecorator(
     mappingTransform: @Composable (
         destination: Destination,
-        destinationPaneDecorator: @Composable (Destination) -> Map<Pane, Destination?>
-    ) -> Map<Pane, Destination?>
+        destinationPaneDecorator: @Composable (Destination) -> Map<Pane, Destination?>,
+    ) -> Map<Pane, Destination?>,
 ): PaneDecorator<NavigationState, Destination, Pane> =
     PaneMappingDecorator { destination, previousTransform ->
         mappingTransform(destination, previousTransform)
@@ -88,8 +86,8 @@ fun <NavigationState : Node, Destination : Node, Pane> paneMappingDecorator(
 fun <Pane, Destination : Node, NavigationState : Node> paneRenderDecorator(
     renderTransform: @Composable PaneScope<Pane, Destination>.(
         destination: Destination,
-        destinationContent: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit
-    ) -> Unit
+        destinationContent: @Composable PaneScope<Pane, Destination>.(Destination) -> Unit,
+    ) -> Unit,
 ): PaneDecorator<NavigationState, Destination, Pane> =
     PaneRenderDecorator { destination, previousTransform ->
         renderTransform(destination, previousTransform)

@@ -40,14 +40,14 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
         state: T,
         useMovableContent: () -> Boolean,
         sharedElement: @Composable (T, Modifier) -> Unit,
-        alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?
+        alternateOutgoingSharedElement: (@Composable (T, Modifier) -> Unit)?,
     ) = when {
         useMovableContent() ->
             keysToMovableSharedElements.getOrPut(sharedContentState.key) {
                 MovableSharedElementState(
                     sharedContentState = sharedContentState,
                     sharedElement = sharedElement,
-                    onRemoved = { keysToMovableSharedElements.remove(sharedContentState.key) }
+                    onRemoved = { keysToMovableSharedElements.remove(sharedContentState.key) },
                 )
             }
                 .also { it.sharedContentState = sharedContentState }
@@ -61,16 +61,16 @@ class MovableSharedElementHostState<Pane, Destination : Node>(
         else -> when {
             // The element is being shared in its new destination, stop showing it
             // in the in active one
-            isCurrentlyShared(sharedContentState.key)
-                    && isMatchFound(sharedContentState.key) -> Defaults.EmptyElement(
+            isCurrentlyShared(sharedContentState.key) &&
+                isMatchFound(sharedContentState.key) -> Defaults.EmptyElement(
                 state,
-                Modifier.fillParentAxisIfFixedOrWrap()
+                Modifier.fillParentAxisIfFixedOrWrap(),
             )
             // The element is not being shared in its new destination, allow it run its exit
             // transition
             else -> (alternateOutgoingSharedElement ?: sharedElement)(
                 state,
-                Modifier.fillParentAxisIfFixedOrWrap()
+                Modifier.fillParentAxisIfFixedOrWrap(),
             )
         }
     }

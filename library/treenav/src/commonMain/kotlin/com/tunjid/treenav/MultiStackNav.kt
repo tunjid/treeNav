@@ -51,7 +51,7 @@ fun MultiStackNav.pop(): MultiStackNav = when (val changed = atCurrentIndex(Stac
             null -> this
             else -> copy(
                 indexHistory = newIndexHistory,
-                currentIndex = newIndex
+                currentIndex = newIndex,
             )
         }
     }
@@ -64,7 +64,7 @@ fun MultiStackNav.pop(): MultiStackNav = when (val changed = atCurrentIndex(Stac
  */
 fun MultiStackNav.switch(toIndex: Int): MultiStackNav = copy(
     currentIndex = toIndex,
-    indexHistory = (indexHistory - toIndex) + toIndex
+    indexHistory = (indexHistory - toIndex) + toIndex,
 )
 
 /**
@@ -76,7 +76,7 @@ fun MultiStackNav.popToRoot(indexToPop: Int = currentIndex) = copy(
     stacks = stacks.mapIndexed { index: Int, stackNav: StackNav ->
         if (index == indexToPop) stackNav.popToRoot()
         else stackNav
-    }
+    },
 )
 
 /**
@@ -95,7 +95,7 @@ fun MultiStackNav.reversedBackStackSequence(
     placeChildrenBeforeParent: Boolean = false,
 ): Sequence<Node> =
     if (!includeCurrentDestinationChildren && placeChildrenBeforeParent) throw IllegalArgumentException(
-        "Cannot place children nodes before the parent if children are not included"
+        "Cannot place children nodes before the parent if children are not included",
     )
     else generateSequence(this) { current ->
         current.pop().takeUnless(current::equals)
@@ -130,7 +130,7 @@ fun MultiStackNav.backStack(
     distinctDestinations: Boolean = false,
 ): List<Node> = reversedBackStackSequence(
     includeCurrentDestinationChildren = includeCurrentDestinationChildren,
-    placeChildrenBeforeParent = !placeChildrenBeforeParent
+    placeChildrenBeforeParent = !placeChildrenBeforeParent,
 )
     .toList()
     .asReversed()
@@ -146,7 +146,7 @@ private inline fun MultiStackNav.atCurrentIndex(operation: StackNav.() -> StackN
     stacks = stacks.mapIndexed { index, stack ->
         if (index == currentIndex) operation(stack)
         else stack
-    }
+    },
 )
 
 val MultiStackNav.current: Node? get() = stacks.getOrNull(currentIndex)?.children?.lastOrNull()

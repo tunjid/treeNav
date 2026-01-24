@@ -72,21 +72,20 @@ fun ProfileScreen(
                     .offset {
                         IntOffset(
                             x = 0,
-                            y = -headerState.translation.roundToInt()
+                            y = -headerState.translation.roundToInt(),
                         )
                     }
                     .clickable {
                         val profileName = state.profile?.name ?: return@clickable
                         onAction(Action.Navigation.ToAvatar(profileName, state.roomName))
-                    }
+                    },
             )
         },
         body = {
             ProfileDetails(state)
-        }
+        },
     )
 }
-
 
 @Composable
 private fun ProfileHeader(
@@ -96,17 +95,17 @@ private fun ProfileHeader(
     onBackPressed: (() -> Unit)?,
 ) = with(paneScaffoldState) {
     Box(
-        modifier = Modifier.heightIn(min = 400.dp)
+        modifier = Modifier.heightIn(min = 400.dp),
     ) {
         ProfilePhoto(
             state = state,
             paneScaffoldState = paneScaffoldState,
-            modifier = modifier
+            modifier = modifier,
         )
         SampleTopAppBar(
             title = {
                 PaneSharedElement(
-                    sharedContentState = rememberSharedContentState("title")
+                    sharedContentState = rememberSharedContentState("title"),
                 ) {
                     Text(text = if (state.profileName == null) "Me" else "Profile")
                 }
@@ -115,7 +114,6 @@ private fun ProfileHeader(
         )
     }
 }
-
 
 @Composable
 private fun ProfilePhoto(
@@ -127,7 +125,7 @@ private fun ProfilePhoto(
     if (profileName != null) {
         paneScaffoldState.UpdatedMovableStickySharedElementOf(
             sharedContentState = paneScaffoldState.rememberSharedContentState(
-                key = "${state.roomName}-$profileName-profile"
+                key = "${state.roomName}-$profileName-profile",
             ),
             state = ProfilePhotoArgs(
                 profileName = profileName,
@@ -137,7 +135,7 @@ private fun ProfilePhoto(
             modifier = modifier,
             sharedElement = { args: ProfilePhotoArgs, innerModifier: Modifier ->
                 ProfilePhoto(args, innerModifier)
-            }
+            },
         )
     }
 }
@@ -150,30 +148,30 @@ private fun ProfileDetails(
     Column(
         modifier = modifier
             .padding(horizontal = 16.dp)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = state.profile?.name ?: "",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = state.profile?.jobTitle ?: "",
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = state.profile?.location ?: "",
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = state.profile?.selfDescription ?: "",
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
         )
     }
 }

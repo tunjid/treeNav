@@ -87,8 +87,8 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
 
     val panesToDestinations = rememberUpdatedState(
         state.destinationPanes(
-            state.destinationTransform(navigationState)
-        )
+            state.destinationTransform(navigationState),
+        ),
     )
 
     val backStack = remember { mutableStateListOf<Destination>() }.also { mutableBackStack ->
@@ -106,7 +106,7 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
     val slots = remember {
         List(
             size = state.panes.size,
-            init = ::Slot
+            init = ::Slot,
         ).toSet()
     }
 
@@ -123,7 +123,7 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
     val panedNavigationState = initialPanedNavigationState.rememberUpdatedPanedNavigationState(
         backStackIds = backStack.map(Node::id),
         panesToDestinations = panesToDestinations.value,
-        slots = slots
+        slots = slots,
     )
 
     val sceneStrategy = remember {
@@ -146,13 +146,12 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
             }
         }
 
-
     MultiPaneNavDisplay(
         backStack = backStack,
         modifier = modifier,
         onBack = remember(navigationState) onBack@{
             var backStackIds by mutableStateOf(
-                state.backStackTransform(navigationState).map(Node::id)
+                state.backStackTransform(navigationState).map(Node::id),
             )
             return@onBack {
                 backStackIds = backStackIds.dropLast(1)
@@ -180,9 +179,8 @@ private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : N
 ) : SceneStrategy<Destination> {
 
     override fun SceneStrategyScope<Destination>.calculateScene(
-        entries: List<NavEntry<Destination>>
+        entries: List<NavEntry<Destination>>,
     ): Scene<Destination> {
-
         val backstackIds = entries.map { it.id }
 
         // Calculate the scene for the entries specified.
@@ -208,7 +206,7 @@ private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : N
 
         val sceneKey = MultiPaneSceneKey(
             ids = backstackIds,
-            isPreviewingBack = backstackIds != panedNavigationState.backStackIds
+            isPreviewingBack = backstackIds != panedNavigationState.backStackIds,
         )
 
         return MultiPaneDisplayScene(
@@ -227,7 +225,7 @@ private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : N
                 }
                 mutableEntries.removeAt(index)
             },
-            scopeContent = content
+            scopeContent = content,
         )
     }
 }
@@ -313,7 +311,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
             }
 
             CompositionLocalProvider(
-                LocalPaneScope provides scope
+                LocalPaneScope provides scope,
             ) {
                 entry.Content()
             }
@@ -330,9 +328,8 @@ private class NonRenderingMultiPaneDisplayScope<Pane, Destination : Node>(
 
     @Composable
     override fun Destination(pane: Pane) = throw IllegalStateException(
-        "This MultiPaneDisplayScope cannot render panes"
+        "This MultiPaneDisplayScope cannot render panes",
     )
-
 }
 
 private fun <NavigationState : Node> MultiPaneDisplayState<NavigationState, *, *>.findNavigationStateMatching(
@@ -355,7 +352,7 @@ private fun <NavigationState : Node> MultiPaneDisplayState<NavigationState, *, *
 private fun <Destination : Node, Pane> SlotBasedPaneNavigationState<Pane, Destination>.rememberUpdatedPanedNavigationState(
     backStackIds: List<String>,
     panesToDestinations: Map<Pane, Destination?>,
-    slots: Set<Slot>
+    slots: Set<Slot>,
 ): State<SlotBasedPaneNavigationState<Pane, Destination>> =
     remember {
         mutableStateOf(this)
@@ -405,7 +402,7 @@ internal class MultiPaneSceneKey(
 
 private val LocalPaneScope = staticCompositionLocalOf<PaneScope<*, *>> {
     throw IllegalArgumentException(
-        "PaneScope should not be read until provided in the composition"
+        "PaneScope should not be read until provided in the composition",
     )
 }
 

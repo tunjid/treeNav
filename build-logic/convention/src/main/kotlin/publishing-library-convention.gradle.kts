@@ -79,7 +79,6 @@ mavenPublishing {
     )
     configureBasedOnAppliedPlugins()
 
-
     pom {
         name.set(project.name)
         description.set("A kotlin multiplatform experiment for representing app navigation with tree like data structures")
@@ -112,7 +111,6 @@ mavenPublishing {
         signAllPublications()
     }
 }
-
 
 signing {
     val localProperties = rootProject.ext.get("localProps") as? java.util.Properties

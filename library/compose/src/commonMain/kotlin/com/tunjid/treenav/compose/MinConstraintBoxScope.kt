@@ -128,7 +128,6 @@ inline fun SharedTransitionScope.SharedElementWithCallerManagedVisibility(
                     zIndexInOverlay = zIndexInOverlay,
                     clipInOverlayDuringTransition = clipInOverlayDuringTransition,
                 )
-
                 .fillParentAxisIfFixedOrWrap(),
         ) {
             // 3a. The shared element if it is visible and animating
@@ -153,8 +152,8 @@ internal data object MinConstraintBoxScopeInstance :
                     minHeight = when {
                         constraints.hasBoundedHeight && constraints.hasFixedHeight -> constraints.maxHeight
                         else -> constraints.minHeight
-                    }
-                )
+                    },
+                ),
             )
             layout(
                 width = placeable.width,

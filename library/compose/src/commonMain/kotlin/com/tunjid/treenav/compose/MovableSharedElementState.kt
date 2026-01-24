@@ -11,12 +11,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
-
 @Stable
 internal class MovableSharedElementState<State>(
     sharedContentState: SharedTransitionScope.SharedContentState,
     sharedElement: @Composable (State, Modifier) -> Unit,
-    onRemoved: () -> Unit
+    onRemoved: () -> Unit,
 ) {
 
     var sharedContentState by mutableStateOf(sharedContentState)
@@ -29,7 +28,7 @@ internal class MovableSharedElementState<State>(
                 // The shared element composable will be created by the first screen and reused by
                 // subsequent screens. This updates the state from other screens so changes are seen.
                 state as State,
-                modifier
+                modifier,
             )
 
             DisposableEffect(Unit) {
@@ -40,4 +39,3 @@ internal class MovableSharedElementState<State>(
             }
         }
 }
-

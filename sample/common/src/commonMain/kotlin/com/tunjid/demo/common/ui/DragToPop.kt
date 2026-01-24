@@ -39,11 +39,10 @@ import com.tunjid.composables.dragtodismiss.DragToDismissState
 import com.tunjid.composables.dragtodismiss.dragToDismiss
 import com.tunjid.composables.dragtodismiss.rememberUpdatedDragToDismissState
 import com.tunjid.treenav.compose.NavigationEventStatus
+import kotlin.math.min
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.consumeAsFlow
-import kotlin.math.min
-
 
 @Stable
 class DragToPopState private constructor(
@@ -76,8 +75,8 @@ class DragToPopState private constructor(
                                     min(
                                         a = dragToDismissState.offset.getDistanceSquared() / dismissThresholdSquared,
                                         b = 1f,
-                                    )
-                                )
+                                    ),
+                                ),
                             )
                         }
                     }
@@ -104,7 +103,7 @@ class DragToPopState private constructor(
             onDismissed = {
                 dragToPopState.dismissOffset = dragToPopState.dragToDismissState.offset.round()
                 dragToPopState.channel.trySend(NavigationEventStatus.Completed.Commited)
-            }
+            },
         )
             .offset {
                 dragToPopState.dismissOffset ?: dragToPopState.dragToDismissState.offset.round()
@@ -112,9 +111,8 @@ class DragToPopState private constructor(
 
         @Composable
         fun rememberDragToPopState(
-            dismissThreshold: Dp = 200.dp
+            dismissThreshold: Dp = 200.dp,
         ): DragToPopState {
-
             val floatDismissThreshold = with(LocalDensity.current) {
                 dismissThreshold.toPx().let { it * it }
             }
@@ -123,7 +121,7 @@ class DragToPopState private constructor(
 
             val dispatcher = checkNotNull(
                 LocalNavigationEventDispatcherOwner.current
-                    ?.navigationEventDispatcher
+                    ?.navigationEventDispatcher,
             )
             val input = remember(dispatcher) {
                 DirectNavigationEventInput()
@@ -140,7 +138,7 @@ class DragToPopState private constructor(
                 DragToPopState(
                     dismissThresholdSquared = floatDismissThreshold,
                     dragToDismissState = dragToDismissState,
-                    input = input
+                    input = input,
                 )
             }
 
@@ -153,9 +151,8 @@ class DragToPopState private constructor(
     }
 }
 
-
 private fun DragToDismissState.navigationEvent(
-    progress: Float
+    progress: Float,
 ) = NavigationEvent(
     touchX = offset.x,
     touchY = offset.y,

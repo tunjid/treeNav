@@ -47,19 +47,19 @@ class AvatarViewModel(
             profileName = profileName,
         ),
         inputs = listOf(
-            profileRepository.profileMutations(profileName)
+            profileRepository.profileMutations(profileName),
         ),
         actionTransform = { actions ->
             actions.toMutationStream(
-                keySelector = Action::key
+                keySelector = Action::key,
             ) {
                 when (val type = type()) {
                     is Action.Navigation -> navigationRepository.navigationMutations(
-                        type.flow
+                        type.flow,
                     )
                 }
             }
-        }
+        },
     )
 
 private fun ProfileRepository.profileMutations(
@@ -77,9 +77,13 @@ data class State(
 sealed class Action(
     val key: String,
 ) {
-    sealed class Navigation : Action("Navigation"), NavigationAction {
-        data object Pop : Navigation(), NavigationAction by navigationAction(
-            MultiStackNav::pop
-        )
+    sealed class Navigation :
+        Action("Navigation"),
+        NavigationAction {
+        data object Pop :
+            Navigation(),
+            NavigationAction by navigationAction(
+                MultiStackNav::pop,
+            )
     }
 }

@@ -43,15 +43,15 @@ import com.tunjid.treenav.compose.SharedElementWithCallerManagedVisibility
 
 @Composable
 fun <Destination : Node> PaneScope<
-        ThreePane,
-        Destination
-        >.rememberPaneSharedTransitionScope(
+    ThreePane,
+    Destination,
+    >.rememberPaneSharedTransitionScope(
     sharedTransitionScope: SharedTransitionScope,
 ): PaneSharedTransitionScope<ThreePane, Destination> =
     remember(this, sharedTransitionScope) {
         ThreePaneSharedTransitionScope(
             paneScope = this,
-            sharedTransitionScope = sharedTransitionScope
+            sharedTransitionScope = sharedTransitionScope,
         )
     }
 
@@ -75,16 +75,17 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
         content: @Composable MinConstraintBoxScope.() -> Unit,
     ) = when (val pane = paneState.pane) {
         null -> throw IllegalArgumentException(
-            "Shared elements may only be used in non null panes"
+            "Shared elements may only be used in non null panes",
         )
         // Allow movable shared elements in the primary pane only
         ThreePane.Primary,
-        ThreePane.Secondary -> SharedElement(
+        ThreePane.Secondary,
+        -> SharedElement(
             modifier = modifier,
             sharedContentState = sharedContentState,
             animatedVisibilityScope =
-                if (pane == ThreePane.Primary) paneScope
-                else rememberStaticExitedAnimatedVisibilityScope(),
+            if (pane == ThreePane.Primary) paneScope
+            else rememberStaticExitedAnimatedVisibilityScope(),
             placeholderSize = placeholderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,
@@ -100,7 +101,8 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
         )
         // In the other panes use the element as is
         ThreePane.Tertiary,
-        ThreePane.Overlay -> MinConstraintBox(modifier) {
+        ThreePane.Overlay,
+        -> MinConstraintBox(modifier) {
             content()
         }
     }
@@ -117,12 +119,13 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
         content: @Composable MinConstraintBoxScope.() -> Unit,
     ) = when (val pane = paneState.pane) {
         null -> throw IllegalArgumentException(
-            "Shared elements may only be used in non null panes"
+            "Shared elements may only be used in non null panes",
         )
 
         ThreePane.Primary,
-        ThreePane.Secondary -> if (pane == ThreePane.Secondary && !canAnimateSecondary()) MinConstraintBox(
-            modifier
+        ThreePane.Secondary,
+        -> if (pane == ThreePane.Secondary && !canAnimateSecondary()) MinConstraintBox(
+            modifier,
         ) {
             content()
         }
@@ -147,7 +150,8 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
         )
 
         ThreePane.Tertiary,
-        ThreePane.Overlay -> MinConstraintBox(modifier) {
+        ThreePane.Overlay,
+        -> MinConstraintBox(modifier) {
             content()
         }
     }

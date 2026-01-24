@@ -48,10 +48,9 @@ internal object Defaults {
                 return sharedContentState.parentSharedContentState?.clipPathInOverlay
             }
         }
-
 }
 
 private val DefaultSpring = spring(
     stiffness = StiffnessMediumLow,
-    visibilityThreshold = Rect.VisibilityThreshold
+    visibilityThreshold = Rect.VisibilityThreshold,
 )

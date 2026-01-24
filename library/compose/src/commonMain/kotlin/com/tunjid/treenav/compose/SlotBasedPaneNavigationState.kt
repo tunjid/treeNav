@@ -80,7 +80,7 @@ internal data class SlotBasedPaneNavigationState<Pane, Destination : Node>(
             swapAdaptations = emptySet(),
             panesToDestinations = emptyMap(),
             destinationIdsToAdaptiveSlots = slots.associateBy(
-                keySelector = Slot::toString
+                keySelector = Slot::toString,
             ),
             backStackIds = emptyList(),
             previousPanesToDestinations = emptyMap(),
@@ -107,7 +107,7 @@ internal data class SlotBasedPaneNavigationState<Pane, Destination : Node>(
     internal fun slotFor(
         pane: Pane,
     ): Slot? = destinationIdsToAdaptiveSlots[
-        panesToDestinations[pane]?.id
+        panesToDestinations[pane]?.id,
     ]
 
     internal fun paneFor(
@@ -185,7 +185,7 @@ internal fun <Pane, Destination : Node> SlotBasedPaneNavigationState<Pane, Desti
             if (toNode.id != fromNode?.id) continue
             val swap = Adaptation.Swap(
                 from = fromPane,
-                to = toPane
+                to = toPane,
             )
             // The panes are different, a swap occurred
             if (toPane != fromPane) {
@@ -227,11 +227,10 @@ internal fun <Pane, Destination : Node> SlotBasedPaneNavigationState<Pane, Desti
             else -> swapAdaptations
         },
         previousPanesToDestinations = previous.panesToDestinations.keys.associateWith(
-            valueSelector = previous::destinationIn
+            valueSelector = previous::destinationIn,
         ),
         destinationIdsToAdaptiveSlots = nodeIdsToAdaptiveSlots,
         backStackIds = backStackIds,
         panesToDestinations = panesToDestinations,
     )
-
 }
