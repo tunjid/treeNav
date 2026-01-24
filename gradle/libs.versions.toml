@@ -5,9 +5,10 @@ androidxAppCompat = "1.7.1"
 androidxBenchmark = "1.4.1"
 androidxCore = "1.17.0"
 androidxCollection = "1.5.0"
+axion-release = "1.21.1"
 dokka = "2.1.0"
 compose = "1.10.0"
-composeMultiplatform = "1.10.0-rc02"
+composeMultiplatform = "1.10.0"
 composeMultiplatformMaterial3 = "1.10.0-alpha05"
 lifecycleMultiplatform = "2.10.0-alpha07"
 junit4 = "4.13.2"
@@ -23,13 +24,14 @@ appcompatV7 = "28.0.0"
 googleMaterial = "1.13.0"
 materialIcons = "1.7.3"
 mavenPublish = "0.35.0"
-navigationEventComposeMultiplatform = "1.0.0-rc02"
+navigationEventComposeMultiplatform = "1.0.0"
 navigation3 = "1.0.0"
 navigation3Multiplatform = "1.0.0-alpha06"
 savedstateMultiplatform = "1.4.0"
 
 [libraries]
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
+axionRelease-gradlePlugin = { group = "pl.allegro.tech.build.axion-release", name = "pl.allegro.tech.build.axion-release.gradle.plugin", version.ref = "axion-release" }
 compose-compiler-plugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
@@ -88,6 +90,7 @@ appcompat-v7 = { group = "com.android.support", name = "appcompat-v7", version.r
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 androidx-benchmark = { id = "androidx.benchmark", version.ref = "androidxBenchmark" }
+axionRelease = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion-release" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
