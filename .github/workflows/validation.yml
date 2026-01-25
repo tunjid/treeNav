@@ -1,4 +1,4 @@
-name: JVM Tests
+name: Validation
 
 on:
   push:
