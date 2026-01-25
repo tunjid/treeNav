@@ -2,24 +2,45 @@ name: JVM Tests
 
 on:
   push:
-    branches: [ develop ]
+    branches:
+      - main
+      - releases
   pull_request:
-    branches: [ develop ]
+  workflow_dispatch:
 
 jobs:
-  test:
-
+  check-style:
     runs-on: ubuntu-latest
-
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v2
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Setup java
+        uses: actions/setup-java@v5
         with:
-          java-version: '17'
-          distribution: 'adopt'
-      - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v3
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Check style
+        run: ./gradlew spotlessCheck
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Setup java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: JVM tests
         run: ./gradlew jvmTest
