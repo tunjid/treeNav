@@ -382,7 +382,7 @@ internal class SplitPaneState(
 
     internal val splitLayoutState = SplitLayoutState(
         orientation = Orientation.Horizontal,
-        maxCount = filteredPaneOrder.size,
+        maxCount = PaneRenderOrder.size,
         minSize = 10.dp,
         visibleCount = {
             filteredPaneOrder.size
