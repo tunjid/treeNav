@@ -61,7 +61,6 @@ kotlin {
         }
         named("androidMain") {
             dependencies {
-                implementation(libs.compose.animation)
             }
         }
     }
