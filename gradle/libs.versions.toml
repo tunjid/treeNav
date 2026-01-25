@@ -1,5 +1,5 @@
 [versions]
-androidGradlePlugin = "8.13.1"
+androidGradlePlugin = "8.13.2"
 activity-compose = "1.12.2"
 androidxAppCompat = "1.7.1"
 androidxBenchmark = "1.4.1"
@@ -7,12 +7,11 @@ androidxCore = "1.17.0"
 androidxCollection = "1.5.0"
 axion-release = "1.21.1"
 dokka = "2.1.0"
-compose = "1.10.0"
 composeMultiplatform = "1.10.0"
 composeMultiplatformMaterial3 = "1.10.0-alpha05"
 lifecycleMultiplatform = "2.10.0-alpha07"
 junit4 = "4.13.2"
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 kotlinxCoroutines = "1.10.2"
 kotlinxDatetime = "0.7.1"
 ktlint-cli = "1.8.0"
@@ -29,7 +28,7 @@ navigationEventComposeMultiplatform = "1.0.0"
 navigation3 = "1.0.0"
 navigation3Multiplatform = "1.0.0-alpha06"
 savedstateMultiplatform = "1.4.0"
-spotless = "8.1.0"
+spotless = "8.2.0"
 
 [libraries]
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -40,7 +39,6 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity-compose" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 androidx-collection = { group = "androidx.collection", name = "collection", version.ref = "androidxCollection" }
-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "compose" }
 compose-multiplatform-animation = { group = "org.jetbrains.compose.animation", name = "animation", version.ref = "composeMultiplatform" }
 compose-multiplatform-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "composeMultiplatform" }
 compose-multiplatform-foundation-layout = { group = "org.jetbrains.compose.foundation", name = "foundation-layout", version.ref = "composeMultiplatform" }
