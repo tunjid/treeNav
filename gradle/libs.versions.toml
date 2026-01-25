@@ -15,6 +15,7 @@ junit4 = "4.13.2"
 kotlin = "2.2.21"
 kotlinxCoroutines = "1.10.2"
 kotlinxDatetime = "0.7.1"
+ktlint-cli = "1.8.0"
 tunjidStateHolder = "1.1.0"
 tunjidComposables = "0.0.24"
 junit = "4.13.2"
@@ -28,6 +29,7 @@ navigationEventComposeMultiplatform = "1.0.0"
 navigation3 = "1.0.0"
 navigation3Multiplatform = "1.0.0-alpha06"
 savedstateMultiplatform = "1.4.0"
+spotless = "8.1.0"
 
 [libraries]
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -55,6 +57,7 @@ compose-multiplatform-ui-util = { group = "org.jetbrains.compose.ui", name = "ui
 compose-multiplatform-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "composeMultiplatformMaterial3" }
 compose-multiplatform-material-icons-core = { group = "org.jetbrains.compose.material", name = "material-icons-core", version.ref = "materialIcons" }
 compose-multiplatform-material-icons-extended = { group = "org.jetbrains.compose.material", name = "material-icons-extended", version.ref = "materialIcons" }
+ktlint = { group = "com.pinterest.ktlint", name = "ktlint-cli", version.ref = "ktlint-cli" }
 lifecycle-multiplatform-runtime = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime", version.ref = "lifecycleMultiplatform" }
 lifecycle-multiplatform-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleMultiplatform" }
 lifecycle-multiplatform-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "lifecycleMultiplatform" }
@@ -97,3 +100,4 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 jetbrains-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
