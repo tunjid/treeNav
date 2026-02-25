@@ -19,6 +19,7 @@ package com.tunjid.treenav.compose
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -40,6 +41,7 @@ import com.tunjid.treenav.compose.panedecorators.PaneRenderDecorator
  * possible configurations. The panes should consist of enum class instances, or a sealed class
  * hierarchy of kotlin objects.
  * @param navigationState the navigation state to be adapted into various panes.
+ * @param sharedTransitionScope the [SharedTransitionScope] to allow transitions between scenes.
  * @param backStackTransform a transform to read the back stack of the navigation state.
  * @param destinationTransform a transform of the [navigationState] to its current destination.
  * @param popTransform a transform of the [navigationState] when back is pressed.
@@ -52,6 +54,7 @@ import com.tunjid.treenav.compose.panedecorators.PaneRenderDecorator
 class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> internal constructor(
     internal val panes: List<Pane>,
     internal val navigationState: State<NavigationState>,
+    internal val sharedTransitionScope: SharedTransitionScope?,
     internal val backStackTransform: (NavigationState) -> List<Destination>,
     internal val destinationTransform: (NavigationState) -> Destination,
     internal val popTransform: (NavigationState) -> NavigationState,
@@ -105,6 +108,7 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
          * possible configurations. The panes should consist of enum class instances, or a sealed class
          * hierarchy of kotlin objects.
          * @param navigationState the navigation state to be adapted into various panes.
+         * @param sharedTransitionScope the [SharedTransitionScope] to allow transitions between scenes.
          * @param backStackTransform a transform to read the back stack of the navigation state. The [List]
          * returned is expected to be immutable.
          * @param destinationTransform a transform of the [navigationState] to its current destination.
@@ -119,6 +123,7 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
         operator fun <NavigationState : Node, Destination : Node, Pane> invoke(
             panes: List<Pane>,
             navigationState: State<NavigationState>,
+            sharedTransitionScope: SharedTransitionScope? = null,
             backStackTransform: (NavigationState) -> List<Destination>,
             destinationTransform: (NavigationState) -> Destination,
             popTransform: (NavigationState) -> NavigationState,
@@ -133,6 +138,7 @@ class MultiPaneDisplayState<NavigationState : Node, Destination : Node, Pane> in
             initial = MultiPaneDisplayState(
                 panes = panes,
                 navigationState = navigationState,
+                sharedTransitionScope = sharedTransitionScope,
                 backStackTransform = backStackTransform,
                 destinationTransform = destinationTransform,
                 popTransform = popTransform,
@@ -178,6 +184,7 @@ private operator fun <NavigationState : Node, Destination : Node, Pane> MultiPan
     MultiPaneDisplayState(
         panes = panes,
         navigationState = navigationState,
+        sharedTransitionScope = sharedTransitionScope,
         backStackTransform = backStackTransform,
         popTransform = popTransform,
         onPopped = onPopped,
