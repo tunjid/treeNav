@@ -36,12 +36,11 @@ import androidx.navigation3.scene.Scene
 import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.scene.SceneStrategyScope
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
+import androidx.navigation3.ui.NavDisplay
 import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.destination
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.id
-import com.tunjid.treenav.compose.navigation3.ui.MultiPaneNavDisplay
-import com.tunjid.treenav.compose.navigation3.ui.NavDisplay
 import com.tunjid.treenav.compose.panedecorators.PaneDecorator
 
 /**
@@ -146,7 +145,7 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
             }
         }
 
-    MultiPaneNavDisplay(
+    NavDisplay(
         backStack = backStack,
         modifier = modifier,
         onBack = remember(navigationState) onBack@{
