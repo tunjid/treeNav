@@ -25,7 +25,6 @@ googleMaterial = "1.13.0"
 materialIcons = "1.7.3"
 mavenPublish = "0.35.0"
 navigationEventComposeMultiplatform = "1.0.1"
-navigation3 = "1.1.0-alpha04"
 navigation3Multiplatform = "1.1.0-alpha03"
 savedstateMultiplatform = "1.4.0"
 spotless = "8.2.0"
@@ -63,7 +62,6 @@ lifecycle-multiplatform-viewmodel-compose = { group = "org.jetbrains.androidx.li
 lifecycle-multiplatform-viewmodel-navigation3 = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "lifecycleMultiplatform" }
 lifecycle-multiplatform-viewmodel-savedstate = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycleMultiplatform" }
 navigation-event-multiplatform-compose = { group = "org.jetbrains.androidx.navigationevent", name = "navigationevent-compose", version.ref = "navigationEventComposeMultiplatform" }
-navigation-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 navigation-multiplatform-ui = { group = "org.jetbrains.androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3Multiplatform" }
 savedstate-multiplatform-savedstate = { group = "org.jetbrains.androidx.savedstate", name = "savedstate", version.ref = "savedstateMultiplatform" }
 savedstate-multiplatform-compose = { group = "org.jetbrains.androidx.savedstate", name = "savedstate-compose", version.ref = "savedstateMultiplatform" }

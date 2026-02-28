@@ -32,7 +32,6 @@ kotlin {
 
                 implementation(compose.components.resources)
 
-                implementation(libs.navigation.runtime)
                 implementation(libs.navigation.multiplatform.ui)
                 implementation(libs.navigation.event.multiplatform.compose)
 
