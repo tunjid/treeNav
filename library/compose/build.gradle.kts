@@ -24,7 +24,6 @@ kotlin {
                 implementation(project(":library:treenav"))
 
                 implementation(libs.androidx.collection)
-                implementation(libs.navigation.runtime)
                 implementation(libs.navigation.multiplatform.ui)
                 implementation(libs.navigation.event.multiplatform.compose)
 
