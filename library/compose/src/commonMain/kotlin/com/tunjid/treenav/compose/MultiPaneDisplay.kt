@@ -160,7 +160,8 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
             }
         },
         entryDecorators = state.navEntryDecorators,
-        sceneStrategy = sceneStrategy,
+        sceneStrategies = listOf(sceneStrategy),
+        sharedTransitionScope = state.sharedTransitionScope,
         transitionSpec = transitionSpec,
         popTransitionSpec = transitionSpec,
         predictivePopTransitionSpec = { transitionSpec() },
