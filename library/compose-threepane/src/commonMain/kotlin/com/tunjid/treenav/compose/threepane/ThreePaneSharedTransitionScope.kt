@@ -21,12 +21,12 @@ import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.visible
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.Defaults.visible
 import com.tunjid.treenav.compose.MinConstraintBox
 import com.tunjid.treenav.compose.MinConstraintBoxScope
 import com.tunjid.treenav.compose.PaneScope
