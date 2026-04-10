@@ -17,6 +17,7 @@
 package com.tunjid.treenav.compose
 
 import androidx.compose.animation.BoundsTransform
+import androidx.compose.animation.SharedTransitionDefaults
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.ContentSize
@@ -50,7 +51,7 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
     fun PaneSharedElement(
         modifier: Modifier = Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
-        boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
+        boundsTransform: BoundsTransform = SharedTransitionDefaults.BoundsTransform,
         placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
@@ -73,7 +74,7 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
     fun PaneStickySharedElement(
         modifier: Modifier = Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
-        boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
+        boundsTransform: BoundsTransform = SharedTransitionDefaults.BoundsTransform,
         placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
         renderInOverlayDuringTransition: Boolean = true,
         zIndexInOverlay: Float = 0f,
