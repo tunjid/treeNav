@@ -64,8 +64,10 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
     PaneScope<ThreePane, Destination> by paneScope,
     SharedTransitionScope by sharedTransitionScope {
 
+    // Overrides the member extension on PaneSharedTransitionScope.CMP9841 rather than
+    // PaneSharedElement directly. See PaneSharedTransitionScope.CMP9841 for why.
     @Composable
-    override fun PaneSharedElement(
+    override fun PaneSharedTransitionScope.CMP9841.PaneSharedElementImpl(
         modifier: Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
@@ -114,8 +116,10 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
         }
     }
 
+    // Overrides the member extension on PaneSharedTransitionScope.CMP9841 rather than
+    // PaneStickySharedElement directly. See PaneSharedTransitionScope.CMP9841 for why.
     @Composable
-    override fun PaneStickySharedElement(
+    override fun PaneSharedTransitionScope.CMP9841.PaneStickySharedElementImpl(
         modifier: Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,

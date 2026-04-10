@@ -45,6 +45,9 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
      * implementations can specify extra logic for how the shared element behaves when
      * rendered concurrently in multiple panes.
      *
+     * Implementations must override [CMP9841.PaneSharedElementImpl], not this method. See
+     * [CMP9841] for why.
+     *
      * @see [SharedTransitionScope.sharedElement].
      */
     @Composable
@@ -57,6 +60,32 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
         zIndexInOverlay: Float = 0f,
         clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
         content: @Composable MinConstraintBoxScope.() -> Unit,
+    ) = with(CMP9841) {
+        PaneSharedElementImpl(
+            modifier = modifier,
+            sharedContentState = sharedContentState,
+            boundsTransform = boundsTransform,
+            placeholderSize = placeholderSize,
+            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+            zIndexInOverlay = zIndexInOverlay,
+            clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+            content = content,
+        )
+    }
+
+    /**
+     * Override point for [PaneSharedElement]. See [CMP9841].
+     */
+    @Composable
+    fun CMP9841.PaneSharedElementImpl(
+        modifier: Modifier,
+        sharedContentState: SharedTransitionScope.SharedContentState,
+        boundsTransform: BoundsTransform,
+        placeholderSize: SharedTransitionScope.PlaceholderSize,
+        renderInOverlayDuringTransition: Boolean,
+        zIndexInOverlay: Float,
+        clipInOverlayDuringTransition: OverlayClip,
+        content: @Composable MinConstraintBoxScope.() -> Unit,
     )
 
     /**
@@ -67,6 +96,9 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
      * This is a pane specific implementation of [SharedTransitionScope.sharedElement], where
      * implementations can specify extra logic for how the shared element behaves when
      * rendered concurrently in multiple panes.
+     *
+     * Implementations must override [CMP9841.PaneStickySharedElementImpl], not this method. See
+     * [CMP9841] for why.
      *
      * @see [SharedTransitionScope.sharedElement].
      */
@@ -80,5 +112,48 @@ interface PaneSharedTransitionScope<Pane, Destination : Node> :
         zIndexInOverlay: Float = 0f,
         clipInOverlayDuringTransition: OverlayClip = Defaults.ParentClip,
         content: @Composable MinConstraintBoxScope.() -> Unit,
+    ) = with(CMP9841) {
+        PaneStickySharedElementImpl(
+            modifier = modifier,
+            sharedContentState = sharedContentState,
+            boundsTransform = boundsTransform,
+            placeholderSize = placeholderSize,
+            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+            zIndexInOverlay = zIndexInOverlay,
+            clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+            content = content,
+        )
+    }
+
+    /**
+     * Override point for [PaneStickySharedElement]. See [CMP9841].
+     */
+    @Composable
+    fun CMP9841.PaneStickySharedElementImpl(
+        modifier: Modifier,
+        sharedContentState: SharedTransitionScope.SharedContentState,
+        boundsTransform: BoundsTransform,
+        placeholderSize: SharedTransitionScope.PlaceholderSize,
+        renderInOverlayDuringTransition: Boolean,
+        zIndexInOverlay: Float,
+        clipInOverlayDuringTransition: OverlayClip,
+        content: @Composable MinConstraintBoxScope.() -> Unit,
     )
+
+    /**
+     * Marker receiver for the override hooks that work around
+     * [CMP-9841](https://youtrack.jetbrains.com/issue/CMP-9841).
+     *
+     * Overriding a default-paramed `@Composable` interface method on a class that also uses
+     * interface delegation triggers a Kotlin/Native IR linkage crash at runtime on iOS. To
+     * work around it, the real override hooks ([PaneSharedElementImpl] and
+     * [PaneStickySharedElementImpl]) are declared as abstract member extensions on this
+     * marker object — they have no default parameter values (so the Compose plugin does
+     * not emit a `ComposeDefaultImpls.$default` trampoline for them) and their extension
+     * receiver is [CMP9841] rather than [PaneSharedTransitionScope] itself, so they do not
+     * appear in IDE autocomplete at user call sites. Implementers provide behavior by
+     * overriding the member extensions; the default bodies of [PaneSharedElement] and
+     * [PaneStickySharedElement] dispatch to them via `with(CMP9841) { ... }`.
+     */
+    companion object CMP9841
 }
