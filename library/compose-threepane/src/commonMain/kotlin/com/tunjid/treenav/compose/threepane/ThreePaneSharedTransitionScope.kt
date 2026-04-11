@@ -21,12 +21,12 @@ import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.visible
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.Defaults.visible
 import com.tunjid.treenav.compose.MinConstraintBox
 import com.tunjid.treenav.compose.MinConstraintBoxScope
 import com.tunjid.treenav.compose.PaneScope
@@ -64,8 +64,10 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
     PaneScope<ThreePane, Destination> by paneScope,
     SharedTransitionScope by sharedTransitionScope {
 
+    // Overrides the member extension on PaneSharedTransitionScope.CMP9841 rather than
+    // PaneSharedElement directly. See PaneSharedTransitionScope.CMP9841 for why.
     @Composable
-    override fun PaneSharedElement(
+    override fun PaneSharedTransitionScope.CMP9841.PaneSharedElementImpl(
         modifier: Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
@@ -114,8 +116,10 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
         }
     }
 
+    // Overrides the member extension on PaneSharedTransitionScope.CMP9841 rather than
+    // PaneStickySharedElement directly. See PaneSharedTransitionScope.CMP9841 for why.
     @Composable
-    override fun PaneStickySharedElement(
+    override fun PaneSharedTransitionScope.CMP9841.PaneStickySharedElementImpl(
         modifier: Modifier,
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,

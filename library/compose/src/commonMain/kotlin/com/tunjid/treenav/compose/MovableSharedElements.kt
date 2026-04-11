@@ -2,6 +2,7 @@ package com.tunjid.treenav.compose
 
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.SharedTransitionDefaults
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.ContentSize
@@ -145,7 +146,7 @@ fun <T> MovableSharedElementScope.UpdatedMovableSharedElementOf(
     sharedContentState: SharedContentState,
     state: T,
     modifier: Modifier = Modifier,
-    boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
+    boundsTransform: BoundsTransform = SharedTransitionDefaults.BoundsTransform,
     placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
@@ -199,7 +200,7 @@ fun <T> MovableSharedElementScope.UpdatedMovableStickySharedElementOf(
     sharedContentState: SharedContentState,
     state: T,
     modifier: Modifier = Modifier,
-    boundsTransform: BoundsTransform = Defaults.DefaultBoundsTransform,
+    boundsTransform: BoundsTransform = SharedTransitionDefaults.BoundsTransform,
     placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,

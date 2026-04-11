@@ -2,12 +2,12 @@ package com.tunjid.treenav.compose
 
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
+import androidx.compose.foundation.layout.visible
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Modifier
 import com.tunjid.treenav.Node
-import com.tunjid.treenav.compose.Defaults.visible
 
 /**
  * State for managing movable shared elements within a single [MultiPaneDisplay].
