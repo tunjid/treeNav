@@ -16,6 +16,10 @@
 
 package com.tunjid.treenav.strings
 
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.forEach
+
 /**
  * A class for looking up items that match a certain path pattern by route
  */
@@ -34,9 +38,20 @@ class RouteTrie<T> {
 }
 
 /**
+ * Creates a [RouteTrie] from the given [pairs] of path-pattern strings to values.
+ *
+ * Each key is wrapped in a [PathPattern] and inserted into the trie, mapped to
+ * its corresponding value. Convenient for declaring small, literal route tables
+ * inline, mirroring the style of [mapOf].
+ */
+fun <V> trieOf(vararg pairs: Pair<String, V>): RouteTrie<V> = RouteTrie<V>().apply {
+    pairs.forEach { (pattern, value) -> set(PathPattern(pattern), value) }
+}
+
+/**
  * Converts this [Map] to a [RouteTrie] capable of looking up any type [T] by matching it
  * to it's [PathPattern].
  */
-fun <T> Map<PathPattern, T>.toRouteTrie() = RouteTrie<T>().apply {
+fun <T> Map<PathPattern, T>.toRouteTrie(): RouteTrie<T> = RouteTrie<T>().apply {
     forEach { (pattern, value) -> set(pattern, value) }
 }
