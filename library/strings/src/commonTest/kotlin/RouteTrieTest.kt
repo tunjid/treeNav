@@ -17,6 +17,7 @@
 import com.tunjid.treenav.strings.PathPattern
 import com.tunjid.treenav.strings.routeOf
 import com.tunjid.treenav.strings.toRouteTrie
+import com.tunjid.treenav.strings.trieOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -76,6 +77,43 @@ class RouteTrieTest {
             expected = 3,
             actual = routeTrie[routeOf("users/1/photos/pager?page=0")],
             message = "users path with parameter and photos and pager segments with queries should be found at index 3",
+        )
+    }
+
+    @Test
+    fun testTrieOf() {
+        val routeTrie = trieOf(
+            "/users" to 0,
+            "/users/{id}" to 1,
+            "/users/{id}/photos/grid" to 2,
+            "/users/{id}/photos/pager" to 3,
+            "/home" to 4,
+        )
+
+        assertEquals(
+            expected = 0,
+            actual = routeTrie[routeOf("users")],
+            message = "trieOf should resolve a literal pattern",
+        )
+        assertEquals(
+            expected = 1,
+            actual = routeTrie[routeOf("users/42")],
+            message = "trieOf should resolve a pattern with a path parameter",
+        )
+        assertEquals(
+            expected = 2,
+            actual = routeTrie[routeOf("users/42/photos/grid")],
+            message = "trieOf should resolve nested patterns under a parameter",
+        )
+        assertEquals(
+            expected = 4,
+            actual = routeTrie[routeOf("home")],
+            message = "trieOf should resolve sibling literal patterns",
+        )
+        assertEquals(
+            expected = null,
+            actual = routeTrie[routeOf("users/42/photos")],
+            message = "trieOf should return null for an unmatched prefix",
         )
     }
 }
