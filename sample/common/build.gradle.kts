@@ -21,6 +21,9 @@ plugins {
 }
 
 kotlin {
+    androidLibrary {
+        androidResources { enable = true }
+    }
     sourceSets {
         named("commonMain") {
             dependencies {
