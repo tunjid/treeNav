@@ -254,6 +254,12 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
 
     override val key: Any = sceneKey
 
+    override fun equals(other: Any?): Boolean =
+        this === other ||
+            (other is MultiPaneDisplayScene<*, *> && sceneKey == other.sceneKey)
+
+    override fun hashCode(): Int = sceneKey.hashCode()
+
     override val entries: List<NavEntry<Destination>>
         get() = when {
             // Filtering of duplicates is already handled in NavDisplay
