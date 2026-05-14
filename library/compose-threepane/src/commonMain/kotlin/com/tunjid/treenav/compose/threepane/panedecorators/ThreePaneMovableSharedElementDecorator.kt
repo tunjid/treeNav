@@ -31,6 +31,7 @@ import com.tunjid.treenav.compose.MovableSharedElementHostState
 import com.tunjid.treenav.compose.MovableSharedElementScope
 import com.tunjid.treenav.compose.MultiPaneDisplay
 import com.tunjid.treenav.compose.MultiPaneDisplayState
+import com.tunjid.treenav.compose.NavigationEventStatus
 import com.tunjid.treenav.compose.PaneMovableSharedElementScope
 import com.tunjid.treenav.compose.PaneNavigationState
 import com.tunjid.treenav.compose.PaneScope
@@ -41,7 +42,8 @@ import com.tunjid.treenav.compose.panedecorators.PaneDecorator
 import com.tunjid.treenav.compose.panedecorators.paneRenderDecorator
 import com.tunjid.treenav.compose.rememberPaneMovableSharedElementScope
 import com.tunjid.treenav.compose.threepane.ThreePane
-import com.tunjid.treenav.compose.threepane.canAnimateSecondary
+import com.tunjid.treenav.compose.threepane.canAnimatePrimaryStickyElement
+import com.tunjid.treenav.compose.threepane.canAnimateSecondaryStickyElement
 import com.tunjid.treenav.compose.threepane.rememberStaticExitedAnimatedVisibilityScope
 
 /**
@@ -125,6 +127,9 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
     override val inPredictiveBack: Boolean
         get() = delegate.paneScope.inPredictiveBack
 
+    override val navigationEventStatus: NavigationEventStatus
+        get() = delegate.paneScope.navigationEventStatus
+
     override fun <T> movableSharedElementOf(
         sharedContentState: SharedTransitionScope.SharedContentState,
         boundsTransform: BoundsTransform,
@@ -200,7 +205,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
 
                 ThreePane.Primary,
                 ThreePane.Secondary,
-                -> if (pane == ThreePane.Secondary && !canAnimateSecondary()) PlainElement(
+                -> if (pane == ThreePane.Secondary && !canAnimateSecondaryStickyElement) PlainElement(
                     state = state,
                     modifier = modifier,
                     content = alternateOutgoingSharedElement ?: sharedElement,
@@ -214,7 +219,7 @@ private class ThreePaneMovableSharedElementScope<Destination : Node>(
                     clipInOverlayDuringTransition = clipInOverlayDuringTransition,
                     // Allow movable shared elements in the primary pane only
                     areBoundsTracked = {
-                        isActive && pane == ThreePane.Primary
+                        isActive && pane == ThreePane.Primary && canAnimatePrimaryStickyElement
                     },
                     content = {
                         if (pane == ThreePane.Primary) MovableSharedElement(

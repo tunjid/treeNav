@@ -17,6 +17,10 @@
 package com.tunjid.demo.common.ui.chatrooms
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -26,6 +30,7 @@ import com.tunjid.demo.common.ui.PaneScaffold
 import com.tunjid.demo.common.ui.data.ChatsRepository
 import com.tunjid.demo.common.ui.predictiveBackBackgroundModifier
 import com.tunjid.demo.common.ui.predictiveBackContentTransform
+import com.tunjid.demo.common.ui.rememberHeapDumper
 import com.tunjid.demo.common.ui.rememberPaneScaffoldState
 import com.tunjid.demo.common.ui.viewModelCoroutineScope
 import com.tunjid.treenav.compose.threepane.threePaneEntry
@@ -39,6 +44,7 @@ fun chatRoomPaneEntry() = threePaneEntry(
                 chatsRepository = ChatsRepository,
             )
         }
+        val dumpHeap = rememberHeapDumper()
         rememberPaneScaffoldState().PaneScaffold(
             modifier = Modifier
                 .fillMaxSize()
@@ -49,6 +55,16 @@ fun chatRoomPaneEntry() = threePaneEntry(
                     state = viewModel.state.collectAsStateWithLifecycle().value,
                     onAction = viewModel.accept,
                 )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = dumpHeap,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Memory,
+                        contentDescription = "Dump heap",
+                    )
+                }
             },
             navigationBar = {
                 PaneNavigationBar()

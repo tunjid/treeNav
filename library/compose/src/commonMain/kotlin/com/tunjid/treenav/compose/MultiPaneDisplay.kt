@@ -42,6 +42,7 @@ import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.children
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.destination
 import com.tunjid.treenav.compose.MultiPaneDisplayState.Companion.id
 import com.tunjid.treenav.compose.panedecorators.PaneDecorator
+import kotlin.jvm.JvmInline
 
 /**
  * Scope that provides context about individual panes [Pane] in an [MultiPaneDisplay].
@@ -82,7 +83,7 @@ fun <NavigationState : Node, Destination : Node, Pane> MultiPaneDisplay(
 ) {
     val navigationState by state.navigationState
 
-    val backStatusState = rememberNavigationEventStatus()
+    val backStatusState = state.rememberNavigationEventStatus()
 
     val panesToDestinations = rememberUpdatedState(
         state.destinationPanes(
@@ -206,7 +207,6 @@ private class MultiPanePaneSceneStrategy<NavigationState : Node, Destination : N
 
         val sceneKey = MultiPaneSceneKey(
             ids = backstackIds,
-            isPreviewingBack = backstackIds != panedNavigationState.backStackIds,
         )
 
         return MultiPaneDisplayScene(
@@ -238,7 +238,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     private val destination: Destination,
     private val slots: Set<Slot>,
     private val initialPanedNavigationState: SlotBasedPaneNavigationState<Pane, Destination>,
-    navigationEventStatus: () -> NavigationEventStatus,
+    private val navigationEventStatus: () -> NavigationEventStatus,
     private val panesToDestinations: @Composable (Destination) -> Map<Pane, Destination?>,
     private val scopeContent: @Composable (MultiPaneDisplayScope<Pane, Destination>.() -> Unit),
 ) : Scene<Destination> {
@@ -261,14 +261,13 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
     override fun hashCode(): Int = sceneKey.hashCode()
 
     override val entries: List<NavEntry<Destination>>
-        get() = when {
-            // Filtering of duplicates is already handled in NavDisplay
-            sceneKey.isPreviewingBack -> eligibleSceneEntries
-            // Since the display may adapt, the actual entries to show are a subset of all eligible
-            // entries that can show.
-            // This is so destinations animating out are shown by the SceneSetupNavEntryDecorator.
-            // Otherwise, they will be removed immediately and not animate.
-            else -> currentPanedNavigationState.value.let { state ->
+        get() = when (navigationEventStatus()) {
+            // Active gesture preview: include every eligible entry so destinations
+            // animating out are kept around for the SceneSetupNavEntryDecorator to render.
+            NavigationEventStatus.Seeking -> eligibleSceneEntries
+            // Steady state (committed or cancelled): the display may adapt, so the actual
+            // entries to show are the subset of eligible entries that have a pane mapping.
+            is NavigationEventStatus.Completed -> currentPanedNavigationState.value.let { state ->
                 eligibleSceneEntries.filter { navEntry ->
                     state.paneFor(navEntry.destination()) != null
                 }
@@ -309,7 +308,7 @@ private class MultiPaneDisplayScene<Pane, Destination : Node>(
 
             val scope = remember {
                 AnimatedPaneScope(
-                    navigationEventStatus = navigationEventStatus,
+                    currentNavigationEventStatus = navigationEventStatus,
                     currentPaneState = updatedPaneState::value,
                     currentPaneNavigationState = currentPanedNavigationState::value,
                     currentAnimatedContentScope = updatedAnimatedContentScope::value,
@@ -381,28 +380,12 @@ private fun <Destination : Node, Pane> SlotBasedPaneNavigationState<Pane, Destin
  * This is to let [NavDisplay] find the appropriate scene to go back to with this key. The
  * flag is only used internally.
  */
-internal class MultiPaneSceneKey(
+@JvmInline
+internal value class MultiPaneSceneKey(
     val ids: List<String>,
-    val isPreviewingBack: Boolean,
 ) {
-
-    private val idsHash = ids.hashCode()
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as MultiPaneSceneKey
-
-        return ids == other.ids
-    }
-
-    override fun hashCode(): Int {
-        return idsHash
-    }
-
     override fun toString(): String {
-        return "MultiPaneSceneKey(ids = $ids, isPreviewingBack = $isPreviewingBack)"
+        return "MultiPaneSceneKey(ids = $ids)"
     }
 }
 

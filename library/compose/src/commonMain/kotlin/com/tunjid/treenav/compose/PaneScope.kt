@@ -42,7 +42,7 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
     val paneState: PaneState<Pane, Destination>
 
     /**
-     * Whether or not this [PaneScope] is active in its current pane. It is active when this pane's
+     * Whether this [PaneScope] is active in its current pane. It is active when this pane's
      * transition matches the pane for the current navigation destination in a given scene.
      *
      * This means that during predictive back animations, the outgoing panes, i.e the panes
@@ -52,9 +52,14 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
     val isActive: Boolean
 
     /**
-     * Whether or not a predictive back gesture is in progress
+     * Whether a predictive back gesture is in progress
      */
     val inPredictiveBack: Boolean
+
+    /**
+     * The status of a navigation event.
+     */
+    val navigationEventStatus: NavigationEventStatus
 }
 
 /**
@@ -62,7 +67,8 @@ interface PaneScope<Pane, Destination : Node> : AnimatedVisibilityScope {
  */
 @Stable
 internal class AnimatedPaneScope<Pane, Destination : Node>(
-    private val navigationEventStatus: () -> NavigationEventStatus,
+    // These lambdas all track snapshot reads
+    private val currentNavigationEventStatus: () -> NavigationEventStatus,
     private val currentPaneNavigationState: () -> PaneNavigationState<Pane, Destination>,
     private val currentPaneState: () -> PaneState<Pane, Destination>,
     private val currentAnimatedContentScope: () -> AnimatedContentScope,
@@ -88,17 +94,19 @@ internal class AnimatedPaneScope<Pane, Destination : Node>(
         get() {
             val currentSize = transition.sceneCurrentDestinationKey.ids.size
             val targetSize = transition.sceneTargetDestinationKey.ids.size
-
-            val targetIsPreview = transition.sceneTargetDestinationKey.isPreviewingBack
-
             val isAnimatingBack = targetSize < currentSize
 
-            return when (navigationEventStatus()) {
-                NavigationEventStatus.Seeking -> isAnimatingBack && targetIsPreview
-                NavigationEventStatus.Completed.Cancelled -> isAnimatingBack && targetIsPreview
-                NavigationEventStatus.Completed.Commited -> false
+            return when (currentNavigationEventStatus()) {
+                NavigationEventStatus.Seeking -> isAnimatingBack
+                // When canceled, there's a transition period
+                // where the transition seeks back to the target
+                is NavigationEventStatus.Completed.Cancelled -> !isEntering
+                is NavigationEventStatus.Completed.Commited -> false
             }
         }
+
+    override val navigationEventStatus: NavigationEventStatus
+        get() = currentNavigationEventStatus()
 }
 
 /**

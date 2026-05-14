@@ -34,6 +34,7 @@ import com.tunjid.treenav.Node
 import com.tunjid.treenav.compose.Adaptation
 import com.tunjid.treenav.compose.Adaptation.Swap
 import com.tunjid.treenav.compose.MultiPaneDisplay
+import com.tunjid.treenav.compose.NavigationEventStatus
 import com.tunjid.treenav.compose.PaneEntry
 import com.tunjid.treenav.compose.PaneScope
 
@@ -116,13 +117,17 @@ internal fun rememberStaticExitedAnimatedVisibilityScope(): AnimatedVisibilitySc
     }
 }
 
-internal fun PaneScope<ThreePane, *>.canAnimateSecondary(): Boolean {
-    if (inPredictiveBack) return false
-    if (!paneState.adaptations.contains(PrimaryToSecondary)) return false
-    if (paneState.adaptations.contains(Adaptation.Pop)) return false
+internal val PaneScope<ThreePane, *>.canAnimateSecondaryStickyElement: Boolean
+    get() {
+        if (inPredictiveBack) return false
+        if (!paneState.adaptations.contains(PrimaryToSecondary)) return false
+        if (paneState.adaptations.contains(Adaptation.Pop)) return false
 
-    return true
-}
+        return true
+    }
+
+internal val PaneScope<ThreePane, *>.canAnimatePrimaryStickyElement: Boolean
+    get() = navigationEventStatus != NavigationEventStatus.Completed.Cancelled
 
 private val PrimaryToSecondary = Swap(
     from = ThreePane.Primary,

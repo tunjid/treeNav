@@ -16,6 +16,7 @@
 
 package com.tunjid.demo.common.ui
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -53,6 +54,10 @@ class DragToPopState private constructor(
 
     private val channel = Channel<NavigationEventStatus>()
     private var dismissOffset by mutableStateOf<IntOffset?>(null)
+
+    init {
+        dragToDismissState.animationSpec = tween(8000)
+    }
 
     suspend fun awaitEvents() {
         channel.consumeAsFlow()
@@ -97,7 +102,7 @@ class DragToPopState private constructor(
                 dragToPopState.channel.trySend(NavigationEventStatus.Seeking)
             },
             onCancelled = cancelled@{ hasResetOffset ->
-                if (hasResetOffset) return@cancelled
+                if (!hasResetOffset) return@cancelled
                 dragToPopState.channel.trySend(NavigationEventStatus.Completed.Cancelled)
             },
             onDismissed = {
