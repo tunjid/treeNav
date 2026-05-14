@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -152,6 +153,7 @@ fun PaneScaffoldState.PaneScaffold(
                     SnackbarHost(snackbarHostState)
                 },
                 content = { paddingValues ->
+                    PersistentSharedElement()
                     content(paddingValues)
                 },
             )
@@ -216,3 +218,23 @@ private fun scaffoldBoundsTransform(
         -> snap()
     }
 }
+
+/**
+ * A workaround for https://issuetracker.google.com/issues/498497888
+ * Sticky shared elements which use Modifier.sharedElementWithUserManagedVisibility
+ * need an accompanying Modifier.sharedElement match to animate if the shared element
+ * transition is sought. The bug does not affect the transition if it is not seeking.
+ */
+@Composable
+private fun PaneScaffoldState.PersistentSharedElement() {
+    if (paneState.pane == ThreePane.Primary) Box(
+        Modifier
+            .sharedElement(
+                sharedContentState = rememberSharedContentState(PersistentSharedElementKey),
+                animatedVisibilityScope = this,
+            )
+            .size(1.dp),
+    )
+}
+
+private object PersistentSharedElementKey

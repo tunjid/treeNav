@@ -135,7 +135,7 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
 
         ThreePane.Primary,
         ThreePane.Secondary,
-        -> if (pane == ThreePane.Secondary && !canAnimateSecondary()) MinConstraintBox(
+        -> if (pane == ThreePane.Secondary && !canAnimateSecondaryStickyElement) MinConstraintBox(
             modifier,
         ) {
             content()
@@ -148,7 +148,7 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
             zIndexInOverlay = zIndexInOverlay,
             clipInOverlayDuringTransition = clipInOverlayDuringTransition,
             areBoundsTracked = {
-                isActive && pane == ThreePane.Primary
+                isActive && pane == ThreePane.Primary && canAnimatePrimaryStickyElement
             },
             content = {
                 // TODO: Maybe fade content out
