@@ -21,10 +21,14 @@ plugins {
 
 kotlin {
     applyDefaultHierarchyTemplate()
-    androidLibrary {
+    android {
         namespace = "com.tunjid.treenav.${project.name.replace("-", ".")}"
-        compileSdk = 37
-        minSdk = 23
+        compileSdk {
+            version = release(37) {
+                minorApiLevel = 1
+            }
+        }
+        minSdk = 24
     }
     jvm {
         testRuns["test"].executionTask.configure {

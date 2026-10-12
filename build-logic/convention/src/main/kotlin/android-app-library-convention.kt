@@ -25,10 +25,14 @@ fun org.gradle.api.Project.androidConfiguration(
     extension: ApplicationExtension,
 ) = extension.apply {
     namespace = "com.tunjid.treenav.${project.name.replace("-", ".")}"
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
-        minSdk = 23
+        minSdk = 24
     }
 
     compileOptions {

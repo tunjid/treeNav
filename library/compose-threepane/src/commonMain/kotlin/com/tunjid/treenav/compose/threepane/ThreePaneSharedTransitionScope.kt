@@ -143,6 +143,7 @@ private class ThreePaneSharedTransitionScope<Destination : Node>(
         else SharedElementWithCallerManagedVisibility(
             modifier = modifier,
             sharedContentState = sharedContentState,
+            boundsTransform = boundsTransform,
             placeholderSize = placeholderSize,
             renderInOverlayDuringTransition = renderInOverlayDuringTransition,
             zIndexInOverlay = zIndexInOverlay,

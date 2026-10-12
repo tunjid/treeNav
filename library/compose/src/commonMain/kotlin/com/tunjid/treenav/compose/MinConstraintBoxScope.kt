@@ -105,6 +105,7 @@ inline fun SharedTransitionScope.SharedElement(
 inline fun SharedTransitionScope.SharedElementWithCallerManagedVisibility(
     modifier: Modifier,
     sharedContentState: SharedTransitionScope.SharedContentState,
+    boundsTransform: BoundsTransform = SharedTransitionDefaults.BoundsTransform,
     placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
@@ -123,6 +124,7 @@ inline fun SharedTransitionScope.SharedElementWithCallerManagedVisibility(
                 .sharedElementWithCallerManagedVisibility(
                     sharedContentState = sharedContentState,
                     visible = boundsTracked,
+                    boundsTransform = boundsTransform,
                     placeholderSize = placeholderSize,
                     renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                     zIndexInOverlay = zIndexInOverlay,

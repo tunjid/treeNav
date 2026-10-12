@@ -301,6 +301,7 @@ class PaneMovableSharedElementScope<Pane, Destination : Node> internal construct
             SharedElementWithCallerManagedVisibility(
                 modifier = modifier,
                 sharedContentState = sharedContentState,
+                boundsTransform = boundsTransform,
                 placeholderSize = placeholderSize,
                 renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                 zIndexInOverlay = zIndexInOverlay,
