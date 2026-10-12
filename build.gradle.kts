@@ -61,13 +61,40 @@ allprojects {
 }
 
 plugins {
+    alias(libs.plugins.axionRelease)
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.axionRelease) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.jetbrains.compose) apply false
     alias(libs.plugins.jetbrains.dokka) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.spotless) apply false
+}
+
+scmVersion {
+    tag {
+        // Use an empty string for prefix
+        prefix.set("")
+    }
+    repository {
+        pushTagsOnly.set(true)
+    }
+    providers.gradleProperty("library.releaseBranch")
+        .orNull
+        ?.let { releaseBranch ->
+            when {
+                releaseBranch.contains("bugfix/") -> versionIncrementer("incrementPatch")
+                releaseBranch.contains("feature/") -> versionIncrementer("incrementMinor")
+                releaseBranch.contains("release/") -> versionIncrementer("incrementMajor")
+                else -> throw IllegalArgumentException("Unknown release type")
+            }
+        }
+}
+
+allprojects {
+    val libProps = rootProject.ext.get("libProps") as? java.util.Properties
+        ?: return@allprojects
+    group = libProps["groupId"] as String
+    version = rootProject.scmVersion.version
 }

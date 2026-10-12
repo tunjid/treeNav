@@ -18,39 +18,12 @@ plugins {
     id("com.vanniktech.maven.publish")
     signing
     id("org.jetbrains.dokka")
-    id("pl.allegro.tech.build.axion-release")
 }
 
-scmVersion {
-    tag {
-        // Use an empty string for prefix
-        prefix.set("")
-    }
-    repository {
-        pushTagsOnly.set(true)
-    }
-    providers.gradleProperty("library.releaseBranch")
-        .orNull
-        ?.let { releaseBranch ->
-            when {
-                releaseBranch.contains("bugfix/") -> versionIncrementer("incrementPatch")
-                releaseBranch.contains("feature/") -> versionIncrementer("incrementMinor")
-                releaseBranch.contains("release/") -> versionIncrementer("incrementMajor")
-                else -> throw IllegalArgumentException("Unknown release type")
-            }
-        }
-}
-
-allprojects {
-    val libProps = rootProject.ext.get("libProps") as? java.util.Properties
-        ?: return@allprojects
-    group = libProps["groupId"] as String
-    version = scmVersion.version
-
-    task("printProjectVersion") {
-        doLast {
-            println(">> " + project.name + " version is " + version)
-        }
+// group and version are set for all projects by the axion-release plugin applied in the root project
+tasks.register("printProjectVersion") {
+    doLast {
+        println(">> " + project.name + " version is " + version)
     }
 }
 
